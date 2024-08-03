@@ -1,34 +1,65 @@
 package com.pigeon_stargram.sns_clone.controller;
 
-import aj.org.objectweb.asm.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pigeon_stargram.sns_clone.dto.PostsDto;
-import com.pigeon_stargram.sns_clone.dto.PostsDtoList;
-import jakarta.annotation.Resource;
+import com.pigeon_stargram.sns_clone.TestData;
+import com.pigeon_stargram.sns_clone.dto.*;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
-@RequestMapping("")
+@RequestMapping("/api/posts")
 @RestController
 public class PostsController {
 
-    @GetMapping("/api/posts/list")
-    public List<PostsDto> init() throws IOException {
-        log.info("PostsController init");
-        ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private TestData testData;
 
-        List<PostsDto> postsDtos = objectMapper.readValue(new ClassPathResource("data/posts.json").getFile(), objectMapper.getTypeFactory().constructCollectionType(List.class, PostsDto.class));
+    @GetMapping("/list")
+    public List<PostsDto> getPosts() {
+        log.info("getPosts: {}", testData.postsDtoList);
+        return testData.postsDtoList;
+    }
 
+    @PostMapping("/editComment")
+    public List<PostsDto> editComment(@RequestBody EditCommentDto dto) {
+        log.info("editComment: {}", dto);
+        testData.postsDtoList.forEach(post -> {
+            if (post.getId().equals(dto.getKey())) {
+                List<CommentDto> comments = post.getData().getComments();
 
-        return postsDtos;
+                if (comments == null) {
+                    comments = new LinkedList<>();
+                    post.getData().setComments(comments);
+                }
+
+                comments.add(0, dto.getId());
+            }
+        });
+        log.info("editComment: {}", testData.postsDtoList);
+
+        return testData.postsDtoList;
+    }
+
+    @PostMapping("/list/like")
+    public List<PostsDto> likePost(@RequestBody LikePostDto dto){
+        log.info("likePost: {}", dto);
+        Optional<PostsDto> post = testData.postsDtoList.stream()
+                .filter(postsDto -> postsDto.getId().equals(dto.getPostId()))
+                .findFirst();
+
+        Optional<LikeDto> likes = post.map(PostsDto::getData).map(DataDto::getLikes);
+        likes.ifPresent(likeDto -> {
+            likeDto.setLike(!likeDto.isLike());
+            likeDto.setValue(likeDto.isLike() ? likeDto.getValue() + 1 : likeDto.getValue() - 1);
+        });
+        return testData.postsDtoList;
     }
 }
