@@ -12,30 +12,30 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @Slf4j
-@RequestMapping("/api/comments")
+@RequestMapping("/api/replies")
 @RestController
-public class CommentsController {
+public class RepliesController {
 
     @Autowired
     private TestData testData;
 
     @PostMapping("/add")
-    public List<PostsDto> addComment(@RequestBody AddCommentDto comment) {
-        log.info("addComment: {}", comment);
-        List<CommentDto> comments = testData.findPostById(comment.getPostId())
-                .map(PostsDto::getData)
-                .map(DataDto::getComments)
+    public List<PostsDto> addReply(@RequestBody AddReplyDto dto) {
+        log.info("addReply: {}", dto);
+        List<ReplyDto> replyDtos = testData.findCommentById(dto.getPostId(), dto.getCommentId())
+                .map(CommentDto::getData)
+                .map(CommentDataDto::getReplies)
                 .get();
-        comments.addFirst(comment.getComment());
+        replyDtos.addFirst(dto.getReply());
         return testData.postsDtoList;
     }
 
     @PostMapping("/list/like")
-    public List<PostsDto> likeComment(@RequestBody LikeCommentDto dto) {
+    public List<PostsDto> likeReply(@RequestBody LikeReplyDto dto) {
         log.info("likeComment: {}", dto);
-        LikeDto likeDto = testData.findCommentById(dto.getPostId(), dto.getCommentId())
-                .map(CommentDto::getData)
-                .map(CommentDataDto::getLikes)
+        LikeDto likeDto = testData.findReplyById(dto.getPostId(), dto.getCommentId(), dto.getReplayId())
+                .map(ReplyDto::getData)
+                .map(ReplyDataDto::getLikes)
                 .get();
 
         likeDto.setLike(!likeDto.isLike());
