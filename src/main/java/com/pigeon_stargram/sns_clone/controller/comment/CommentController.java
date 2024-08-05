@@ -1,18 +1,15 @@
 package com.pigeon_stargram.sns_clone.controller.comment;
 
-import com.pigeon_stargram.sns_clone.TestData;
 import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.comment.request.RequestAddComment;
 import com.pigeon_stargram.sns_clone.dto.comment.request.RequestLikeComment;
 import com.pigeon_stargram.sns_clone.dto.post.PostsDto;
-import com.pigeon_stargram.sns_clone.dto.post2.*;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

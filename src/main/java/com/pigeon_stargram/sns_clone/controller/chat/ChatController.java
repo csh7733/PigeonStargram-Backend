@@ -7,8 +7,6 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
