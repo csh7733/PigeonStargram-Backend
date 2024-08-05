@@ -1,14 +1,14 @@
-package com.pigeon_stargram.sns_clone.dto;
+package com.pigeon_stargram.sns_clone.dto.posts;
 
 import lombok.*;
 
-@Getter
 @Builder
+@Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentDto {
+public class PostsDto {
     private String id;
     private ProfileDto profile;
-    private CommentDataDto data;
+    private DataDto data;
 }

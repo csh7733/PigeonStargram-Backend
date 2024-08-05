@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.dto;
+package com.pigeon_stargram.sns_clone.dto.posts;
 
 import lombok.*;
 
@@ -7,7 +7,8 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LikeCommentDto {
+public class LikeReplyDto {
     String postId;
     String commentId;
+    String replayId;
 }

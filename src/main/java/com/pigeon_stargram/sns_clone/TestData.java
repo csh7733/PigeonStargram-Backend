@@ -1,7 +1,7 @@
 package com.pigeon_stargram.sns_clone;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pigeon_stargram.sns_clone.dto.*;
+import com.pigeon_stargram.sns_clone.dto.posts.*;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
