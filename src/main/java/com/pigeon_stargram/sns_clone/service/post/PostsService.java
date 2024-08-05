@@ -70,7 +70,7 @@ public class PostsService {
     }
 
 
-    private Posts getPostEntity(Long postId) {
+    public Posts getPostEntity(Long postId) {
         return postsRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid comment ID"));
     }

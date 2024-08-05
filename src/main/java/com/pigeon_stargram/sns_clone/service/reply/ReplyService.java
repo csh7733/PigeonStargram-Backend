@@ -7,6 +7,7 @@ import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.reply.ReplyDto;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyRepository;
+import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

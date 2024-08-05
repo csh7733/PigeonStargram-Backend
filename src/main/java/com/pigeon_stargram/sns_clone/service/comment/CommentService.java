@@ -8,6 +8,8 @@ import com.pigeon_stargram.sns_clone.dto.comment.CommentDto;
 import com.pigeon_stargram.sns_clone.dto.reply.ReplyDto;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentRepository;
+import com.pigeon_stargram.sns_clone.repository.post.PostsRepository;
+import com.pigeon_stargram.sns_clone.service.post.PostsService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -80,7 +82,7 @@ public class CommentService {
         commentRepository.deleteById(commentId);
     }
 
-    private Comment getCommentEntity(Long commentId) {
+    public Comment getCommentEntity(Long commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid comment ID"));
     }
