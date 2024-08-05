@@ -70,17 +70,23 @@ public class ChatController {
     }
 
     @PostMapping("/filter")
-    public List<ChatHistoryDto> getUserChats(@RequestBody Map<String, String> request) {
-        String userName = request.get("user");
-        log.info("filter userName = {}", userName);
-        return chatHistories.stream().filter(chat -> chat.getFrom().equals(userName) || chat.getTo().equals(userName)).collect(Collectors.toList());
+    public List<ChatHistoryDto> getUserChats(@RequestBody Map<String, Integer> request) {
+        Integer userId = request.get("user");
+        log.info("filter userName = {}", userId);
+        return chatHistories.stream().filter(chat -> chat.getFrom().equals(userId) || chat.getTo().equals(userId)).collect(Collectors.toList());
     }
 
 
     @PostMapping("/insert")
     public List<ChatHistoryDto> insertChat(@RequestBody ChatHistoryDto chatDto) {
+        log.info("chatDto = {}",chatDto.toString());
         chatDto.setId(chatHistories.size() + 1);
         chatHistories.add(chatDto);
         return chatHistories;
+    }
+
+    @PostMapping("/insert2")
+    public ChatHistoryDto insertChat2(@RequestBody ChatHistoryDto chatDto) {
+        return chatDto;
     }
 }

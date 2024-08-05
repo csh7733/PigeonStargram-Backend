@@ -7,10 +7,11 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 public class ChatHistoryDto {
     private int id;
-    private String from;
-    private String to;
+    private Integer from;
+    private Integer to;
     private String text;
     private String time;
 
