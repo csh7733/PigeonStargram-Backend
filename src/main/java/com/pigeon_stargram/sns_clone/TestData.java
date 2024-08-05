@@ -1,21 +1,39 @@
 package com.pigeon_stargram.sns_clone;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pigeon_stargram.sns_clone.dto.chat.UserDto;
 import com.pigeon_stargram.sns_clone.dto.posts.*;
+import com.pigeon_stargram.sns_clone.service.UserService;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 @Slf4j
+@RequiredArgsConstructor
 @Component
 public class TestData {
 
     public List<PostsDto> postsDtoList;
+    public List<UserDto> userDtoList;
+
+    private final UserService userService;
+
+    @PostConstruct
+    public void initData() throws IOException {
+        log.info("init data");
+        ObjectMapper objectMapper = new ObjectMapper();
+        userDtoList = objectMapper.readValue(
+                new ClassPathResource("data/chat.json").getFile(),
+                objectMapper.getTypeFactory()
+                        .constructCollectionType(List.class, PostsDto.class));
+    }
 
     @PostConstruct
     public void init() throws IOException {
@@ -50,4 +68,5 @@ public class TestData {
                 .filter(replyDto -> replyDto.getId().equals(replyId))
                 .findFirst();
     }
+
 }
