@@ -3,10 +3,9 @@ package com.pigeon_stargram.sns_clone.controller.follow;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.Follow.FilterFollowersDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
-import com.pigeon_stargram.sns_clone.service.user.FollowService;
+import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

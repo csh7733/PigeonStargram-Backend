@@ -1,9 +1,10 @@
-package com.pigeon_stargram.sns_clone.service.user;
+package com.pigeon_stargram.sns_clone.service.follow;
 
 import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
-import com.pigeon_stargram.sns_clone.repository.user.FollowRepository;
+import com.pigeon_stargram.sns_clone.repository.follow.FollowRepository;
+import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

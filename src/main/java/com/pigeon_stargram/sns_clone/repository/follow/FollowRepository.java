@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.repository.user;
+package com.pigeon_stargram.sns_clone.repository.follow;
 
 import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.user.User;
