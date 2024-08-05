@@ -24,7 +24,6 @@ public class ReplyService {
     private final ReplyLikeRepository replyLikeRepository;
 
     public void createReply(User user, Comment comment, String content) {
-
         Reply reply = Reply.builder()
                 .user(user)
                 .comment(comment)
