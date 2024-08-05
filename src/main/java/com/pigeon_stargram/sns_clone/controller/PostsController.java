@@ -35,6 +35,7 @@ public class PostsController {
                     post.getData().setComments(comments);
                 }
 
+                
                 comments.add(0, dto.getId());
             }
         });
