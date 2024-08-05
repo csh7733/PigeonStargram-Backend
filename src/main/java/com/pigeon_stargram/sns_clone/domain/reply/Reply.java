@@ -1,19 +1,18 @@
-package com.pigeon_stargram.sns_clone.domain.posts;
+package com.pigeon_stargram.sns_clone.domain.reply;
 
 import com.pigeon_stargram.sns_clone.domain.BaseTimeEntity;
+import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @NoArgsConstructor
 @Entity
-public class Posts extends BaseTimeEntity {
+public class Reply extends BaseTimeEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,35 +21,24 @@ public class Posts extends BaseTimeEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    private String content;
+    @ManyToOne
+    @JoinColumn(name = "comment_id")
+    private Comment comment;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Image> images = new ArrayList<>();
+    private String content;
 
     private Integer likes;
 
     @Builder
-    public Posts(User user, String content) {
+    public Reply(User user, Comment comment, String content) {
         this.user = user;
+        this.comment = comment;
         this.content = content;
-        this.likes = 0;
-    }
-
-    @Builder
-    public Posts(User user, String content, List<Image> images) {
-        this.user = user;
-        this.content = content;
-        this.images = images;
         this.likes = 0;
     }
 
     public void modify(String content) {
         this.content = content;
-    }
-
-    public void modify(String content,List<Image> images) {
-        this.content = content;
-        this.images = images;
     }
 
     public void incrementLikes() {

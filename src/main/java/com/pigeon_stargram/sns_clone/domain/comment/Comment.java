@@ -1,18 +1,17 @@
-package com.pigeon_stargram.sns_clone.domain.replies;
+package com.pigeon_stargram.sns_clone.domain.comment;
 
 import com.pigeon_stargram.sns_clone.domain.BaseTimeEntity;
-import com.pigeon_stargram.sns_clone.domain.comments.Comments;
+import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-
 @Getter
 @NoArgsConstructor
 @Entity
-public class Replies extends BaseTimeEntity {
+public class Comment extends BaseTimeEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,19 +21,23 @@ public class Replies extends BaseTimeEntity {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "comment_id")
-    private Comments comment;
+    @JoinColumn(name = "post_id")
+    private Posts post;
 
     private String content;
 
     private Integer likes;
 
     @Builder
-    public Replies(User user, Comments comment, String content) {
+    public Comment(User user, Posts post, String content) {
         this.user = user;
-        this.comment = comment;
+        this.post = post;
         this.content = content;
         this.likes = 0;
+    }
+
+    public void modify(String content) {
+        this.content = content;
     }
 
     public void incrementLikes() {

@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.domain.posts;
+package com.pigeon_stargram.sns_clone.domain.post;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
