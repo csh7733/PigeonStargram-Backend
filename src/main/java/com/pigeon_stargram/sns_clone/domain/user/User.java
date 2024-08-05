@@ -1,17 +1,19 @@
 package com.pigeon_stargram.sns_clone.domain.user;
 
-import com.pigeon_stargram.sns_clone.dto.chat.UserDto;
+import com.pigeon_stargram.sns_clone.domain.follow.Follow;
+import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
 
-@ToString(exclude = {"postsList", "followList"})
+@ToString(exclude = {"followers", "followings"})
 @EqualsAndHashCode
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "user_entity")
 @Entity
 public class User {
 
@@ -31,15 +33,28 @@ public class User {
     private String birthdayText;
     private String onlineStatus;
 
-    @OneToMany(mappedBy = "user")
-    private List<Posts> postsList;
+//    @OneToMany(mappedBy = "user")
+//    private List<Posts> posts;
 
-    @OneToMany(mappedBy = "user")
-    private List<Follow> followList;
+    @OneToMany(mappedBy = "fromUser")
+    private List<Follow> followers;
+
+    @OneToMany(mappedBy = "toUser")
+    private List<Follow> followings;
 
 
     @Builder
     public User(String name) {
         this.name = name;
+    }
+
+    public FollowerDto toFollowerDto() {
+        return FollowerDto.builder()
+                .id(this.id)
+                .avatar(this.avatar)
+                .name(this.name)
+                .location(this.location)
+                .follow(this.followers.size())
+                .build();
     }
 }

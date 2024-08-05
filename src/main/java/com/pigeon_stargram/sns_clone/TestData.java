@@ -1,8 +1,10 @@
 package com.pigeon_stargram.sns_clone;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pigeon_stargram.sns_clone.dto.chat.UserDto;
+import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
+import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import com.pigeon_stargram.sns_clone.dto.posts.*;
+import com.pigeon_stargram.sns_clone.service.user.FollowService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +23,10 @@ public class TestData {
 
     public List<PostsDto> postsDtoList;
     public List<UserDto> userDtoList;
+    public List<FollowerDto> followerDtoList;
 
     private final UserService userService;
+    private final FollowService followService;
 
     @PostConstruct
     public void initData() throws IOException {
@@ -33,7 +37,13 @@ public class TestData {
                 objectMapper.getTypeFactory()
                         .constructCollectionType(List.class, UserDto.class));
         userService.saveAll(userDtoList);
-        userService.findAll().forEach(user -> log.info("user: {}", user));
+
+        followerDtoList = objectMapper.readValue(
+                new ClassPathResource("data/followers.json").getFile(),
+                objectMapper.getTypeFactory()
+                        .constructCollectionType(List.class, FollowerDto.class));
+        followerDtoList.forEach(dto -> log.info("init data: {}", dto));
+        followService.saveAll(followerDtoList);
     }
 
     @PostConstruct

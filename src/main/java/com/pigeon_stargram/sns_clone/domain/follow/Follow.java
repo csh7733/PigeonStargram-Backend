@@ -1,5 +1,6 @@
-package com.pigeon_stargram.sns_clone.domain.user;
+package com.pigeon_stargram.sns_clone.domain.follow;
 
+import com.pigeon_stargram.sns_clone.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 

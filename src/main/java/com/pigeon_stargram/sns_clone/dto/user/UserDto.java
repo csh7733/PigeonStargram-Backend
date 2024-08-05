@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.dto.chat;
+package com.pigeon_stargram.sns_clone.dto.user;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;

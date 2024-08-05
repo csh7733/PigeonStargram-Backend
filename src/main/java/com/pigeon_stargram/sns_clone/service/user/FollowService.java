@@ -1,7 +1,8 @@
 package com.pigeon_stargram.sns_clone.service.user;
 
-import com.pigeon_stargram.sns_clone.domain.user.Follow;
+import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
 import com.pigeon_stargram.sns_clone.repository.user.FollowRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 @Service
 public class FollowService {
 
+    private final UserService userService;
     private final FollowRepository followRepository;
 
     public Follow save(Follow follow) {
@@ -32,6 +34,24 @@ public class FollowService {
         List<Follow> followList = followRepository.findByFromUser(user);
         return followList.stream()
                 .map(Follow::getToUser)
+                .collect(Collectors.toList());
+    }
+
+    public List<Follow> saveAll(List<FollowerDto> followerDtoList) {
+        List<User> users = followerDtoList.stream()
+                .map(FollowerDto::toUser)
+                .collect(Collectors.toList());
+        userService.saveAllUser(users);
+
+        List<Follow> follows = followerDtoList.stream()
+                .map(dto -> dto.toEntity(userService.findById(dto.getId())))
+                .collect(Collectors.toList());
+        return followRepository.saveAll(follows);
+    }
+
+    public List<User> findAll(){
+        return followRepository.findAll().stream()
+                .map(Follow::getFromUser)
                 .collect(Collectors.toList());
     }
 }

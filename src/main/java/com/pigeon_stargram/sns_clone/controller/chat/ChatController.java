@@ -2,13 +2,12 @@ package com.pigeon_stargram.sns_clone.controller.chat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pigeon_stargram.sns_clone.dto.chat.ChatHistoryDto;
-import com.pigeon_stargram.sns_clone.dto.chat.UserDto;
+import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

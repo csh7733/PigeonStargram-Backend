@@ -1,0 +1,142 @@
+[
+  {
+    "id": 1,
+    "avatar": "avatar-6.png",
+    "name": "Barney",
+    "location": "Handburgh",
+    "follow": 1
+  },
+  {
+    "id": 2,
+    "avatar": "avatar-3.png",
+    "name": "Thea",
+    "location": "New jana",
+    "follow": 2
+  },
+  {
+    "id": 3,
+    "avatar": "avatar-7.png",
+    "name": "Guiseppe",
+    "location": "Jenkinsstad",
+    "follow": 1
+  },
+  {
+    "id": 4,
+    "avatar": "avatar-8.png",
+    "name": "Henderson",
+    "location": "South Antonina",
+    "follow": 1
+  },
+  {
+    "id": 5,
+    "avatar": "avatar-9.png",
+    "name": "Maddison",
+    "location": "New Dorthy",
+    "follow": 1
+  },
+  {
+    "id": 6,
+    "avatar": "avatar-1.png",
+    "name": "Wilber",
+    "location": "Twilahsven",
+    "follow": 1
+  },
+  {
+    "id": 7,
+    "avatar": "avatar-4.png",
+    "name": "Hayden",
+    "location": "Darrelshaire",
+    "follow": 1
+  },
+  {
+    "id": 8,
+    "avatar": "avatar-10.png",
+    "name": "Lloyd",
+    "location": "New Credrick",
+    "follow": 1
+  },
+  {
+    "id": 9,
+    "avatar": "avatar-8.png",
+    "name": "Kris",
+    "location": "New Dianna",
+    "follow": 1
+  },
+  {
+    "id": 10,
+    "avatar": "avatar-11.png",
+    "name": "Kyler",
+    "location": "Murraymouth",
+    "follow": 1
+  },
+  {
+    "id": 11,
+    "avatar": "avatar-3.png",
+    "name": "Pamela",
+    "location": "Murraymouth",
+    "follow": 1
+  },
+  {
+    "id": 12,
+    "avatar": "avatar-6.png",
+    "name": "John Doe",
+    "location": "North Zole",
+    "follow": 1
+  },
+  {
+    "id": 13,
+    "avatar": "avatar-5.png",
+    "name": "Anthony",
+    "location": "Lake Judy",
+    "follow": 1
+  },
+  {
+    "id": 14,
+    "avatar": "avatar-12.png",
+    "name": "Reggie",
+    "location": "Kailynland",
+    "follow": 1
+  },
+  {
+    "id": 15,
+    "avatar": "avatar-1.png",
+    "name": "Francesca",
+    "location": "Pagacview",
+    "follow": 2
+  },
+  {
+    "id": 16,
+    "avatar": "avatar-9.png",
+    "name": "Carmel",
+    "location": "Port Lerashire",
+    "follow": 1
+  },
+  {
+    "id": 17,
+    "avatar": "avatar-4.png",
+    "name": "Darwin",
+    "location": "North Jacquesside",
+    "follow": 2
+  },
+  {
+    "id": 18,
+    "avatar": "avatar-3.png",
+    "name": "Kaylin",
+    "location": "Bergstrombury",
+    "follow": 1
+  },
+  {
+    "id": 19,
+    "avatar": "avatar-7.png",
+    "name": "Kamryn",
+    "location": "South Norma",
+    "follow": 1
+  },
+  {
+    "id": 20,
+    "avatar": "avatar-8.png",
+    "name": "Madelyn",
+    "location": "Port Opheliamouth",
+    "follow": 1
+  }
+]
