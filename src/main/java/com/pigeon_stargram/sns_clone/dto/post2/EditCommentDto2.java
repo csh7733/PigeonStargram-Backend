@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.dto.post;
+package com.pigeon_stargram.sns_clone.dto.post2;
 
 import lombok.*;
 
@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EditCommentDto {
+public class EditCommentDto2 {
     private String key;
-    private CommentDto id;
+    private CommentDto2 id;
 }

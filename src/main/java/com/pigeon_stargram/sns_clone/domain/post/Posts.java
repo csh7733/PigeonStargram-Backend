@@ -24,7 +24,7 @@ public class Posts extends BaseTimeEntity {
 
     private String content;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
     private List<Image> images = new ArrayList<>();
 
     private Integer likes;

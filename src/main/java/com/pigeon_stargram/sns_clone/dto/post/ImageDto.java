@@ -1,5 +1,6 @@
 package com.pigeon_stargram.sns_clone.dto.post;
 
+import com.pigeon_stargram.sns_clone.domain.post.Image;
 import lombok.*;
 
 @Getter
@@ -9,6 +10,11 @@ import lombok.*;
 @AllArgsConstructor
 public class ImageDto {
     private String img;
-    private String title;
-    private boolean featured;
+    private Boolean featured;
+
+    public ImageDto(Image image) {
+        this.img = image.getImg();
+        this.featured = image.getFeatured();
+    }
+
 }

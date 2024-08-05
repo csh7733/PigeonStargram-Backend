@@ -10,16 +10,12 @@ import lombok.*;
 @AllArgsConstructor
 public class ReplyDto {
     private Long id;
-    private Long userId;
-    private Long commentId;
-    private String content;
-    private Integer likes;
+    private ReplyProfileDto profile;
+    private ReplyDataDto data;
 
     public ReplyDto(Reply reply) {
         this.id = reply.getId();
-        this.userId = reply.getUser().getId();
-        this.commentId = reply.getComment().getId();
-        this.content = reply.getContent();
-        this.likes = reply.getLikes();
+        this.profile = new ReplyProfileDto(reply.getUser(),reply.getModifiedDate());
+        this.data = new ReplyDataDto(reply);
     }
 }

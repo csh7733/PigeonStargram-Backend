@@ -1,27 +1,23 @@
 package com.pigeon_stargram.sns_clone.domain.user;
 
-import com.pigeon_stargram.sns_clone.domain.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 
 @Getter
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
-public class User extends BaseTimeEntity {
+public class User {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String name;
+    private String avatar;
 
-    @Column(nullable = false)
-    private String email;
-
-    @Column
-    private String picture;
-
+    public User(String name, String avatar) {
+        this.name = name;
+        this.avatar = avatar;
+    }
 }

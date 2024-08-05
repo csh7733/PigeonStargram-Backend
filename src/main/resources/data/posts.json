@@ -1,9 +1,9 @@
 [
   {
-    "id": "#4POST_JONE_DOE",
+    "id": "1",
     "profile": { "id": "#52JONE_DOE", "avatar": "img-user.png", "name": "John Doe", "time": "now" },
     "data": {
-      "content": "켄터키",
+      "content": "켄터키ff",
       "images": [],
       "likes": { "like": true, "value": 1 },
       "comments": [
@@ -93,17 +93,17 @@
               {
                 "id": "#REPLY_2",
                 "profile": { "id": "#52JONE_DOE", "avatar": "avatar-2.png", "name": "John Doe", "time": "15 min ago " },
-                "data": { "comment": "Test", "likes": { "like": true, "value": 1 }, "replies": [] }
+                "data": { "comment": "Test", "likes": { "like": true, "value": 1 } }
               },
               {
                 "id": "#REPLY_3",
                 "profile": { "id": "#52JONE_DOE", "avatar": "avatar-2.png", "name": "John Doe", "time": "15 min ago " },
-                "data": { "comment": "Test To Reply", "likes": { "like": true, "value": 1 }, "replies": [] }
+                "data": { "comment": "Test To Reply", "likes": { "like": true, "value": 1 }}
               },
               {
                 "id": "#REPLY_3",
                 "profile": { "id": "#52JONE_DOE", "avatar": "avatar-2.png", "name": "John Doe", "time": "15 min ago " },
-                "data": { "comment": "test", "likes": { "like": false, "value": 0 }, "replies": [] }
+                "data": { "comment": "test", "likes": { "like": false, "value": 0 }}
               }
             ]
           }

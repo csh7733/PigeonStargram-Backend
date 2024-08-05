@@ -1,7 +1,7 @@
 package com.pigeon_stargram.sns_clone;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pigeon_stargram.sns_clone.dto.post.*;
+import com.pigeon_stargram.sns_clone.dto.post2.*;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
@@ -15,7 +15,7 @@ import java.util.Optional;
 @Component
 public class TestData {
 
-    public List<PostsDto> postsDtoList;
+    public List<PostsDto2> postsDtoList;
 
     @PostConstruct
     public void init() throws IOException {
@@ -24,28 +24,28 @@ public class TestData {
         postsDtoList = objectMapper.readValue(
                 new ClassPathResource("data/posts.json").getFile(),
                 objectMapper.getTypeFactory()
-                        .constructCollectionType(List.class, PostsDto.class));
+                        .constructCollectionType(List.class, PostsDto2.class));
     }
 
-    public Optional<PostsDto> findPostById(String postId) {
+    public Optional<PostsDto2> findPostById(String postId) {
         return postsDtoList.stream()
                 .filter(postsDto -> postsDto.getId().equals(postId))
                 .findFirst();
     }
 
-    public Optional<CommentDto> findCommentById(String postId, String commentId) {
+    public Optional<CommentDto2> findCommentById(String postId, String commentId) {
         return findPostById(postId)
-                .map(PostsDto::getData)
-                .map(DataDto::getComments)
+                .map(PostsDto2::getData)
+                .map(DataDto2::getComments)
                 .get().stream()
                 .filter(commentDto -> commentDto.getId().equals(commentId))
                 .findFirst();
     }
 
-    public Optional<ReplyDto> findReplyById(String postId, String commentId, String replyId) {
+    public Optional<ReplyDto2> findReplyById(String postId, String commentId, String replyId) {
         return findCommentById(postId, commentId)
-                .map(CommentDto::getData)
-                .map(CommentDataDto::getReplies)
+                .map(CommentDto2::getData)
+                .map(CommentDataDto2::getReplies)
                 .get().stream()
                 .filter(replyDto -> replyDto.getId().equals(replyId))
                 .findFirst();

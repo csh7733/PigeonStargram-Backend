@@ -23,33 +23,32 @@ public class ReplyService {
     private final ReplyRepository replyRepository;
     private final ReplyLikeRepository replyLikeRepository;
 
-    public void createReply(User user, Comment comment, String content) {
+    public Reply createReply(User user, Comment comment, String content) {
         Reply reply = Reply.builder()
                 .user(user)
                 .comment(comment)
                 .content(content)
                 .build();
-
         replyRepository.save(reply);
+
+        return reply;
     }
 
-    public ReplyDto getReply(Long replyId) {
-        Reply reply = replyRepository.findById(replyId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid reply ID"));
-        return new ReplyDto(reply);
-    }
+//    public ReplyDto getReply(Long replyId) {
+//        Reply reply = replyRepository.findById(replyId)
+//                .orElseThrow(() -> new IllegalArgumentException("Invalid reply ID"));
+//        return new ReplyDto(reply);
+//    }
 
     public List<ReplyDto> getReplyListByComment(Long commentId) {
-        List<Reply> replies = replyRepository.findByCommentId(commentId);
-        return replies.stream()
+        return replyRepository.findByCommentId(commentId).stream()
                 .map(ReplyDto::new)
                 .collect(Collectors.toList());
     }
 
-    public ReplyDto editReply(Long replyId, String newContent) {
+    public void editReply(Long replyId, String newContent) {
         Reply reply = getReplyEntity(replyId);
         reply.modify(newContent);
-        return new ReplyDto(reply);
     }
 
     public void likeReply(User user, Long replyId) {

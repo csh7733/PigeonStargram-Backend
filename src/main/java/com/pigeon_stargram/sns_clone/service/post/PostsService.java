@@ -1,18 +1,21 @@
 package com.pigeon_stargram.sns_clone.service.post;
 
-import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.post.Image;
 import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.domain.post.PostsLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 
+import com.pigeon_stargram.sns_clone.dto.comment.CommentDto;
+import com.pigeon_stargram.sns_clone.dto.post.PostsDto;
 import com.pigeon_stargram.sns_clone.repository.post.PostsLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.post.PostsRepository;
+import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +23,7 @@ public class PostsService {
 
     private final PostsRepository postsRepository;
     private final PostsLikeRepository postsLikeRepository;
+    private final CommentService commentService;
 
     public Posts createPost(User user, String content) {
         Posts post = new Posts(user,content);
@@ -31,12 +35,12 @@ public class PostsService {
         return postsRepository.save(post);
     }
 
-    public void updatePost(Long postId, String content) {
+    public void editPost(Long postId, String content) {
         Posts post = getPostEntity(postId);
         post.modify(content);
     }
 
-    public void updatePost(Long postId, String content, List<Image> images) {
+    public void editPost(Long postId, String content, List<Image> images) {
         Posts post = getPostEntity(postId);
         post.modify(content,images);
     }
@@ -53,6 +57,16 @@ public class PostsService {
             post.incrementLikes();
         }
         postsRepository.save(post);
+    }
+
+    public List<PostsDto> getPostsByUser(User user) {
+        List<Posts> posts = postsRepository.findByUserId(user.getId());
+        return posts.stream()
+                .map(post -> {
+                    List<CommentDto> comments = commentService.getCommentListByPost(post.getId());
+                    return new PostsDto(post, comments);
+                })
+                .collect(Collectors.toList());
     }
 
 
