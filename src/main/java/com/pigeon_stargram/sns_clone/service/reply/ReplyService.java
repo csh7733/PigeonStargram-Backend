@@ -4,7 +4,7 @@ import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.reply.Reply;
 import com.pigeon_stargram.sns_clone.domain.reply.ReplyLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.reply.ReplyDTO;
+import com.pigeon_stargram.sns_clone.dto.reply.ReplyDto;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyRepository;
 import jakarta.transaction.Transactional;
@@ -33,23 +33,23 @@ public class ReplyService {
         replyRepository.save(reply);
     }
 
-    public ReplyDTO getReply(Long replyId) {
+    public ReplyDto getReply(Long replyId) {
         Reply reply = replyRepository.findById(replyId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid reply ID"));
-        return new ReplyDTO(reply);
+        return new ReplyDto(reply);
     }
 
-    public List<ReplyDTO> getReplyListByComment(Long commentId) {
+    public List<ReplyDto> getReplyListByComment(Long commentId) {
         List<Reply> replies = replyRepository.findByCommentId(commentId);
         return replies.stream()
-                .map(ReplyDTO::new)
+                .map(ReplyDto::new)
                 .collect(Collectors.toList());
     }
 
-    public ReplyDTO editReply(Long replyId, String newContent) {
+    public ReplyDto editReply(Long replyId, String newContent) {
         Reply reply = getReplyEntity(replyId);
         reply.modify(newContent);
-        return new ReplyDTO(reply);
+        return new ReplyDto(reply);
     }
 
     public void likeReply(User user, Long replyId) {
@@ -68,10 +68,6 @@ public class ReplyService {
             replyLikeRepository.save(replyLike);
             reply.incrementLikes();
         }
-    }
-
-    public void unlikeReply(Long replyLikeId) {
-        replyLikeRepository.deleteById(replyLikeId);
     }
 
     public void deleteReply(Long replyId) {

@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.domain.comment;
+package com.pigeon_stargram.sns_clone.domain.post;
 
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import jakarta.persistence.*;
@@ -9,10 +9,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(name = "comment_like")
-public class CommentLike {
+@Table(name = "posts_like")
+public class PostsLike {
 
-    @Id
+    @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -21,12 +21,12 @@ public class CommentLike {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "comment_id")
-    private Comment comment;
+    @JoinColumn(name = "post_id")
+    private Posts post;
 
     @Builder
-    public CommentLike(User user, Comment comment) {
+    public PostsLike(User user, Posts post) {
         this.user = user;
-        this.comment = comment;
+        this.post = post;
     }
 }

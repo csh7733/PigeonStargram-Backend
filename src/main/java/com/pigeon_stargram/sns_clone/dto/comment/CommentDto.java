@@ -8,14 +8,14 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentDTO {
+public class CommentDto {
     private Long id;
     private Long userId;
     private Long postId;
     private String content;
     private Integer likes;
 
-    public CommentDTO(Comment comment) {
+    public CommentDto(Comment comment) {
         this.id = comment.getId();
         this.userId = comment.getUser().getId();
         this.postId = comment.getPost().getId();
