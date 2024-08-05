@@ -1,7 +1,7 @@
 package com.pigeon_stargram.sns_clone.controller.posts;
 
 import com.pigeon_stargram.sns_clone.TestData;
-import com.pigeon_stargram.sns_clone.dto.posts.*;
+import com.pigeon_stargram.sns_clone.dto.post.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
