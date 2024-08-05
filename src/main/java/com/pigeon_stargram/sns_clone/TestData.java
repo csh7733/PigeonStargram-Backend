@@ -32,7 +32,7 @@ public class TestData {
         userDtoList = objectMapper.readValue(
                 new ClassPathResource("data/chat.json").getFile(),
                 objectMapper.getTypeFactory()
-                        .constructCollectionType(List.class, PostsDto.class));
+                        .constructCollectionType(List.class, UserDto.class));
     }
 
     @PostConstruct
