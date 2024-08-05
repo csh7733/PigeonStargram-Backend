@@ -38,7 +38,7 @@ public class ReplyController {
         Long userId = requestAddReply.getReply().getUserId();
         User user = userRepository.findById(userId).get();
         replyService.createReply(user,comment,content);
-        return postsService.getPostsByUser(user);
+        return postsService.getAllPosts();
     }
 
     @PostMapping("/list/like")
@@ -48,6 +48,6 @@ public class ReplyController {
         Long replyId = requestLikeReply.getReplyId();
 
         replyService.likeReply(user,replyId);
-        return postsService.getPostsByUser(user);
+        return postsService.getAllPosts();
     }
 }

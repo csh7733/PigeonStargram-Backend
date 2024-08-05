@@ -37,7 +37,7 @@ public class CommentController {
         User user = userRepository.findById(userId).get();
 
         commentService.createComment(user,post,content);
-        return postsService.getPostsByUser(user);
+        return postsService.getAllPosts();
     }
 
     @PostMapping("/list/like")
@@ -47,6 +47,6 @@ public class CommentController {
         Long commentId = requestLikeComment.getCommentId();
 
         commentService.likeComment(user,commentId);
-        return postsService.getPostsByUser(user);
+        return postsService.getAllPosts();
     }
 }

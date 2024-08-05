@@ -69,6 +69,15 @@ public class PostsService {
                 .collect(Collectors.toList());
     }
 
+    public List<PostsDto> getAllPosts() {
+        List<Posts> posts = postsRepository.findAll();
+        return posts.stream()
+                .map(post -> {
+                    List<CommentDto> comments = commentService.getCommentListByPost(post.getId());
+                    return new PostsDto(post, comments);
+                })
+                .collect(Collectors.toList());
+    }
 
     public Posts getPostEntity(Long postId) {
         return postsRepository.findById(postId)

@@ -24,7 +24,7 @@ public class PostsController {
         //테스트용 유저
         User user = userRepository.findById(1L).get();
 
-        return postsService.getPostsByUser(user);
+        return postsService.getAllPosts();
     }
 
 //    @PostMapping("/editComment")
@@ -52,7 +52,7 @@ public class PostsController {
         User user = userRepository.findById(1L).get();
 
         postsService.likePost(user,requestLikePost.getPostId());
-        return postsService.getPostsByUser(user);
+        return postsService.getAllPosts();
     }
 
 }
