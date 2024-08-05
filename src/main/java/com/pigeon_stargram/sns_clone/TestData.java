@@ -3,13 +3,12 @@ package com.pigeon_stargram.sns_clone;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pigeon_stargram.sns_clone.dto.chat.UserDto;
 import com.pigeon_stargram.sns_clone.dto.posts.*;
-import com.pigeon_stargram.sns_clone.service.UserService;
+import com.pigeon_stargram.sns_clone.service.user.UserService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import java.io.IOException;
 import java.util.List;
@@ -33,6 +32,8 @@ public class TestData {
                 new ClassPathResource("data/chat.json").getFile(),
                 objectMapper.getTypeFactory()
                         .constructCollectionType(List.class, UserDto.class));
+        userService.saveAll(userDtoList);
+        userService.findAll().forEach(user -> log.info("user: {}", user));
     }
 
     @PostConstruct

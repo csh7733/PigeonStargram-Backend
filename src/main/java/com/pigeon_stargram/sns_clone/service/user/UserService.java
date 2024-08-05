@@ -1,10 +1,14 @@
-package com.pigeon_stargram.sns_clone.service;
+package com.pigeon_stargram.sns_clone.service.user;
 
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.chat.UserDto;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -19,5 +23,15 @@ public class UserService {
 
     public User save(User user) {
         return userRepository.save(user);
+    }
+
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+
+    public List<User> saveAll(List<UserDto> userDtoList) {
+        List<User> userList = new ArrayList<>();
+        userDtoList.forEach(userDto -> userList.addLast(userDto.toEntity()));
+        return userRepository.saveAll(userList);
     }
 }

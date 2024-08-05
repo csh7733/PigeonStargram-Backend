@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone.dto.chat;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.pigeon_stargram.sns_clone.domain.user.User;
 import lombok.*;
 
 @Getter
@@ -44,4 +45,20 @@ public class UserDto {
     @JsonProperty("online_status")
     private String onlineStatus;
 
+    public User toEntity() {
+        return User.builder()
+                .name(name)
+                .company(company)
+                .role(role)
+                .workEmail(workEmail)
+                .personalEmail(personalEmail)
+                .workPhone(workPhone)
+                .personalPhone(personalPhone)
+                .location(location)
+                .avatar(avatar)
+                .status(status)
+                .birthdayText(birthdayText)
+                .onlineStatus(onlineStatus)
+                .build();
+    }
 }
