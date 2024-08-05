@@ -28,8 +28,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReplyController {
 
-    @Autowired
-    private TestData testData;
     private final PostsService postsService;
     private final CommentService commentService;
     private final ReplyService replyService;
