@@ -26,6 +26,15 @@ public class FollowController {
                 .toList();
     }
 
+    @DeleteMapping("/{userId}")
+    public List<FollowerDto> deleteFollower(@PathVariable Long userId) {
+        //temp
+        User tempUser = userService.findAll().stream().findFirst().get();
+
+        followService.deleteFollow(new DeleteFollowDto(tempUser.getId(), userId));
+        return getFollowers();
+    }
+
     @PostMapping("/filter")
     public List<FollowerDto> filterFollowers(@RequestBody RequestFilterFollowersDto dto) {
         //temp
@@ -40,7 +49,8 @@ public class FollowController {
     public List<FollowerDto> addFollower(@RequestBody RequestAddFollowerDto dto) {
         //temp
         User tempUser = userService.findAll().stream().findFirst().get();
-        followService.follow(new AddFollowerDto(tempUser.getId(), dto.getId()));
+
+        followService.createFollow(new AddFollowDto(tempUser.getId(), dto.getId()));
         return getFollowers();
     }
 

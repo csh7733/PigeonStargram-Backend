@@ -2,8 +2,8 @@ package com.pigeon_stargram.sns_clone.service.follow;
 
 import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.Follow.AddFollowerDto;
-import com.pigeon_stargram.sns_clone.dto.Follow.RequestAddFollowerDto;
+import com.pigeon_stargram.sns_clone.dto.Follow.AddFollowDto;
+import com.pigeon_stargram.sns_clone.dto.Follow.DeleteFollowDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
 import com.pigeon_stargram.sns_clone.repository.follow.FollowRepository;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -22,10 +22,16 @@ public class FollowService {
     private final UserService userService;
     private final FollowRepository followRepository;
 
-    public Follow follow(AddFollowerDto dto) {
+    public Follow createFollow(AddFollowDto dto) {
         User fromUser = userService.findById(dto.getFromId());
         User toUser = userService.findById(dto.getToId());
         return followRepository.save(dto.toEntity(fromUser, toUser));
+    }
+
+    public void deleteFollow(DeleteFollowDto dto){
+        User fromUser = userService.findById(dto.getFromId());
+        User toUser = userService.findById(dto.getToId());
+        followRepository.delete(dto.toEntity(fromUser, toUser);
     }
 
     public List<User> findFollowers(User user) {

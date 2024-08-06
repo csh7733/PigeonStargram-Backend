@@ -9,7 +9,8 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddFollowerDto {
+public class DeleteFollowDto {
+
     private Long fromId;
     private Long toId;
 
