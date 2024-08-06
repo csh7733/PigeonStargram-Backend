@@ -2,7 +2,7 @@ package com.pigeon_stargram.sns_clone.controller.reply;
 
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.post.PostsDto;
+import com.pigeon_stargram.sns_clone.dto.post.response.PostsDto;
 import com.pigeon_stargram.sns_clone.dto.reply.request.RequestAddReply;
 import com.pigeon_stargram.sns_clone.dto.reply.request.RequestLikeReply;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;

@@ -4,16 +4,14 @@ import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.reply.Reply;
 import com.pigeon_stargram.sns_clone.domain.reply.ReplyLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.reply.ReplyDto;
+import com.pigeon_stargram.sns_clone.dto.reply.response.ReplyDto;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyRepository;
-import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service

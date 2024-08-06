@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.dto.comment;
+package com.pigeon_stargram.sns_clone.dto.comment.response;
 
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import lombok.AllArgsConstructor;

@@ -5,8 +5,8 @@ import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.domain.post.PostsLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 
-import com.pigeon_stargram.sns_clone.dto.comment.CommentDto;
-import com.pigeon_stargram.sns_clone.dto.post.PostsDto;
+import com.pigeon_stargram.sns_clone.dto.comment.response.CommentDto;
+import com.pigeon_stargram.sns_clone.dto.post.response.PostsDto;
 import com.pigeon_stargram.sns_clone.repository.post.PostsLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.post.PostsRepository;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service

@@ -1,7 +1,7 @@
-package com.pigeon_stargram.sns_clone.dto.comment;
+package com.pigeon_stargram.sns_clone.dto.comment.response;
 
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
-import com.pigeon_stargram.sns_clone.dto.reply.ReplyDto;
+import com.pigeon_stargram.sns_clone.dto.reply.response.ReplyDto;
 import lombok.*;
 
 import java.util.List;

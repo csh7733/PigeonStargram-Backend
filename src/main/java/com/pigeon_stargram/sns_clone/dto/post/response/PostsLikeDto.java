@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.dto.post;
+package com.pigeon_stargram.sns_clone.dto.post.response;
 
 import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import lombok.*;

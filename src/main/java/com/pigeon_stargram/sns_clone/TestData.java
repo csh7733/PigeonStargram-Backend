@@ -4,7 +4,7 @@ import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.post.Image;
 import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.post.PostsDto;
+import com.pigeon_stargram.sns_clone.dto.post.response.PostsDto;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;

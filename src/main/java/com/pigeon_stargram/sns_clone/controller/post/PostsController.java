@@ -1,7 +1,7 @@
 package com.pigeon_stargram.sns_clone.controller.post;
 
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.post.PostsDto;
+import com.pigeon_stargram.sns_clone.dto.post.response.PostsDto;
 import com.pigeon_stargram.sns_clone.dto.post.request.RequestEditPost;
 import com.pigeon_stargram.sns_clone.dto.post.request.RequestLikePost;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
