@@ -1,6 +1,7 @@
 package com.pigeon_stargram.sns_clone.controller.follow;
 
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.Follow.AddFollowerDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.FilterFollowersDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
@@ -26,7 +27,6 @@ public class FollowController {
                 .collect(Collectors.toList());
     }
 
-
     @PostMapping("/filter")
     public List<FollowerDto> filterFollowers(@RequestBody FilterFollowersDto dto) {
         return followService.findAll().stream()
@@ -36,5 +36,12 @@ public class FollowController {
                             user.getLocation().toLowerCase().contains(key.toLowerCase());
                 }).map(User::toFollowerDto)
                 .collect(Collectors.toList());
+    }
+
+    @PostMapping("/add")
+    public List<FollowerDto> addFollower(@RequestBody AddFollowerDto dto) {
+        log.info("addFollower: {}", dto);
+//        followService.
+        return getFollowers();
     }
 }

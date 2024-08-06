@@ -37,13 +37,6 @@ public class TestData {
                 objectMapper.getTypeFactory()
                         .constructCollectionType(List.class, UserDto.class));
         userService.saveAll(userDtoList);
-
-        followerDtoList = objectMapper.readValue(
-                new ClassPathResource("data/followers.json").getFile(),
-                objectMapper.getTypeFactory()
-                        .constructCollectionType(List.class, FollowerDto.class));
-        followerDtoList.forEach(dto -> log.info("init data: {}", dto));
-        followService.saveAll(followerDtoList);
     }
 
     @PostConstruct
