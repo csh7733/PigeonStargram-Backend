@@ -47,16 +47,19 @@ public class PostsService {
 
     public void likePost(User user, Long postId) {
         Posts post = getPostEntity(postId);
-        Optional<PostsLike> existingLike = postsLikeRepository.findByUserAndPost(user, post);
-        if (existingLike.isPresent()) {
-            postsLikeRepository.delete(existingLike.get());
-            post.decrementLikes();
-        } else {
-            PostsLike postsLike = new PostsLike(user, post);
-            postsLikeRepository.save(postsLike);
-            post.incrementLikes();
-        }
-        postsRepository.save(post);
+
+        postsLikeRepository.findByUserAndPost(user, post)
+                .ifPresentOrElse(
+                        existingLike -> {
+                            postsLikeRepository.delete(existingLike);
+                            post.decrementLikes();
+                        },
+                        () -> {
+                            PostsLike postsLike = new PostsLike(user, post);
+                            postsLikeRepository.save(postsLike);
+                            post.incrementLikes();
+                        }
+                );
     }
 
     public List<PostsDto> getPostsByUser(User user) {

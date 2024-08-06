@@ -48,6 +48,6 @@ public class ReplyController {
         Long replyId = requestLikeReply.getReplyId();
 
         replyService.likeReply(user,replyId);
-        return postsService.getAllPosts();
+        return postsService.getAllPosts()   ;
     }
 }

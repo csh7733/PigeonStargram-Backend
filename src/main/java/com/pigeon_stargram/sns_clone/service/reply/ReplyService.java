@@ -55,19 +55,21 @@ public class ReplyService {
     public void likeReply(User user, Long replyId) {
         Reply reply = getReplyEntity(replyId);
 
-        Optional<ReplyLike> existingLike = replyLikeRepository.findByUserAndReply(user,reply);
-
-        if (existingLike.isPresent()) {
-            replyLikeRepository.delete(existingLike.get());
-            reply.decrementLikes();
-        } else {
-            ReplyLike replyLike = ReplyLike.builder()
-                    .user(user)
-                    .reply(reply)
-                    .build();
-            replyLikeRepository.save(replyLike);
-            reply.incrementLikes();
-        }
+        replyLikeRepository.findByUserAndReply(user, reply)
+                .ifPresentOrElse(
+                        existingLike -> {
+                            replyLikeRepository.delete(existingLike);
+                            reply.decrementLikes();
+                        },
+                        () -> {
+                            ReplyLike replyLike = ReplyLike.builder()
+                                    .user(user)
+                                    .reply(reply)
+                                    .build();
+                            replyLikeRepository.save(replyLike);
+                            reply.incrementLikes();
+                        }
+                );
     }
 
     public void deleteReply(Long replyId) {

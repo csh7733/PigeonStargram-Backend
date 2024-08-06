@@ -63,19 +63,21 @@ public class CommentService {
     public void likeComment(User user, Long commentId) {
         Comment comment = getCommentEntity(commentId);
 
-        Optional<CommentLike> existingLike = commentLikeRepository.findByUserAndComment(user, comment);
-
-        if (existingLike.isPresent()) {
-            commentLikeRepository.delete(existingLike.get());
-            comment.decrementLikes();
-        } else {
-            CommentLike commentLike = CommentLike.builder()
-                    .user(user)
-                    .comment(comment)
-                    .build();
-            commentLikeRepository.save(commentLike);
-            comment.incrementLikes();
-        }
+        commentLikeRepository.findByUserAndComment(user, comment)
+                .ifPresentOrElse(
+                        existingLike -> {
+                            commentLikeRepository.delete(existingLike);
+                            comment.decrementLikes();
+                        },
+                        () -> {
+                            CommentLike commentLike = CommentLike.builder()
+                                    .user(user)
+                                    .comment(comment)
+                                    .build();
+                            commentLikeRepository.save(commentLike);
+                            comment.incrementLikes();
+                        }
+                );
     }
 
     public void deleteComment(Long commentId) {
