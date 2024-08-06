@@ -10,16 +10,25 @@ import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import com.pigeon_stargram.sns_clone.util.JsonUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.Follow.AddFollowDto;
+import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
+import com.pigeon_stargram.sns_clone.dto.user.UserDto;
+import com.pigeon_stargram.sns_clone.service.follow.FollowService;
+import com.pigeon_stargram.sns_clone.service.user.UserService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.List;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
+@Component
 public class TestData {
 
     private final UserRepository userRepository;
@@ -28,16 +37,34 @@ public class TestData {
     private final ReplyService replyService;
     private final JsonUtil jsonUtil;
 
+    private final UserService userService;
+    private final FollowService followService;
+
+    public List<UserDto> userDtoList;
+
     @PostConstruct
-    public void initData() {
+    public void initData1() throws IOException {
+        log.info("init data");
+        ObjectMapper objectMapper = new ObjectMapper();
+        userDtoList = objectMapper.readValue(
+                new ClassPathResource("data/chat.json").getFile(),
+                objectMapper.getTypeFactory()
+                        .constructCollectionType(List.class, UserDto.class));
+        userService.saveAll(userDtoList);
+        followService.createFollow(new AddFollowDto(1L, 10L));
+        followService.createFollow(new AddFollowDto(1L, 11L));
+    }
+
+    @PostConstruct
+    public void initData2() {
         // Creating Users
         User johnDoe = new User("John Doe", "img-user.png");
         User janeSmith = new User("Jane Smith", "avatar-2.png");
         User aliceBrown = new User("Alice Brown", "avatar-3.png");
 
-        userRepository.save(johnDoe);
-        userRepository.save(janeSmith);
-        userRepository.save(aliceBrown);
+        userService.save(johnDoe);
+        userService.save(janeSmith);
+        userService.save(aliceBrown);
 
         // Post 1 by John Doe
         Posts post1 = postsService.createPost(johnDoe, "Hello from John Doe!");
@@ -81,4 +108,5 @@ public class TestData {
             log.info(jsonString);
         });
     }
+
 }

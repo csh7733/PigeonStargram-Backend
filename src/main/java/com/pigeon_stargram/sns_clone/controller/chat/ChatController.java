@@ -2,7 +2,7 @@ package com.pigeon_stargram.sns_clone.controller.chat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pigeon_stargram.sns_clone.dto.chat.ChatHistoryDto;
-import com.pigeon_stargram.sns_clone.dto.chat.UserDto;
+import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
