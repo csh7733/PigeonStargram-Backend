@@ -1,10 +1,12 @@
 package com.pigeon_stargram.sns_clone.controller.follow;
 
+import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.Follow.AddFollowerDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.FilterFollowersDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
+import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 @RestController
 public class FollowController {
 
+    private final UserService userService;
     private final FollowService followService;
 
     @GetMapping("/list")
@@ -41,7 +44,12 @@ public class FollowController {
     @PostMapping("/add")
     public List<FollowerDto> addFollower(@RequestBody AddFollowerDto dto) {
         log.info("addFollower: {}", dto);
-//        followService.
+
+        User firstUser = userService.findAll().getFirst();
+        User findUser = userService.findById(dto.getId());
+        Follow follow = dto.toEntity(firstUser, findUser);
+        followService.save(follow);
+
         return getFollowers();
     }
 }

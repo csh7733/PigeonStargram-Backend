@@ -10,9 +10,9 @@ import lombok.*;
 @Builder
 @ToString
 public class AddFollowerDto {
-    String id;
+    Long id;
 
-    public Follow toEntity(User toUser, User fromUser) {
+    public Follow toEntity(User fromUser, User toUser) {
         return new Follow(fromUser, toUser);
     }
 }
