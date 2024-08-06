@@ -26,13 +26,14 @@ public class FollowController {
                 .collect(Collectors.toList());
     }
 
+
     @PostMapping("/filter")
     public List<FollowerDto> filterFollowers(@RequestBody FilterFollowersDto dto) {
         return followService.findAll().stream()
                 .filter(user -> {
                     String key = dto.getKey();
-                    return user.getName().equals(key) ||
-                            user.getLocation().equals(key);
+                    return user.getName().toLowerCase().contains(key.toLowerCase()) ||
+                            user.getLocation().toLowerCase().contains(key.toLowerCase());
                 }).map(User::toFollowerDto)
                 .collect(Collectors.toList());
     }

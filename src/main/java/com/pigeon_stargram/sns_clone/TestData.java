@@ -28,7 +28,7 @@ public class TestData {
     private final UserService userService;
     private final FollowService followService;
 
-    @PostConstruct
+//    @PostConstruct
     public void initData() throws IOException {
         log.info("init data");
         ObjectMapper objectMapper = new ObjectMapper();
