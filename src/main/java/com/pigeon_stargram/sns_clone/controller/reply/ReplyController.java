@@ -29,7 +29,7 @@ public class ReplyController {
     private final ReplyService replyService;
     private final UserRepository userRepository;
 
-    @PostMapping("/add")
+    @PostMapping
     public List<PostsDto> addReply(@RequestBody RequestAddReply requestAddReply) {
         Long commentId = requestAddReply.getCommentId();
         Comment comment = commentService.getCommentEntity(commentId);
@@ -41,7 +41,7 @@ public class ReplyController {
         return postsService.getAllPosts();
     }
 
-    @PostMapping("/list/like")
+    @PostMapping("/like")
     public List<PostsDto> likeReply(@RequestBody RequestLikeReply requestLikeReply) {
         //테스트용 유저
         User user = userRepository.findById(1L).get();

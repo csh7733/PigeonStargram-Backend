@@ -19,12 +19,15 @@ public class PostsController {
     private final PostsService postsService;
     private final UserRepository userRepository;
 
-    @GetMapping("/list")
-    public List<PostsDto> getPosts() {
-        //테스트용 유저
-        User user = userRepository.findById(1L).get();
-
-        return postsService.getAllPosts();
+    @GetMapping
+    public List<PostsDto> getPosts(@RequestParam(required = false) Long userId) {
+        if (userId != null) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
+            return postsService.getPostsByUser(user);
+        } else {
+            return postsService.getAllPosts();
+        }
     }
 
 //    @PostMapping("/editComment")
@@ -46,7 +49,7 @@ public class PostsController {
 //        return testData.postsDtoList;
 //    }
 
-    @PostMapping("/list/like")
+    @PostMapping("/like")
     public List<PostsDto> likePost(@RequestBody RequestLikePost requestLikePost) {
         //테스트용 유저
         User user = userRepository.findById(1L).get();

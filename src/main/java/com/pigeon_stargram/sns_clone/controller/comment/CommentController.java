@@ -27,7 +27,7 @@ public class CommentController {
     private final CommentService commentService;
     private final UserRepository userRepository;
 
-    @PostMapping("/add")
+    @PostMapping
     public List<PostsDto> addComment(@RequestBody RequestAddComment requestAddComment) {
         Long postId = requestAddComment.getPostId();
         Posts post = postsService.getPostEntity(postId);
@@ -40,7 +40,7 @@ public class CommentController {
         return postsService.getAllPosts();
     }
 
-    @PostMapping("/list/like")
+    @PostMapping("/like")
     public List<PostsDto> likeComment(@RequestBody RequestLikeComment requestLikeComment) {
         //테스트용 유저
         User user = userRepository.findById(1L).get();
