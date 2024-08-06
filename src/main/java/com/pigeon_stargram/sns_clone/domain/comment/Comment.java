@@ -2,11 +2,15 @@ package com.pigeon_stargram.sns_clone.domain.comment;
 
 import com.pigeon_stargram.sns_clone.domain.BaseTimeEntity;
 import com.pigeon_stargram.sns_clone.domain.post.Posts;
+import com.pigeon_stargram.sns_clone.domain.reply.ReplyLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -28,6 +32,9 @@ public class Comment extends BaseTimeEntity {
     private String content;
 
     private Integer likes;
+
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<CommentLike> commentLikes = new ArrayList<>();
 
     @Builder
     public Comment(User user, Posts post, String content) {

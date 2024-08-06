@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -31,6 +32,9 @@ public class Reply extends BaseTimeEntity {
     private String content;
 
     private Integer likes;
+
+    @OneToMany(mappedBy = "reply", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<ReplyLike> replyLikes = new ArrayList<>();
 
     @Builder
     public Reply(User user, Comment comment, String content) {
