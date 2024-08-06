@@ -1,5 +1,6 @@
 package com.pigeon_stargram.sns_clone.dto.comment.request;
 
+
 import lombok.*;
 
 @Getter
@@ -7,6 +8,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequestLikeComment {
-    private Long commentId;
+public class AddCommentDto {
+    private Long postId;
+    private newCommentDto comment;
 }

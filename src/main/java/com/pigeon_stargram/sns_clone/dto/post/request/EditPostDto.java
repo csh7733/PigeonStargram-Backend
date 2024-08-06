@@ -7,6 +7,6 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequestEditPost {
+public class EditPostDto {
     private String content;
 }

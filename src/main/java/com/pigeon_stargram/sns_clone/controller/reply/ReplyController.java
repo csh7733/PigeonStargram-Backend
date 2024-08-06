@@ -3,8 +3,8 @@ package com.pigeon_stargram.sns_clone.controller.reply;
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.post.response.PostsDto;
-import com.pigeon_stargram.sns_clone.dto.reply.request.RequestAddReply;
-import com.pigeon_stargram.sns_clone.dto.reply.request.RequestLikeReply;
+import com.pigeon_stargram.sns_clone.dto.reply.request.AddReplyDto;
+import com.pigeon_stargram.sns_clone.dto.reply.request.LikeReplyDto;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
@@ -30,7 +30,7 @@ public class ReplyController {
     private final UserRepository userRepository;
 
     @PostMapping
-    public List<PostsDto> addReply(@RequestBody RequestAddReply request) {
+    public List<PostsDto> addReply(@RequestBody AddReplyDto request) {
         Long commentId = request.getCommentId();
         Comment comment = commentService.getCommentEntity(commentId);
         String content = request.getReply().getContent();
@@ -42,7 +42,7 @@ public class ReplyController {
     }
 
     @PostMapping("/like")
-    public List<PostsDto> likeReply(@RequestBody RequestLikeReply request) {
+    public List<PostsDto> likeReply(@RequestBody LikeReplyDto request) {
         //테스트용 유저
         User user = userRepository.findById(1L).get();
         Long replyId = request.getReplyId();

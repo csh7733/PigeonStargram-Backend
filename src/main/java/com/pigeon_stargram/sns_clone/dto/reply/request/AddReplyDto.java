@@ -1,6 +1,5 @@
 package com.pigeon_stargram.sns_clone.dto.reply.request;
 
-import com.pigeon_stargram.sns_clone.dto.post2.ReplyDto2;
 import lombok.*;
 
 @Getter
@@ -8,7 +7,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequestAddReply {
+public class AddReplyDto {
     private Long commentId;
     private newReplyDto reply;
 }

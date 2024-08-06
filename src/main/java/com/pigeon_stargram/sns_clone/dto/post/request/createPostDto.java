@@ -7,6 +7,8 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequestLikePost {
-    private Long postId;
+public class createPostDto {
+
+    private Long userId;
+    private String content;
 }

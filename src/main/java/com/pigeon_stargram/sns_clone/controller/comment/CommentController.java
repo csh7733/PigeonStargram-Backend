@@ -2,8 +2,8 @@ package com.pigeon_stargram.sns_clone.controller.comment;
 
 import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.comment.request.RequestAddComment;
-import com.pigeon_stargram.sns_clone.dto.comment.request.RequestLikeComment;
+import com.pigeon_stargram.sns_clone.dto.comment.request.AddCommentDto;
+import com.pigeon_stargram.sns_clone.dto.comment.request.LikeCommentDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.PostsDto;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
@@ -28,7 +28,7 @@ public class CommentController {
     private final UserRepository userRepository;
 
     @PostMapping
-    public List<PostsDto> addComment(@RequestBody RequestAddComment request) {
+    public List<PostsDto> addComment(@RequestBody AddCommentDto request) {
         Long postId = request.getPostId();
         Posts post = postsService.getPostEntity(postId);
         String content = request.getComment().getContent();
@@ -41,7 +41,7 @@ public class CommentController {
     }
 
     @PostMapping("/like")
-    public List<PostsDto> likeComment(@RequestBody RequestLikeComment request) {
+    public List<PostsDto> likeComment(@RequestBody LikeCommentDto request) {
         //테스트용 유저
         User user = userRepository.findById(1L).get();
         Long commentId = request.getCommentId();

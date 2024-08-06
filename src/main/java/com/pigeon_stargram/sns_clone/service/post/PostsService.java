@@ -14,6 +14,7 @@ import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -74,6 +75,7 @@ public class PostsService {
     public List<PostsDto> getPostsByUser(User user) {
         List<Posts> posts = postsRepository.findByUserId(user.getId());
         return posts.stream()
+                .sorted(Comparator.comparing(Posts::getId).reversed())
                 .map(post -> {
                     List<CommentDto> comments = commentService.getCommentListByPost(post.getId());
                     return new PostsDto(post, comments);
@@ -84,6 +86,7 @@ public class PostsService {
     public List<PostsDto> getAllPosts() {
         List<Posts> posts = postsRepository.findAll();
         return posts.stream()
+                .sorted(Comparator.comparing(Posts::getId).reversed())
                 .map(post -> {
                     List<CommentDto> comments = commentService.getCommentListByPost(post.getId());
                     return new PostsDto(post, comments);
