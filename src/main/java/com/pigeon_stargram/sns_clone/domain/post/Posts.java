@@ -30,6 +30,8 @@ public class Posts extends BaseTimeEntity {
 
     private Integer likes;
 
+    //CascadeType.Remove를 위해 필요한 필드(실제로는 사용X)
+    //fetch = FetchType.LAZY(기본값)로 두어 프록시를 fetch 하지않음
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<PostsLike> postsLikes = new ArrayList<>();
 
