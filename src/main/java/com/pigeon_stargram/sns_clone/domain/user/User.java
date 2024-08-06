@@ -47,14 +47,4 @@ public class User {
     public User(String name) {
         this.name = name;
     }
-
-    public FollowerDto toFollowerDto() {
-        return FollowerDto.builder()
-                .id(this.id)
-                .avatar(this.avatar)
-                .name(this.name)
-                .location(this.location)
-                .follow(this.followers.size())
-                .build();
-    }
 }

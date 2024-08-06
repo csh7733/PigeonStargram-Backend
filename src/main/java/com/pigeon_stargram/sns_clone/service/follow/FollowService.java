@@ -2,6 +2,8 @@ package com.pigeon_stargram.sns_clone.service.follow;
 
 import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.Follow.AddFollowerDto;
+import com.pigeon_stargram.sns_clone.dto.Follow.RequestAddFollowerDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
 import com.pigeon_stargram.sns_clone.repository.follow.FollowRepository;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -20,8 +22,10 @@ public class FollowService {
     private final UserService userService;
     private final FollowRepository followRepository;
 
-    public Follow save(Follow follow) {
-        return followRepository.save(follow);
+    public Follow follow(AddFollowerDto dto) {
+        User fromUser = userService.findById(dto.getFromId());
+        User toUser = userService.findById(dto.getToId());
+        return followRepository.save(dto.toEntity(fromUser, toUser));
     }
 
     public List<User> findFollowers(User user) {
@@ -52,7 +56,7 @@ public class FollowService {
 
     public List<User> findAll(){
         return followRepository.findAll().stream()
-                .map(Follow::getFromUser)
+                .map(Follow::getToUser)
                 .collect(Collectors.toList());
     }
 }

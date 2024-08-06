@@ -1,6 +1,7 @@
 package com.pigeon_stargram.sns_clone;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import com.pigeon_stargram.sns_clone.dto.posts.*;
@@ -28,7 +29,7 @@ public class TestData {
     private final UserService userService;
     private final FollowService followService;
 
-//    @PostConstruct
+    @PostConstruct
     public void initData() throws IOException {
         log.info("init data");
         ObjectMapper objectMapper = new ObjectMapper();

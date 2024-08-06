@@ -1,10 +1,7 @@
 package com.pigeon_stargram.sns_clone.controller.follow;
 
-import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.Follow.AddFollowerDto;
-import com.pigeon_stargram.sns_clone.dto.Follow.FilterFollowersDto;
-import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
+import com.pigeon_stargram.sns_clone.dto.Follow.*;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -26,30 +22,27 @@ public class FollowController {
     @GetMapping("/list")
     public List<FollowerDto> getFollowers() {
         return followService.findAll().stream()
-                .map(User::toFollowerDto)
-                .collect(Collectors.toList());
+                .map(user -> new FollowerDto(user, 1))
+                .toList();
     }
 
     @PostMapping("/filter")
-    public List<FollowerDto> filterFollowers(@RequestBody FilterFollowersDto dto) {
-        return followService.findAll().stream()
-                .filter(user -> {
-                    String key = dto.getKey();
-                    return user.getName().toLowerCase().contains(key.toLowerCase()) ||
-                            user.getLocation().toLowerCase().contains(key.toLowerCase());
-                }).map(User::toFollowerDto)
-                .collect(Collectors.toList());
+    public List<FollowerDto> filterFollowers(@RequestBody RequestFilterFollowersDto dto) {
+        //temp
+        User tempUser = userService.findAll().stream().findFirst().get();
+
+        return userService.findFollowersByFilter(new FilterFollowersDto(tempUser, dto)).stream()
+                .map(user -> new FollowerDto(user, 1))
+                .toList();
     }
 
     @PostMapping("/add")
-    public List<FollowerDto> addFollower(@RequestBody AddFollowerDto dto) {
-        log.info("addFollower: {}", dto);
-
-        User firstUser = userService.findAll().getFirst();
-        User findUser = userService.findById(dto.getId());
-        Follow follow = dto.toEntity(firstUser, findUser);
-        followService.save(follow);
-
+    public List<FollowerDto> addFollower(@RequestBody RequestAddFollowerDto dto) {
+        //temp
+        User tempUser = userService.findAll().stream().findFirst().get();
+        followService.follow(new AddFollowerDto(tempUser.getId(), dto.getId()));
         return getFollowers();
     }
+
+
 }

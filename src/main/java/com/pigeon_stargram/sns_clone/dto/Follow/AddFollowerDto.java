@@ -4,15 +4,19 @@ import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import lombok.*;
 
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @ToString
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class AddFollowerDto {
-    Long id;
+    private Long fromId;
+    private Long toId;
 
-    public Follow toEntity(User fromUser, User toUser) {
-        return new Follow(fromUser, toUser);
+    public Follow toEntity(User fromUser, User toUser){
+        return Follow.builder()
+                .fromUser(fromUser)
+                .toUser(toUser)
+                .build();
     }
 }

@@ -17,6 +17,14 @@ public class FollowerDto {
     private String location;
     private Integer follow;
 
+    public FollowerDto(User user, Integer follow) {
+        this.id = user.getId();
+        this.avatar = user.getAvatar();
+        this.name = user.getName();
+        this.location = user.getLocation();
+        this.follow = follow;
+    }
+
     // temporary
     public User toUser() {
         return User.builder()
