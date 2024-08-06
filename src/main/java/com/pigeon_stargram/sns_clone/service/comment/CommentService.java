@@ -87,6 +87,7 @@ public class CommentService {
     }
 
     public void deleteComment(Long commentId) {
+        replyService.deleteByCommentId(commentId);
         commentRepository.deleteById(commentId);
     }
 
