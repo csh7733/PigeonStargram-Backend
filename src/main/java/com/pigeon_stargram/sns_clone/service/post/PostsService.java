@@ -10,6 +10,7 @@ import com.pigeon_stargram.sns_clone.dto.post.PostsDto;
 import com.pigeon_stargram.sns_clone.repository.post.PostsLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.post.PostsRepository;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
+import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ public class PostsService {
     private final PostsRepository postsRepository;
     private final PostsLikeRepository postsLikeRepository;
     private final CommentService commentService;
+    private final ReplyService replyService;
 
     public Posts createPost(User user, String content) {
         Posts post = new Posts(user,content);
@@ -43,6 +45,14 @@ public class PostsService {
     public void editPost(Long postId, String content, List<Image> images) {
         Posts post = getPostEntity(postId);
         post.modify(content,images);
+    }
+
+    public void deletePost(Long postId) {
+        Posts post = getPostEntity(postId);
+
+        commentService.deleteAllCommentsAndReplyByPostId(postId);
+
+        postsRepository.delete(post);
     }
 
     public void likePost(User user, Long postId) {

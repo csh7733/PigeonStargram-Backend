@@ -30,22 +30,22 @@ public class ReplyController {
     private final UserRepository userRepository;
 
     @PostMapping
-    public List<PostsDto> addReply(@RequestBody RequestAddReply requestAddReply) {
-        Long commentId = requestAddReply.getCommentId();
+    public List<PostsDto> addReply(@RequestBody RequestAddReply request) {
+        Long commentId = request.getCommentId();
         Comment comment = commentService.getCommentEntity(commentId);
-        String content = requestAddReply.getReply().getContent();
+        String content = request.getReply().getContent();
 
-        Long userId = requestAddReply.getReply().getUserId();
+        Long userId = request.getReply().getUserId();
         User user = userRepository.findById(userId).get();
         replyService.createReply(user,comment,content);
         return postsService.getAllPosts();
     }
 
     @PostMapping("/like")
-    public List<PostsDto> likeReply(@RequestBody RequestLikeReply requestLikeReply) {
+    public List<PostsDto> likeReply(@RequestBody RequestLikeReply request) {
         //테스트용 유저
         User user = userRepository.findById(1L).get();
-        Long replyId = requestLikeReply.getReplyId();
+        Long replyId = request.getReplyId();
 
         replyService.likeReply(user,replyId);
         return postsService.getAllPosts()   ;

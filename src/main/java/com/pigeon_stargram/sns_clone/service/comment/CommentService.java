@@ -55,6 +55,15 @@ public class CommentService {
                 .collect(Collectors.toList());
     }
 
+    public void deleteAllCommentsAndReplyByPostId(Long postId) {
+        List<Comment> comments = commentRepository.findByPostId(postId);
+
+        comments.forEach(comment -> {
+            replyService.deleteByCommentId(comment.getId());
+            commentRepository.delete(comment);
+        });
+    }
+
     public void editComment(Long commentId, String newContent) {
         Comment comment = getCommentEntity(commentId);
         comment.modify(newContent);

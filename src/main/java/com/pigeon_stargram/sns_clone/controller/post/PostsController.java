@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone.controller.post;
 
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.post.PostsDto;
+import com.pigeon_stargram.sns_clone.dto.post.request.RequestEditPost;
 import com.pigeon_stargram.sns_clone.dto.post.request.RequestLikePost;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
@@ -30,31 +31,29 @@ public class PostsController {
         }
     }
 
-//    @PostMapping("/editComment")
-//    public List<PostsDto2> editComment(@RequestBody EditCommentDto2 dto) {
-//        log.info("editComment: {}", dto);
-//        testData.postsDtoList.forEach(post -> {
-//            if (post.getId().equals(dto.getKey())) {
-//                List<CommentDto2> comments = post.getData().getComments();
-//
-//                if (comments == null) {
-//                    comments = new LinkedList<>();
-//                    post.getData().setComments(comments);
-//                }
-//
-//
-//                comments.add(0, dto.getId());
-//            }
-//        });
-//        return testData.postsDtoList;
-//    }
+    @PatchMapping("/{postId}")
+    public List<PostsDto> editPost(@PathVariable Long postId, @RequestBody RequestEditPost request) {
+        log.info("patch {}",postId);
+        String content = request.getContent();
+        postsService.editPost(postId,content);
+
+        return postsService.getAllPosts();
+    }
+
+    @DeleteMapping("/{postId}")
+    public List<PostsDto> deletePost(@PathVariable Long postId) {
+        log.info("delete {}",postId);
+        postsService.deletePost(postId);
+
+        return postsService.getAllPosts();
+    }
 
     @PostMapping("/like")
-    public List<PostsDto> likePost(@RequestBody RequestLikePost requestLikePost) {
+    public List<PostsDto> likePost(@RequestBody RequestLikePost request) {
         //테스트용 유저
         User user = userRepository.findById(1L).get();
 
-        postsService.likePost(user,requestLikePost.getPostId());
+        postsService.likePost(user,request.getPostId());
         return postsService.getAllPosts();
     }
 

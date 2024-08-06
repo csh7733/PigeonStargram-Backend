@@ -76,6 +76,10 @@ public class ReplyService {
         replyRepository.deleteById(replyId);
     }
 
+    public void deleteByCommentId(Long commentId) {
+        replyRepository.deleteByCommentId(commentId);
+    }
+
     private Reply getReplyEntity(Long replyId) {
         return replyRepository.findById(replyId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid reply ID"));
