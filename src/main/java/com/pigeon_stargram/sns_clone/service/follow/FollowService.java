@@ -31,7 +31,8 @@ public class FollowService {
     public void deleteFollow(DeleteFollowDto dto){
         User fromUser = userService.findById(dto.getFromId());
         User toUser = userService.findById(dto.getToId());
-        followRepository.delete(dto.toEntity(fromUser, toUser);
+        followRepository.findByFromUserAndToUser(fromUser, toUser)
+                .ifPresent(followRepository::delete);
     }
 
     public List<User> findFollowers(User user) {

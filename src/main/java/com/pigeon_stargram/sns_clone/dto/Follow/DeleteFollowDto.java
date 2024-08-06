@@ -13,11 +13,4 @@ public class DeleteFollowDto {
 
     private Long fromId;
     private Long toId;
-
-    public Follow toEntity(User fromUser, User toUser){
-        return Follow.builder()
-                .fromUser(fromUser)
-                .toUser(toUser)
-                .build();
-    }
 }

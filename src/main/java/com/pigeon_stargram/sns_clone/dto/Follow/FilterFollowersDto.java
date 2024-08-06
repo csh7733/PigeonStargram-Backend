@@ -1,6 +1,7 @@
 package com.pigeon_stargram.sns_clone.dto.Follow;
 
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.Follow.request.RequestFilterFollowersDto;
 import lombok.*;
 
 @ToString

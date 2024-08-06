@@ -2,6 +2,8 @@ package com.pigeon_stargram.sns_clone.controller.follow;
 
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.Follow.*;
+import com.pigeon_stargram.sns_clone.dto.Follow.request.RequestAddFollowerDto;
+import com.pigeon_stargram.sns_clone.dto.Follow.request.RequestFilterFollowersDto;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;

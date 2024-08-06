@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.Follow.AddFollowDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import com.pigeon_stargram.sns_clone.dto.posts.*;
@@ -38,6 +39,8 @@ public class TestData {
                 objectMapper.getTypeFactory()
                         .constructCollectionType(List.class, UserDto.class));
         userService.saveAll(userDtoList);
+        followService.createFollow(new AddFollowDto(1L, 10L));
+        followService.createFollow(new AddFollowDto(1L, 11L));
     }
 
     @PostConstruct
