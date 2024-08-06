@@ -2,8 +2,6 @@ package com.pigeon_stargram.sns_clone.controller.follow;
 
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.Follow.*;
-import com.pigeon_stargram.sns_clone.dto.Follow.request.RequestAddFollowerDto;
-import com.pigeon_stargram.sns_clone.dto.Follow.request.RequestFilterFollowersDto;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +19,15 @@ public class FollowController {
     private final UserService userService;
     private final FollowService followService;
 
-    @GetMapping("/list")
+    // 전체 팔로워 조회
+    @GetMapping("")
     public List<FollowerDto> getFollowers() {
         return followService.findAll().stream()
                 .map(user -> new FollowerDto(user, 1))
                 .toList();
     }
 
+    // 팔로우 삭제
     @DeleteMapping("/{userId}")
     public List<FollowerDto> deleteFollower(@PathVariable Long userId) {
         //temp
@@ -37,22 +37,13 @@ public class FollowController {
         return getFollowers();
     }
 
-    @PostMapping("/filter")
-    public List<FollowerDto> filterFollowers(@RequestBody RequestFilterFollowersDto dto) {
+    // 팔로우 추가
+    @PostMapping("/{userId}")
+    public List<FollowerDto> addFollower(@PathVariable Long userId) {
         //temp
         User tempUser = userService.findAll().stream().findFirst().get();
 
-        return userService.findFollowersByFilter(new FilterFollowersDto(tempUser, dto)).stream()
-                .map(user -> new FollowerDto(user, 1))
-                .toList();
-    }
-
-    @PostMapping("/add")
-    public List<FollowerDto> addFollower(@RequestBody RequestAddFollowerDto dto) {
-        //temp
-        User tempUser = userService.findAll().stream().findFirst().get();
-
-        followService.createFollow(new AddFollowDto(tempUser.getId(), dto.getId()));
+        followService.createFollow(new AddFollowDto(tempUser.getId(), userId));
         return getFollowers();
     }
 

@@ -25,6 +25,10 @@ public class FollowService {
     public Follow createFollow(AddFollowDto dto) {
         User fromUser = userService.findById(dto.getFromId());
         User toUser = userService.findById(dto.getToId());
+        followRepository.findByFromUserAndToUser(fromUser, toUser)
+                .ifPresent(follow -> {
+                    throw new IllegalArgumentException("이미 팔로우 중입니다.");
+                });
         return followRepository.save(dto.toEntity(fromUser, toUser));
     }
 
@@ -47,18 +51,6 @@ public class FollowService {
         return followList.stream()
                 .map(Follow::getToUser)
                 .collect(Collectors.toList());
-    }
-
-    public List<Follow> saveAll(List<FollowerDto> followerDtoList) {
-        List<User> users = followerDtoList.stream()
-                .map(FollowerDto::toUser)
-                .collect(Collectors.toList());
-        userService.saveAllUser(users);
-
-        List<Follow> follows = followerDtoList.stream()
-                .map(dto -> dto.toEntity(userService.findById(dto.getId())))
-                .collect(Collectors.toList());
-        return followRepository.saveAll(follows);
     }
 
     public List<User> findAll(){

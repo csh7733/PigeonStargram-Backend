@@ -1,7 +1,6 @@
 package com.pigeon_stargram.sns_clone.service.user;
 
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.Follow.FilterFollowersDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,9 +38,5 @@ public class UserService {
 
     public List<User> saveAllUser(List<User> users) {
         return userRepository.saveAll(users);
-    }
-
-    public List<User> findFollowersByFilter(FilterFollowersDto dto) {
-        return userRepository.findFollowersByFilter(dto.getUserId(), dto.getKey());
     }
 }
