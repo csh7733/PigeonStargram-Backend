@@ -50,5 +50,6 @@
   { "id": 49, "from": 15, "to": 13, "text": "Hi Good Morning!", "time": "11:35 AM" },
   { "id": 50, "from": 13, "to": 15, "text": "Hey. Very Good morning. How are you?", "time": "11:35 AM" },
   { "id": 51, "from": 15, "to": 13, "text": "Good. Thank you", "time": "11:35 AM" },
-  { "id": 52, "from": 13, "to": 15, "text": "I need your minute, are you available?", "time": "11:35 AM" }
+  { "id": 52, "from": 13, "to": 15, "text": "I need your minute, are you available?", "time": "11:35 AM" },
+  { "id": 52, "from": 1, "to": 2, "text": "Test Message!", "time": "11:35 AM" }
 ]

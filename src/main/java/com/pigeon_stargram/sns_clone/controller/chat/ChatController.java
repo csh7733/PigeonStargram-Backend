@@ -69,9 +69,17 @@ public class ChatController {
 
     @PostMapping("/filter")
     public List<ChatHistoryDto> getUserChats(@RequestBody Map<String, Integer> request) {
-        Integer userId = request.get("user");
-        log.info("filter userName = {}", userId);
-        return chatHistories.stream().filter(chat -> chat.getFrom().equals(userId) || chat.getTo().equals(userId)).collect(Collectors.toList());
+        Integer user1Id = request.get("user1Id");
+        Integer user2Id = request.get("user2Id");
+        log.info("filter user1Id = {}", user1Id);
+        log.info("filter user2Id = {}", user2Id);
+
+        return chatHistories.stream()
+                .filter(chat ->
+                        (chat.getFrom().equals(user1Id) && chat.getTo().equals(user2Id)) ||
+                                (chat.getFrom().equals(user2Id) && chat.getTo().equals(user1Id))
+                )
+                .collect(Collectors.toList());
     }
 
 
