@@ -1,6 +1,7 @@
 package com.pigeon_stargram.sns_clone.service.user;
 
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.chat.response.UserChatDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,16 @@ public class UserService {
 
     public List<User> findAll() {
         return userRepository.findAll();
+    }
+
+    public List<UserChatDto> findAllUsersForChat() {
+        return userRepository.findAll().stream()
+                .map(UserChatDto::new)
+                .collect(Collectors.toList());
+    }
+
+    public UserChatDto findUserForChat(Long userId) {
+        return new UserChatDto(findById(userId));
     }
 
     public List<User> saveAll(List<UserDto> userDtoList) {

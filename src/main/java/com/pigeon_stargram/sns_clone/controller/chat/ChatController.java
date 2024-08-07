@@ -1,11 +1,14 @@
 package com.pigeon_stargram.sns_clone.controller.chat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pigeon_stargram.sns_clone.dto.chat.request.ChatPartnerDto;
 import com.pigeon_stargram.sns_clone.dto.chat.request.GetChatHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.chat.request.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ChatHistoryDto;
+import com.pigeon_stargram.sns_clone.dto.chat.response.UserChatDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
+import com.pigeon_stargram.sns_clone.service.user.UserService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,28 +26,19 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ChatController {
 
-    private List<UserDto> users = new ArrayList<>();
-    private List<ChatHistoryDto> chatHistories = new ArrayList<>();
     private final ChatService chatService;
-
-    @PostConstruct
-    public void init() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        users = objectMapper.readValue(new ClassPathResource("data/chat.json").getFile(), objectMapper.getTypeFactory().constructCollectionType(List.class, UserDto.class));
-        chatHistories = objectMapper.readValue(new ClassPathResource("data/chat-history.json").getFile(), objectMapper.getTypeFactory().constructCollectionType(List.class, ChatHistoryDto.class));
-    }
+    private final UserService userService;
 
     @PostMapping("/users/id")
-    public UserDto getUserById(@RequestBody UserDto userDto) {
-        log.info("id = {}",userDto.getId());
-        log.info("userDto = {}",userDto.toString());
-        return users.stream().filter(u -> u.getId() == userDto.getId()).findFirst().orElse(null);
+    public UserChatDto getUserById(@RequestBody ChatPartnerDto request) {
+        Long userId = request.getId();
+        return userService.findUserForChat(userId);
     }
 
     @GetMapping("/users")
-    public List<UserDto> getAllUsers() {
-        log.info("users = {}",users);
-        return users;
+    public List<UserChatDto> getAllUsers() {
+        log.info("users!!!");
+        return userService.findAllUsersForChat();
     }
 
     @PostMapping("/filter")
@@ -54,7 +48,6 @@ public class ChatController {
 
         return chatService.getUserChats(user1Id,user2Id);
     }
-
 
     @PostMapping("/insert")
     public void insertChat(@RequestBody NewChatDto request) {
