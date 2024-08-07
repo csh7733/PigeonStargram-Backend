@@ -2,9 +2,11 @@ package com.pigeon_stargram.sns_clone.service.chat;
 
 import com.pigeon_stargram.sns_clone.domain.chat.ImageChat;
 import com.pigeon_stargram.sns_clone.domain.chat.TextChat;
+import com.pigeon_stargram.sns_clone.domain.chat.UnReadChat;
 import com.pigeon_stargram.sns_clone.dto.chat.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ChatHistoryDto;
 import com.pigeon_stargram.sns_clone.repository.chat.ChatRepository;
+import com.pigeon_stargram.sns_clone.repository.chat.UnReadChatRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 public class ChatService {
 
     private final ChatRepository chatRepository;
+    private final UnReadChatRepository unReadChatRepository;
 
     public void save(NewChatDto request){
         if(request.getIsImage()) chatRepository.save(request.toImageEntity());
@@ -50,5 +53,31 @@ public class ChatService {
         return chatHistories.stream()
                 .map(ChatHistoryDto::new)
                 .collect(Collectors.toList());
+    }
+
+    public Integer increaseUnReadChatCount(Long userId,Long toUserId){
+        UnReadChat unReadChat = unReadChatRepository.findByUserIdAndToUserId(userId, toUserId)
+                .orElse(UnReadChat.builder()
+                        .userId(userId)
+                        .toUserId(toUserId)
+                        .build());
+
+        Integer count = unReadChat.incrementCount();
+        unReadChatRepository.save(unReadChat);
+        return count;
+    }
+
+    public Integer getUnreadChatCount(Long userId, Long toUserId) {
+        return unReadChatRepository.findByUserIdAndToUserId(userId, toUserId)
+                .map(UnReadChat::getCount)
+                .orElse(0);
+    }
+
+    public void setUnreadChatCount0(Long userId, Long toUserId) {
+        unReadChatRepository.findByUserIdAndToUserId(userId, toUserId)
+                .ifPresent(unReadChat -> {
+                    unReadChat.resetCount();
+                    unReadChatRepository.save(unReadChat);
+                });
     }
 }

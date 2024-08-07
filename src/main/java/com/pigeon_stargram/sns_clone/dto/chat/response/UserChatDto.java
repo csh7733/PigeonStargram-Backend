@@ -61,7 +61,7 @@ public class UserChatDto {
         this.lastMessage = "2h ago";
         this.birthdayText = user.getBirthdayText();
         //temp
-        this.unReadChatCount = 5;
+        this.unReadChatCount = 0;
         this.onlineStatus = user.getOnlineStatus();
     }
 

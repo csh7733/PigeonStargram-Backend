@@ -4,6 +4,7 @@ import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.chat.response.UserChatDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
+import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final ChatService chatService;
 
     public User findById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
@@ -30,9 +32,14 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public List<UserChatDto> findAllUsersForChat() {
+    public List<UserChatDto> findAllUsersForChat(Long currentUserId) {
         return userRepository.findAll().stream()
-                .map(UserChatDto::new)
+                .map(user -> {
+                    UserChatDto userChatDto = new UserChatDto(user);
+                    int unReadChatCount = chatService.getUnreadChatCount(currentUserId, user.getId());
+                    userChatDto.setUnReadChatCount(unReadChatCount);
+                    return userChatDto;
+                })
                 .collect(Collectors.toList());
     }
 

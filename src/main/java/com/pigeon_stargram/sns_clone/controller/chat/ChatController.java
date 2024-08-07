@@ -27,9 +27,9 @@ public class ChatController {
 
     @GetMapping("/users")
     public List<UserChatDto> getAllChatPartners() {
-        log.info("users!!!");
 
-        return userService.findAllUsersForChat();
+        //임시로 현재 유저ID = 15로 설정
+        return userService.findAllUsersForChat(15L);
     }
 
     @GetMapping("/users/{id}")
@@ -54,8 +54,9 @@ public class ChatController {
         chatService.save(chatMessage);
 
         if(!isUserChattingWith(to,from)){
-            log.info("not chat with");
+            chatService.increaseUnReadChatCount(to,from);
         }
+
         return chatMessage;
     }
 
