@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone.controller.chat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pigeon_stargram.sns_clone.dto.chat.request.GetChatHistoryDto;
+import com.pigeon_stargram.sns_clone.dto.chat.request.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ChatHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
@@ -56,10 +57,8 @@ public class ChatController {
 
 
     @PostMapping("/insert")
-    public List<ChatHistoryDto> insertChat(@RequestBody ChatHistoryDto chatDto) {
-        log.info("chatDto = {}",chatDto.toString());
-        chatHistories.add(chatDto);
-        return chatHistories;
+    public void insertChat(@RequestBody NewChatDto request) {
+        chatService.save(request);
     }
 
 //    @PostMapping("/users/modify")

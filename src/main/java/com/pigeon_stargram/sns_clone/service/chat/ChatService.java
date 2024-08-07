@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone.service.chat;
 
 import com.pigeon_stargram.sns_clone.domain.chat.ImageChat;
 import com.pigeon_stargram.sns_clone.domain.chat.TextChat;
+import com.pigeon_stargram.sns_clone.dto.chat.request.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ChatHistoryDto;
 import com.pigeon_stargram.sns_clone.repository.chat.ChatRepository;
 import jakarta.transaction.Transactional;
@@ -17,6 +18,11 @@ import java.util.stream.Collectors;
 public class ChatService {
 
     private final ChatRepository chatRepository;
+
+    public void save(NewChatDto request){
+        if(request.getIsImage()) chatRepository.save(request.toImageEntity());
+        else chatRepository.save(request.toTextEntity());
+    }
 
     public void saveChat(Long fromUserId, Long toUserId, String text) {
         TextChat textChat = TextChat.builder()
