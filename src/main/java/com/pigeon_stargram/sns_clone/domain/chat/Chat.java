@@ -1,30 +1,31 @@
 package com.pigeon_stargram.sns_clone.domain.chat;
 
 import com.pigeon_stargram.sns_clone.domain.BaseTimeEntity;
-import com.pigeon_stargram.sns_clone.domain.comment.CommentLike;
-import com.pigeon_stargram.sns_clone.domain.post.Posts;
-import com.pigeon_stargram.sns_clone.domain.user.User;
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(name = "chat")
-public class Chat extends BaseTimeEntity {
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "chat_type")
+public abstract class Chat extends BaseTimeEntity {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private Long fromUserId;
 
+    @Column(nullable = false)
     private Long toUserId;
 
-    private String text;
-
+    public Chat(Long fromUserId, Long toUserId) {
+        this.fromUserId = fromUserId;
+        this.toUserId = toUserId;
+    }
 }

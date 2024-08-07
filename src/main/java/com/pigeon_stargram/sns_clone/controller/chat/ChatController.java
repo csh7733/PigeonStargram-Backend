@@ -1,7 +1,7 @@
 package com.pigeon_stargram.sns_clone.controller.chat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pigeon_stargram.sns_clone.dto.chat.ChatHistoryDto;
+import com.pigeon_stargram.sns_clone.dto.chat.response.ChatHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -68,9 +68,9 @@ public class ChatController {
     }
 
     @PostMapping("/filter")
-    public List<ChatHistoryDto> getUserChats(@RequestBody Map<String, Integer> request) {
-        Integer user1Id = request.get("user1Id");
-        Integer user2Id = request.get("user2Id");
+    public List<ChatHistoryDto> getUserChats(@RequestBody Map<String, Long> request) {
+        Long user1Id = request.get("user1Id");
+        Long user2Id = request.get("user2Id");
         log.info("filter user1Id = {}", user1Id);
         log.info("filter user2Id = {}", user2Id);
 
@@ -86,7 +86,6 @@ public class ChatController {
     @PostMapping("/insert")
     public List<ChatHistoryDto> insertChat(@RequestBody ChatHistoryDto chatDto) {
         log.info("chatDto = {}",chatDto.toString());
-        chatDto.setId(chatHistories.size() + 1);
         chatHistories.add(chatDto);
         return chatHistories;
     }

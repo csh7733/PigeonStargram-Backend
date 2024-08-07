@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.dto.chat;
+package com.pigeon_stargram.sns_clone.dto.chat.response;
 
 import lombok.*;
 
@@ -9,9 +9,10 @@ import lombok.*;
 @Builder
 @ToString
 public class ChatHistoryDto {
+    //곧 삭제예정
     private int id;
-    private Integer from;
-    private Integer to;
+    private Long from;
+    private Long to;
     private String text;
     private String time;
 

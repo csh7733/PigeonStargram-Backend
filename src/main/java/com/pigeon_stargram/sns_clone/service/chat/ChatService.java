@@ -12,5 +12,4 @@ public class ChatService {
 
     private final ChatRepository chatRepository;
 
-
 }
