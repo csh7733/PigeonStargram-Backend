@@ -13,6 +13,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+import static com.pigeon_stargram.sns_clone.config.WebSocketEventListener.isUserChattingWith;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFormattedTime;
 
 @RestController
@@ -46,10 +47,15 @@ public class ChatController {
     @MessageMapping("/chat/{user1Id}/{user2Id}")
     @SendTo("/topic/chat/{user1Id}/{user2Id}")
     public NewChatDto sendMessage(@Payload NewChatDto chatMessage) {
-        log.info("chat = {}",chatMessage.toString());
-        
+        Long from = chatMessage.getFrom();
+        Long to = chatMessage.getTo();
+
         chatMessage.setTime(getCurrentFormattedTime());
         chatService.save(chatMessage);
+
+        if(!isUserChattingWith(to,from)){
+            log.info("not chat with");
+        }
         return chatMessage;
     }
 
