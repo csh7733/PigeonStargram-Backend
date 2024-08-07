@@ -102,6 +102,12 @@ public class TestData {
         log.info("Print finish");
     }
 
+    @PostConstruct
+    public void initData3(){
+        log.info("init data3");
+    }
+
+
     private void logPosts(List<PostsDto> posts) {
         posts.forEach(post -> {
             String jsonString = jsonUtil.toJson(post);

@@ -41,31 +41,31 @@ public class ChatController {
         return users;
     }
 
-    @PostMapping("/users/modify")
-    public List<UserDto> modifyUser(@RequestBody UserDto userDto) {
-        if (userDto.getId() != 0) {
-            users.stream().filter(u -> u.getId() == userDto.getId()).findFirst().ifPresent(u -> {
-                u.setName(userDto.getName());
-                u.setCompany(userDto.getCompany());
-                u.setRole(userDto.getRole());
-                u.setWorkEmail(userDto.getWorkEmail());
-                u.setPersonalEmail(userDto.getPersonalEmail());
-                u.setWorkPhone(userDto.getWorkPhone());
-                u.setPersonalPhone(userDto.getPersonalPhone());
-                u.setLocation(userDto.getLocation());
-                u.setAvatar(userDto.getAvatar());
-                u.setStatus(userDto.getStatus());
-                u.setLastMessage(userDto.getLastMessage());
-                u.setBirthdayText(userDto.getBirthdayText());
-                u.setUnReadChatCount(userDto.getUnReadChatCount());
-                u.setOnlineStatus(userDto.getOnlineStatus());
-            });
-        } else {
-            userDto.setId(users.size() + 1);
-            users.add(userDto);
-        }
-        return users;
-    }
+//    @PostMapping("/users/modify")
+//    public List<UserDto> modifyUser(@RequestBody UserDto userDto) {
+//        if (userDto.getId() != 0) {
+//            users.stream().filter(u -> u.getId() == userDto.getId()).findFirst().ifPresent(u -> {
+//                u.setName(userDto.getName());
+//                u.setCompany(userDto.getCompany());
+//                u.setRole(userDto.getRole());
+//                u.setWorkEmail(userDto.getWorkEmail());
+//                u.setPersonalEmail(userDto.getPersonalEmail());
+//                u.setWorkPhone(userDto.getWorkPhone());
+//                u.setPersonalPhone(userDto.getPersonalPhone());
+//                u.setLocation(userDto.getLocation());
+//                u.setAvatar(userDto.getAvatar());
+//                u.setStatus(userDto.getStatus());
+//                u.setLastMessage(userDto.getLastMessage());
+//                u.setBirthdayText(userDto.getBirthdayText());
+//                u.setUnReadChatCount(userDto.getUnReadChatCount());
+//                u.setOnlineStatus(userDto.getOnlineStatus());
+//            });
+//        } else {
+//            userDto.setId(users.size() + 1);
+//            users.add(userDto);
+//        }
+//        return users;
+//    }
 
     @PostMapping("/filter")
     public List<ChatHistoryDto> getUserChats(@RequestBody Map<String, Long> request) {

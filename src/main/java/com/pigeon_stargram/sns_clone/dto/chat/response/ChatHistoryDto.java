@@ -1,6 +1,10 @@
 package com.pigeon_stargram.sns_clone.dto.chat.response;
 
+import com.pigeon_stargram.sns_clone.domain.chat.ImageChat;
+import com.pigeon_stargram.sns_clone.domain.chat.TextChat;
 import lombok.*;
+
+import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.formatTime;
 
 @Getter
 @Setter
@@ -16,4 +20,17 @@ public class ChatHistoryDto {
     private String text;
     private String time;
 
+    public ChatHistoryDto(TextChat textChat) {
+        this.from = textChat.getFromUserId();
+        this.to = textChat.getToUserId();
+        this.text = textChat.getText();
+        this.time = formatTime(textChat.getCreatedDate());
+    }
+
+    public ChatHistoryDto(ImageChat imageChat) {
+        this.from = imageChat.getFromUserId();
+        this.to = imageChat.getToUserId();
+        this.text = imageChat.getImagePath();
+        this.time = formatTime(imageChat.getCreatedDate());
+    }
 }
