@@ -5,10 +5,12 @@ import com.pigeon_stargram.sns_clone.domain.chat.TextChat;
 import com.pigeon_stargram.sns_clone.domain.chat.UnReadChat;
 import com.pigeon_stargram.sns_clone.dto.chat.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ChatHistoryDto;
+import com.pigeon_stargram.sns_clone.event.UserConnectEvent;
 import com.pigeon_stargram.sns_clone.repository.chat.ChatRepository;
 import com.pigeon_stargram.sns_clone.repository.chat.UnReadChatRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -79,5 +81,12 @@ public class ChatService {
                     unReadChat.resetCount();
                     unReadChatRepository.save(unReadChat);
                 });
+    }
+
+    @EventListener
+    public void handleUserConnect(UserConnectEvent event) {
+        Long userId = event.getUserId();
+        Long partnerUserId = event.getPartnerUserId();
+        setUnreadChatCount0(userId,partnerUserId);
     }
 }

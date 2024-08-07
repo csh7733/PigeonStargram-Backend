@@ -1,6 +1,9 @@
 package com.pigeon_stargram.sns_clone.config;
 
+import com.pigeon_stargram.sns_clone.event.UserConnectEvent;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
@@ -10,9 +13,11 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class WebSocketEventListener{
 
+    private final ApplicationEventPublisher eventPublisher;
     private static final ConcurrentHashMap<Long, ConcurrentHashMap<Long, Boolean>> activeUsers = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, Long> sessionUserMap = new ConcurrentHashMap<>();
 
@@ -27,6 +32,8 @@ public class WebSocketEventListener{
             activeUsers.putIfAbsent(userId, new ConcurrentHashMap<>());
             activeUsers.get(userId).put(partnerUserId, true);
             log.info("User connected: {} -> is chatting with {}",userId,partnerUserId);
+
+            eventPublisher.publishEvent(new UserConnectEvent(this, userId, partnerUserId));
         }
     }
 
