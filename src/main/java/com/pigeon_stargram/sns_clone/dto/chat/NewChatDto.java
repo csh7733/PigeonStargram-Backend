@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.dto.chat.request;
+package com.pigeon_stargram.sns_clone.dto.chat;
 
 import com.pigeon_stargram.sns_clone.domain.chat.ImageChat;
 import com.pigeon_stargram.sns_clone.domain.chat.TextChat;
@@ -17,6 +17,7 @@ public class NewChatDto {
     private Long from;
     private Long to;
     private String text;
+    private String time;
     private Boolean isImage;
 
     public TextChat toTextEntity(){

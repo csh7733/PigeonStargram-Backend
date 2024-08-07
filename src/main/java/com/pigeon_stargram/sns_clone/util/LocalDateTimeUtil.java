@@ -9,4 +9,9 @@ public class LocalDateTimeUtil {
     public static String formatTime(LocalDateTime modifiedDate) {
         return modifiedDate.format(formatter);
     }
+
+    public static String getCurrentFormattedTime() {
+        LocalDateTime now = LocalDateTime.now();
+        return formatTime(now);
+    }
 }

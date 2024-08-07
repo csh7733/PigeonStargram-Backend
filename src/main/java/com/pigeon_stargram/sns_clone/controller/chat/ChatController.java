@@ -2,15 +2,20 @@ package com.pigeon_stargram.sns_clone.controller.chat;
 
 import com.pigeon_stargram.sns_clone.dto.chat.request.ChatPartnerDto;
 import com.pigeon_stargram.sns_clone.dto.chat.request.GetChatHistoryDto;
-import com.pigeon_stargram.sns_clone.dto.chat.request.NewChatDto;
+import com.pigeon_stargram.sns_clone.dto.chat.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ChatHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.UserChatDto;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+
+import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFormattedTime;
 
 @RestController
 @RequestMapping("/api/chat")
@@ -41,10 +46,13 @@ public class ChatController {
         return chatService.getUserChats(user1Id,user2Id);
     }
 
-    @PostMapping("/insert")
-    public void insertChat(@RequestBody NewChatDto request) {
-
-        chatService.save(request);
+    @MessageMapping("/chat/{user1Id}/{user2Id}")
+    @SendTo("/topic/chat/{user1Id}/{user2Id}")
+    public NewChatDto sendMessage(@Payload NewChatDto chatMessage) {
+        log.info("chat = {}",chatMessage.toString());
+        chatMessage.setTime(getCurrentFormattedTime());
+        chatService.save(chatMessage);
+        return chatMessage;
     }
 
 //    @PostMapping("/users/modify")

@@ -220,8 +220,8 @@
     "online_status": "offline"
   },
   {
-    "id": 15,
-    "name": "User1",
+    "id": 14,
+    "name": "test",
     "company": "ABC Pvt Ltd",
     "role": "Facilitator",
     "work_email": "menelaus_work@gmil.com",
@@ -235,5 +235,21 @@
     "birthdayText": "happy Birthday Menelaus",
     "unReadChatCount": 0,
     "online_status": "offline"
-  }
+  },  {
+  "id": 15,
+  "name": "User1",
+  "company": "ABC Pvt Ltd",
+  "role": "Facilitator",
+  "work_email": "menelaus_work@gmil.com",
+  "personal_email": "menelaus@gmil.com",
+  "work_phone": "053-418-5940",
+  "personal_phone": "053-418-5940",
+  "location": "Bahamas",
+  "avatar": "avatar-5.png",
+  "status": "To stay",
+  "lastMessage": "4/25/2021",
+  "birthdayText": "happy Birthday Menelaus",
+  "unReadChatCount": 0,
+  "online_status": "offline"
+}
 ]

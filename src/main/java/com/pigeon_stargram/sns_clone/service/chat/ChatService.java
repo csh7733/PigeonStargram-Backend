@@ -2,7 +2,7 @@ package com.pigeon_stargram.sns_clone.service.chat;
 
 import com.pigeon_stargram.sns_clone.domain.chat.ImageChat;
 import com.pigeon_stargram.sns_clone.domain.chat.TextChat;
-import com.pigeon_stargram.sns_clone.dto.chat.request.NewChatDto;
+import com.pigeon_stargram.sns_clone.dto.chat.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ChatHistoryDto;
 import com.pigeon_stargram.sns_clone.repository.chat.ChatRepository;
 import jakarta.transaction.Transactional;
