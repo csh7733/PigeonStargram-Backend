@@ -1,9 +1,12 @@
 package com.pigeon_stargram.sns_clone.controller.chat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pigeon_stargram.sns_clone.dto.chat.request.GetChatHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ChatHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
+import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
@@ -15,11 +18,13 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/chat")
+@RequiredArgsConstructor
 @Slf4j
 public class ChatController {
 
     private List<UserDto> users = new ArrayList<>();
     private List<ChatHistoryDto> chatHistories = new ArrayList<>();
+    private final ChatService chatService;
 
     @PostConstruct
     public void init() throws IOException {
@@ -39,6 +44,22 @@ public class ChatController {
     public List<UserDto> getAllUsers() {
         log.info("users = {}",users);
         return users;
+    }
+
+    @PostMapping("/filter")
+    public List<ChatHistoryDto> getUserChats(@RequestBody GetChatHistoryDto request) {
+        Long user1Id = request.getUser1Id();
+        Long user2Id = request.getUser2Id();
+
+        return chatService.getUserChats(user1Id,user2Id);
+    }
+
+
+    @PostMapping("/insert")
+    public List<ChatHistoryDto> insertChat(@RequestBody ChatHistoryDto chatDto) {
+        log.info("chatDto = {}",chatDto.toString());
+        chatHistories.add(chatDto);
+        return chatHistories;
     }
 
 //    @PostMapping("/users/modify")
@@ -66,32 +87,4 @@ public class ChatController {
 //        }
 //        return users;
 //    }
-
-    @PostMapping("/filter")
-    public List<ChatHistoryDto> getUserChats(@RequestBody Map<String, Long> request) {
-        Long user1Id = request.get("user1Id");
-        Long user2Id = request.get("user2Id");
-        log.info("filter user1Id = {}", user1Id);
-        log.info("filter user2Id = {}", user2Id);
-
-        return chatHistories.stream()
-                .filter(chat ->
-                        (chat.getFrom().equals(user1Id) && chat.getTo().equals(user2Id)) ||
-                                (chat.getFrom().equals(user2Id) && chat.getTo().equals(user1Id))
-                )
-                .collect(Collectors.toList());
-    }
-
-
-    @PostMapping("/insert")
-    public List<ChatHistoryDto> insertChat(@RequestBody ChatHistoryDto chatDto) {
-        log.info("chatDto = {}",chatDto.toString());
-        chatHistories.add(chatDto);
-        return chatHistories;
-    }
-
-    @PostMapping("/insert2")
-    public ChatHistoryDto insertChat2(@RequestBody ChatHistoryDto chatDto) {
-        return chatDto;
-    }
 }

@@ -6,6 +6,7 @@ import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.post.response.PostsDto;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
+import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
@@ -39,6 +40,7 @@ public class TestData {
 
     private final UserService userService;
     private final FollowService followService;
+    private final ChatService chatService;
 
     public List<UserDto> userDtoList;
 
@@ -105,6 +107,60 @@ public class TestData {
     @PostConstruct
     public void initData3(){
         log.info("init data3");
+
+        chatService.saveChat(15L, 1L, "Sample Text 1");
+        chatService.saveChat(15L, 1L, "Sample Text 2");
+        chatService.saveChat(1L, 15L, "Sample Text 3");
+        chatService.saveChat(1L, 15L, "Sample Text 4");
+        chatService.saveChat(15L, 2L, "Sample Text 5");
+        chatService.saveChat(2L, 15L, "Sample Text 6");
+        chatService.saveChat(15L, 2L, "Sample Text 7");
+        chatService.saveChat(2L, 15L, "Sample Text 8");
+        chatService.saveChat(15L, 3L, "Sample Text 9");
+        chatService.saveChat(3L, 15L, "Sample Text 10");
+        chatService.saveChat(15L, 3L, "Sample Text 11");
+        chatService.saveChat(3L, 15L, "Sample Text 12");
+        chatService.saveChat(15L, 4L, "Sample Text 13");
+        chatService.saveChat(4L, 15L, "Sample Text 14");
+        chatService.saveChat(15L, 4L, "Sample Text 15");
+        chatService.saveChat(4L, 15L, "Sample Text 16");
+        chatService.saveChat(15L, 5L, "Sample Text 17");
+        chatService.saveChat(5L, 15L, "Sample Text 18");
+        chatService.saveChat(15L, 5L, "Sample Text 19");
+        chatService.saveChat(5L, 15L, "Sample Text 20");
+        chatService.saveChat(15L, 6L, "Sample Text 21");
+        chatService.saveChat(6L, 15L, "Sample Text 22");
+        chatService.saveChat(15L, 6L, "Sample Text 23");
+        chatService.saveChat(6L, 15L, "Sample Text 24");
+        chatService.saveChat(15L, 7L, "Sample Text 25");
+        chatService.saveChat(7L, 15L, "Sample Text 26");
+        chatService.saveChat(15L, 7L, "Sample Text 27");
+        chatService.saveChat(7L, 15L, "Sample Text 28");
+        chatService.saveChat(15L, 8L, "Sample Text 29");
+        chatService.saveChat(8L, 15L, "Sample Text 30");
+        chatService.saveChat(15L, 8L, "Sample Text 31");
+        chatService.saveChat(8L, 15L, "Sample Text 32");
+        chatService.saveChat(15L, 9L, "Sample Text 33");
+        chatService.saveChat(9L, 15L, "Sample Text 34");
+        chatService.saveChat(15L, 9L, "Sample Text 35");
+        chatService.saveChat(9L, 15L, "Sample Text 36");
+        chatService.saveChat(15L, 10L, "Sample Text 37");
+        chatService.saveChat(10L, 15L, "Sample Text 38");
+        chatService.saveChat(15L, 10L, "Sample Text 39");
+        chatService.saveChat(10L, 15L, "Sample Text 40");
+        chatService.saveChat(15L, 11L, "Sample Text 41");
+        chatService.saveChat(11L, 15L, "Sample Text 42");
+        chatService.saveChat(15L, 11L, "Sample Text 43");
+        chatService.saveChat(11L, 15L, "Sample Text 44");
+        chatService.saveChat(15L, 12L, "Sample Text 45");
+        chatService.saveChat(12L, 15L, "Sample Text 46");
+        chatService.saveChat(15L, 12L, "Sample Text 47");
+        chatService.saveChat(12L, 15L, "Sample Text 48");
+        chatService.saveChat(15L, 13L, "Sample Text 49");
+        chatService.saveChat(13L, 15L, "Sample Text 50");
+        chatService.saveChat(15L, 13L, "Sample Text 51");
+        chatService.saveChat(13L, 15L, "Sample Text 52");
+        chatService.saveChat(1L, 2L, "Sample Text 53");
     }
 
 
