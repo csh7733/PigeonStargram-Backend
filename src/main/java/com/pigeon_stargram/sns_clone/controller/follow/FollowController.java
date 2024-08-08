@@ -4,6 +4,7 @@ import com.pigeon_stargram.sns_clone.config.auth.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.Follow.*;
+import com.pigeon_stargram.sns_clone.dto.Follow.request.RequestAddFollowerDto;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,7 @@ import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/api/{userId}")
+@RequestMapping("/api/follow")
 @RestController
 public class FollowController {
 
@@ -23,41 +24,30 @@ public class FollowController {
 
     // 특정유저가 팔로우중인 사람 조회
     @GetMapping("/following")
-    public List<FollowerDto> getFollowing(@PathVariable Long userId) {
-        return followService.findFollowings(userId).stream()
-                .map(user -> new FollowerDto(user, 1))
-                .toList();
+    public List<FollowerDto> getFollowing(@RequestParam Long userId) {
+        return followService.findFollowings(userId);
     }
     
     // 특정유저를 팔로우중인 조회
     @GetMapping("/followers")
-    public List<FollowerDto> getFollowers(@PathVariable Long userId) {
-        return followService.findFollowers(userId).stream()
-                .map(user -> new FollowerDto(user, 1))
-                .toList();
+    public List<FollowerDto> getFollowers(@RequestParam Long userId) {
+        return followService.findFollowers(userId);
     }
 
     // 팔로우 추가
-    @PostMapping("/follow")
+    @PostMapping("")
     public List<FollowerDto> addFollower(@LoginUser SessionUser user,
-                                         @PathVariable Long userId) {
-        log.info("session user: {}", user);
-        //temp
-        User tempUser = userService.findAll().stream().findFirst().get();
-
-        followService.createFollow(new AddFollowDto(tempUser.getId(), userId));
-        return getFollowers(userId);
+                                         @RequestBody RequestAddFollowerDto dto) {
+        followService.createFollow(new AddFollowDto(user.getId(), dto.getId()));
+        return getFollowers(dto.getId());
     }
 
     // 팔로우 삭제
-    @DeleteMapping("/follow")
-    public List<FollowerDto> deleteFollower(@PathVariable Long userId) {
-        //temp
-        User tempUser = userService.findAll().stream().findFirst().get();
-
-        followService.deleteFollow(new DeleteFollowDto(tempUser.getId(), userId));
-        return getFollowers(userId);
+    @DeleteMapping("")
+    public List<FollowerDto> deleteFollower(@LoginUser SessionUser user,
+                                            @RequestBody RequestAddFollowerDto dto) {
+        followService.deleteFollow(new DeleteFollowDto(user.getId(), dto.getId()));
+        return getFollowers(dto.getId());
     }
-
 
 }
