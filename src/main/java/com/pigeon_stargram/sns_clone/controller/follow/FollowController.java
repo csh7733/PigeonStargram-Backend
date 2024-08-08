@@ -12,39 +12,47 @@ import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/api/followers")
+@RequestMapping("/api/{userId}")
 @RestController
 public class FollowController {
 
     private final UserService userService;
     private final FollowService followService;
 
-    // 전체 팔로워 조회
-    @GetMapping("")
-    public List<FollowerDto> getFollowers() {
-        return followService.findAll().stream()
+    // 특정유저가 팔로우중인 사람 조회
+    @GetMapping("/following")
+    public List<FollowerDto> getFollowing(@PathVariable Long userId) {
+        return followService.findFollowings(userId).stream()
+                .map(user -> new FollowerDto(user, 1))
+                .toList();
+    }
+    
+    // 특정유저를 팔로우중인 조회
+    @GetMapping("/followers")
+    public List<FollowerDto> getFollowers(@PathVariable Long userId) {
+        return followService.findFollowers(userId).stream()
                 .map(user -> new FollowerDto(user, 1))
                 .toList();
     }
 
-    // 팔로우 삭제
-    @DeleteMapping("/{userId}")
-    public List<FollowerDto> deleteFollower(@PathVariable Long userId) {
-        //temp
-        User tempUser = userService.findAll().stream().findFirst().get();
-
-        followService.deleteFollow(new DeleteFollowDto(tempUser.getId(), userId));
-        return getFollowers();
-    }
-
     // 팔로우 추가
-    @PostMapping("/{userId}")
+    @PostMapping("/follow")
     public List<FollowerDto> addFollower(@PathVariable Long userId) {
         //temp
         User tempUser = userService.findAll().stream().findFirst().get();
 
         followService.createFollow(new AddFollowDto(tempUser.getId(), userId));
-        return getFollowers();
+        return getFollowers(userId);
+    }
+
+    // 팔로우 삭제
+    @DeleteMapping("/follow")
+    public List<FollowerDto> deleteFollower(@PathVariable Long userId) {
+        //temp
+        User tempUser = userService.findAll().stream().findFirst().get();
+
+        followService.deleteFollow(new DeleteFollowDto(tempUser.getId(), userId));
+        return getFollowers(userId);
     }
 
 
