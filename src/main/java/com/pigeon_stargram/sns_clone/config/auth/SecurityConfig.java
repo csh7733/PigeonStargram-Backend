@@ -19,6 +19,8 @@ import org.springframework.web.filter.CorsFilter;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -27,11 +29,14 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .authorizeRequests(auth ->
                         auth.requestMatchers("/", "/css/**", "/images/**", "/js/**", "/h2-console/**", "/profile").permitAll()
-                                .requestMatchers("/api/**").hasRole(Role.USER.name())
+                                .requestMatchers("/api/**").permitAll()
+//                                .requestMatchers("/api/**").hasRole(Role.USER.name())
                                 .anyRequest().authenticated()
                 )
                 .logout(logout -> logout.logoutSuccessUrl("/"))
-                .oauth2Login(oauth2 -> oauth2.userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)));
+                .oauth2Login(oauth2 ->
+                        oauth2.userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                                .successHandler(customOAuth2SuccessHandler));
 
         return http.build();
     }

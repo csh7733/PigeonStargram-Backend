@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone.dto.user;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.pigeon_stargram.sns_clone.domain.user.Role;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import lombok.*;
 
@@ -49,7 +50,7 @@ public class UserDto {
         return User.builder()
                 .name(name)
                 .company(company)
-                .role(role)
+                .role(Role.USER)
                 .workEmail(workEmail)
                 .personalEmail(personalEmail)
                 .workPhone(workPhone)

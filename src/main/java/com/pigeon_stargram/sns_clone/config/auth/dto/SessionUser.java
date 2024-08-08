@@ -1,6 +1,5 @@
 package com.pigeon_stargram.sns_clone.config.auth.dto;
 
-import OAuth.practice.domain.user.User;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import lombok.Getter;
 
