@@ -32,4 +32,7 @@ public class LastMessage extends BaseTimeEntity {
         this.user2Id = user2Id;
         this.lastMessage = lastMessage;
     }
+    public void update(String lastMessage){
+        this.lastMessage = lastMessage;
+    }
 }

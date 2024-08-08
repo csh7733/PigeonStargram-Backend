@@ -88,15 +88,21 @@ public class ChatService {
                 });
     }
 
-    public void setLastMessage(NewChatDto request) {
-        Long user1Id = request.getFrom();
-        Long user2Id = request.getTo();
+    public LastMessageDto setLastMessage(NewChatDto chatMessage) {
+        Long user1Id = chatMessage.getFrom();
+        Long user2Id = chatMessage.getTo();
 
         Long[] userIds = sortAndGet(user1Id, user2Id);
+        String lastMessageText = chatMessage.getText();
 
-        String lastMessage = request.getText();
-        lastMessageRepository.save(new LastMessage(userIds[0], userIds[1], lastMessage));
+        LastMessage lastMessageEntity = lastMessageRepository.findByUser1IdAndUser2Id(userIds[0], userIds[1])
+                .orElse(new LastMessage(userIds[0], userIds[1], lastMessageText));
+
+        lastMessageEntity.update(lastMessageText);
+
+        return new LastMessageDto(lastMessageRepository.save(lastMessageEntity));
     }
+
 
     public LastMessageDto getLastMessage(Long user1Id, Long user2Id) {
         Long[] userIds = sortAndGet(user1Id, user2Id);

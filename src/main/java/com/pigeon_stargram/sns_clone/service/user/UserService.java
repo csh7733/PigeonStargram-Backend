@@ -1,6 +1,7 @@
 package com.pigeon_stargram.sns_clone.service.user;
 
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.UserChatDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
@@ -36,8 +37,11 @@ public class UserService {
         return userRepository.findAll().stream()
                 .map(user -> {
                     UserChatDto userChatDto = new UserChatDto(user);
-                    int unReadChatCount = chatService.getUnreadChatCount(currentUserId, user.getId());
+                    Integer unReadChatCount = chatService.getUnreadChatCount(currentUserId, user.getId());
+                    LastMessageDto lastMessage = chatService.getLastMessage(currentUserId, user.getId());
                     userChatDto.setUnReadChatCount(unReadChatCount);
+                    userChatDto.setLastMessage(lastMessage.getTime());
+                    userChatDto.setStatus(lastMessage.getLastMessage());
                     return userChatDto;
                 })
                 .collect(Collectors.toList());

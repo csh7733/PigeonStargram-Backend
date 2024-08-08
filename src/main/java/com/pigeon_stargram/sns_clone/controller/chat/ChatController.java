@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone.controller.chat;
 
 import com.pigeon_stargram.sns_clone.dto.chat.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ChatHistoryDto;
+import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.UnReadChatCountDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.UserChatDto;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
@@ -61,12 +62,21 @@ public class ChatController {
             sentUnReadChatCountToUser(to,from,count);
         }
 
+        LastMessageDto lastMessage = chatService.setLastMessage(chatMessage);
+        sentLastMessage(from,to,lastMessage);
+
         return chatMessage;
     }
 
     public void sentUnReadChatCountToUser(Long toUserId, Long fromUserId, Integer count) {
         String destination = "/topic/users/status/" + toUserId;
         messagingTemplate.convertAndSend(destination, new UnReadChatCountDto(fromUserId,count));
+    }
+    public void sentLastMessage(Long user1Id, Long user2Id,LastMessageDto lastMessage) {
+        String destination1 = "/topic/users/status/" + user1Id;
+        String destination2 = "/topic/users/status/" + user2Id;
+        messagingTemplate.convertAndSend(destination1, lastMessage);
+        messagingTemplate.convertAndSend(destination2, lastMessage);
     }
 
 }
