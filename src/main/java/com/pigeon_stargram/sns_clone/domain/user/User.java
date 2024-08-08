@@ -23,7 +23,6 @@ public class User {
 
     private String name;
     private String company;
-    private String role;
     private String workEmail;
     private String personalEmail;
     private String workPhone;
@@ -33,6 +32,9 @@ public class User {
     private String status;
     private String birthdayText;
     private String onlineStatus;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
 //    @OneToMany(mappedBy = "user")
 //    private List<Posts> posts;
@@ -46,5 +48,11 @@ public class User {
     public User(String name, String avatar) {
         this.name = name;
         this.avatar = avatar;
+    }
+
+    public User update(String name, String avatar) {
+        this.name = name;
+        this.avatar = avatar;
+        return this;
     }
 }

@@ -39,18 +39,20 @@ public class FollowService {
                 .ifPresent(followRepository::delete);
     }
 
-    public List<User> findFollowers(User user) {
-        List<Follow> followList = followRepository.findByToUser(user);
-        return followList.stream()
+    public List<FollowerDto> findFollowers(Long userId) {
+        User user = userService.findById(userId);
+        return followRepository.findByToUser(user).stream()
                 .map(Follow::getFromUser)
-                .collect(Collectors.toList());
+                .map(fromUser -> new FollowerDto(fromUser, 1))
+                .toList();
     }
 
-    public List<User> findFollowings(User user) {
-        List<Follow> followList = followRepository.findByFromUser(user);
-        return followList.stream()
+    public List<FollowerDto> findFollowings(Long userId) {
+        User user = userService.findById(userId);
+        return followRepository.findByFromUser(user).stream()
                 .map(Follow::getToUser)
-                .collect(Collectors.toList());
+                .map(toUser -> new FollowerDto(toUser, 1))
+                .toList();
     }
 
     public List<User> findAll(){
