@@ -1,5 +1,7 @@
 package com.pigeon_stargram.sns_clone.controller.follow;
 
+import com.pigeon_stargram.sns_clone.config.auth.LoginUser;
+import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.Follow.*;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
@@ -37,7 +39,9 @@ public class FollowController {
 
     // 팔로우 추가
     @PostMapping("/follow")
-    public List<FollowerDto> addFollower(@PathVariable Long userId) {
+    public List<FollowerDto> addFollower(@LoginUser SessionUser user,
+                                         @PathVariable Long userId) {
+        log.info("session user: {}", user);
         //temp
         User tempUser = userService.findAll().stream().findFirst().get();
 
