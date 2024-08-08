@@ -5,6 +5,7 @@ import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.Follow.*;
 import com.pigeon_stargram.sns_clone.dto.Follow.request.RequestAddFollowerDto;
+import com.pigeon_stargram.sns_clone.dto.Follow.request.RequestDeleteFollowerDto;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -19,14 +20,19 @@ import java.util.List;
 @RestController
 public class FollowController {
 
-    private final UserService userService;
     private final FollowService followService;
 
-    // 특정유저가 팔로우중인 사람 조회
+    // 특정유저가 팔로우중인 사람 조회 - 일반
     @GetMapping("/following")
     public List<FollowerDto> getFollowing(@RequestParam Long userId) {
         return followService.findFollowings(userId);
     }
+
+    // 특정유저를 팔로우중인 사람 조회 - 채팅
+//    @GetMapping("/following")
+//    public List<FollowerDto> getFollowing(@RequestParam Long userId) {
+//        return followService.findFollowings(userId);
+//    }
     
     // 특정유저를 팔로우중인 조회
     @GetMapping("/followers")
@@ -38,6 +44,7 @@ public class FollowController {
     @PostMapping("")
     public List<FollowerDto> addFollower(@LoginUser SessionUser user,
                                          @RequestBody RequestAddFollowerDto dto) {
+        log.info("user: {}", user.getId());
         followService.createFollow(new AddFollowDto(user.getId(), dto.getId()));
         return getFollowers(dto.getId());
     }
@@ -45,7 +52,7 @@ public class FollowController {
     // 팔로우 삭제
     @DeleteMapping("")
     public List<FollowerDto> deleteFollower(@LoginUser SessionUser user,
-                                            @RequestBody RequestAddFollowerDto dto) {
+                                            @RequestBody RequestDeleteFollowerDto dto) {
         followService.deleteFollow(new DeleteFollowDto(user.getId(), dto.getId()));
         return getFollowers(dto.getId());
     }
