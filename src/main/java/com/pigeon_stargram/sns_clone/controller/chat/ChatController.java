@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone.controller.chat;
 
 import com.pigeon_stargram.sns_clone.dto.chat.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ChatHistoryDto;
+import com.pigeon_stargram.sns_clone.dto.chat.response.UnReadChatCountDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.UserChatDto;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -10,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -24,6 +26,7 @@ public class ChatController {
 
     private final ChatService chatService;
     private final UserService userService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("/users")
     public List<UserChatDto> getAllChatPartners() {
@@ -54,10 +57,16 @@ public class ChatController {
         chatService.save(chatMessage);
 
         if(!isUserChattingWith(to,from)){
-            chatService.increaseUnReadChatCount(to,from);
+            Integer count = chatService.increaseUnReadChatCount(to, from);
+            sentUnReadChatCountToUser(to,from,count);
         }
 
         return chatMessage;
+    }
+
+    public void sentUnReadChatCountToUser(Long toUserId, Long fromUserId, Integer count) {
+        String destination = "/topic/users/status/" + toUserId;
+        messagingTemplate.convertAndSend(destination, new UnReadChatCountDto(fromUserId,count));
     }
 
 }
