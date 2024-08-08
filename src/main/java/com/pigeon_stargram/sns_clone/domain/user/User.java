@@ -49,4 +49,10 @@ public class User {
         this.name = name;
         this.avatar = avatar;
     }
+
+    public User update(String name, String avatar) {
+        this.name = name;
+        this.avatar = avatar;
+        return this;
+    }
 }
