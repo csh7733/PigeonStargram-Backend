@@ -47,7 +47,6 @@ public class ChatController {
             users.stream().filter(u -> u.getId() == userDto.getId()).findFirst().ifPresent(u -> {
                 u.setName(userDto.getName());
                 u.setCompany(userDto.getCompany());
-                u.setRole(userDto.getRole());
                 u.setWorkEmail(userDto.getWorkEmail());
                 u.setPersonalEmail(userDto.getPersonalEmail());
                 u.setWorkPhone(userDto.getWorkPhone());
