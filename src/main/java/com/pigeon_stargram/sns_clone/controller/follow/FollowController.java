@@ -36,7 +36,9 @@ public class FollowController {
     
     // 특정유저를 팔로우중인 조회
     @GetMapping("/followers")
-    public List<FollowerDto> getFollowers(@RequestParam Long userId) {
+    public List<FollowerDto> getFollowers(@LoginUser SessionUser user,
+                                          @RequestParam Long userId) {
+        log.info("user: {}", user.getId());
         return followService.findFollowers(userId);
     }
 
@@ -46,7 +48,8 @@ public class FollowController {
                                          @RequestBody RequestAddFollowerDto dto) {
         log.info("user: {}", user.getId());
         followService.createFollow(new AddFollowDto(user.getId(), dto.getId()));
-        return getFollowers(dto.getId());
+//        return getFollowers(dto.getId());
+        return null;
     }
 
     // 팔로우 삭제
@@ -54,7 +57,8 @@ public class FollowController {
     public List<FollowerDto> deleteFollower(@LoginUser SessionUser user,
                                             @RequestBody RequestDeleteFollowerDto dto) {
         followService.deleteFollow(new DeleteFollowDto(user.getId(), dto.getId()));
-        return getFollowers(dto.getId());
+//        return getFollowers(dto.getId());
+        return null;
     }
 
 }

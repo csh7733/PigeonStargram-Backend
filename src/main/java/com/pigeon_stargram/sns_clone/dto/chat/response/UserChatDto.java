@@ -49,7 +49,6 @@ public class UserChatDto {
         this.id = user.getId();
         this.name = user.getName();
         this.company = user.getCompany();
-        this.role = user.getRole();
         this.workEmail = user.getWorkEmail();
         this.personalEmail = user.getPersonalEmail();
         this.workPhone = user.getWorkPhone();
