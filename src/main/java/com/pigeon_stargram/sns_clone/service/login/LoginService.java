@@ -29,6 +29,7 @@ public class LoginService {
     private String resetPasswordBaseUrl;
 
     public Boolean sendPasswordResetLink(String email) {
+        log.info("email = {}",email);
         User user = userService.findByEmail(email);
         if (user == null) {
             return false;
