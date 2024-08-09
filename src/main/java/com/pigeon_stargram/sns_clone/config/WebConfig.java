@@ -3,6 +3,7 @@ package com.pigeon_stargram.sns_clone.config;
 import com.pigeon_stargram.sns_clone.config.auth.LoginUserArgumentResolver;
 import com.pigeon_stargram.sns_clone.config.auth.SessionExpiredInterceptor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -15,6 +16,9 @@ import java.util.List;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
+    @Value("${cors.allowed-origins}")
+    private String allowedOrigins;
+
     private final LoginUserArgumentResolver loginUserArgumentResolver;
     private final SessionExpiredInterceptor sessionExpiredInterceptor;
 
@@ -26,7 +30,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:3000")
+                .allowedOrigins(allowedOrigins)
                 .allowedMethods("GET", "POST", "PUT", "DELETE","PATCH")
                 .allowedHeaders("*")
                 .allowCredentials(true);
@@ -35,6 +39,6 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(sessionExpiredInterceptor)
-                .addPathPatterns("/**"); 
+                .addPathPatterns("/**");
     }
 }
