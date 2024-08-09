@@ -46,5 +46,9 @@ public class LoginController {
                     .body("Invalid username or password");
         }
     }
+    @PostMapping("/logout")
+    public void logout() {
+        httpSession.invalidate();
+    }
 
 }
