@@ -43,20 +43,4 @@ public class SecurityConfig {
 
         return http.build();
     }
-
-//    @Bean
-//    public CorsFilter corsFilter() {
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        CorsConfiguration config = new CorsConfiguration();
-//        config.setAllowCredentials(true);
-//        config.addAllowedOrigin("http://115.41.194.116:3000");
-//        config.addAllowedOrigin("http://192.168.0.8:3000");
-//        config.addAllowedOrigin("http://13.124.153.161");
-//        config.addAllowedOrigin("http://localhost:3000");
-//        config.addAllowedOrigin("http://ec2-13-124-153-161.ap-northeast-2.compute.amazonaws.com");
-//        config.addAllowedHeader("*");
-//        config.addAllowedMethod("*");
-//        source.registerCorsConfiguration("/**", config);
-//        return new CorsFilter(source);
-//    }
 }
