@@ -7,6 +7,7 @@ import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.login.request.LoginDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RegisterDto;
 import com.pigeon_stargram.sns_clone.dto.login.response.UserEmailInfoDto;
+import com.pigeon_stargram.sns_clone.dto.login.response.UserInfoDto;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,7 @@ public class LoginController {
         if (user != null) {
             log.info("login success");
             httpSession.setAttribute("user", new SessionUser(user));
-            return ResponseEntity.ok(new SessionUser(user));
+            return ResponseEntity.ok(new UserInfoDto(user));
         } else {
             log.info("login fail");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

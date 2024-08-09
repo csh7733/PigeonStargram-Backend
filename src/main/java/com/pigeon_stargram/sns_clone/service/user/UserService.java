@@ -53,6 +53,7 @@ public class UserService {
                     Integer unReadChatCount = chatService.getUnreadChatCount(currentUserId, user.getId());
                     LastMessageDto lastMessage = chatService.getLastMessage(currentUserId, user.getId());
                     userChatDto.setUnReadChatCount(unReadChatCount);
+                    log.info(lastMessage.getLastMessage());
                     userChatDto.setLastMessage(lastMessage.getTime());
                     userChatDto.setStatus(lastMessage.getLastMessage());
                     return userChatDto;
