@@ -29,12 +29,12 @@ public class User {
     private String personalPhone;
     private String location;
     private String avatar;
-    private String status;
     private String birthdayText;
     private String onlineStatus;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private Role role = Role.USER;
 
 //    @OneToMany(mappedBy = "user")
 //    private List<Posts> posts;

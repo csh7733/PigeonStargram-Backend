@@ -55,7 +55,7 @@ public class UserChatDto {
         this.personalPhone = user.getPersonalPhone();
         this.location = user.getLocation();
         this.avatar = user.getAvatar();
-        this.status = user.getStatus();
+        this.status = "채팅 기록 없음";
         //temp
         this.lastMessage = "2h ago";
         this.birthdayText = user.getBirthdayText();
