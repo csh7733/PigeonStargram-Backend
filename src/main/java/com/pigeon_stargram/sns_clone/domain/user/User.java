@@ -36,6 +36,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role = Role.USER;
 
+    private String password;
+
 //    @OneToMany(mappedBy = "user")
 //    private List<Posts> posts;
 

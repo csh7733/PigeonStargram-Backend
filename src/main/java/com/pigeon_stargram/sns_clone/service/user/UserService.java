@@ -3,6 +3,7 @@ package com.pigeon_stargram.sns_clone.service.user;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.UserChatDto;
+import com.pigeon_stargram.sns_clone.dto.login.request.LoginDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RegisterDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
@@ -21,6 +22,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final ChatService chatService;
+
+    public User login(LoginDto dto){
+        String email = dto.getEmail();
+        String password = dto.getPassword();
+        return userRepository.findByWorkEmailAndPassword(email,password)
+                .orElse(null);
+    }
 
     public User findById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));

@@ -13,6 +13,7 @@ public class RegisterDto {
     private String username;
     private String company;
     private String personalPhone;
+    private String password;
     @Builder.Default
     private String avatar = "avatar-3.png";
 
@@ -23,6 +24,7 @@ public class RegisterDto {
                 .avatar(avatar)
                 .personalPhone(personalPhone)
                 .company(company)
+                .password(password)
                 .build();
     }
 }
