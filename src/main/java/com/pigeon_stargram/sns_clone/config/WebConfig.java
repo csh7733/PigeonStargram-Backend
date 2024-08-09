@@ -1,6 +1,7 @@
 package com.pigeon_stargram.sns_clone.config;
 
 import com.pigeon_stargram.sns_clone.config.auth.LoginUserArgumentResolver;
+import com.pigeon_stargram.sns_clone.config.auth.NewUserEmailArgumentResolver;
 import com.pigeon_stargram.sns_clone.config.auth.SessionExpiredInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,11 +21,14 @@ public class WebConfig implements WebMvcConfigurer {
     private String allowedOrigins;
 
     private final LoginUserArgumentResolver loginUserArgumentResolver;
+    private final NewUserEmailArgumentResolver newUserEmailArgumentResolver;
+
     private final SessionExpiredInterceptor sessionExpiredInterceptor;
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
         argumentResolvers.add(loginUserArgumentResolver);
+        argumentResolvers.add(newUserEmailArgumentResolver);
     }
 
     @Override
@@ -39,6 +43,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(sessionExpiredInterceptor)
-                .addPathPatterns("/**");
+                .addPathPatterns("/**")
+                .excludePathPatterns("/api/session/**");
     }
 }

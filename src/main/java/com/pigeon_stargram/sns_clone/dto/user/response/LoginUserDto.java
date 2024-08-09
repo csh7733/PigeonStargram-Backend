@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.dto.login.response;
+package com.pigeon_stargram.sns_clone.dto.user.response;
 
 import lombok.*;
 @ToString

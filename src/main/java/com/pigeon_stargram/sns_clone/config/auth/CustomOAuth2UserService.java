@@ -45,6 +45,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         if (isNewUser) {
             httpSession.setAttribute("isNewUser", true);
+            httpSession.setAttribute("email", attributes.getEmail());
 
             return new DefaultOAuth2User(
                     Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
