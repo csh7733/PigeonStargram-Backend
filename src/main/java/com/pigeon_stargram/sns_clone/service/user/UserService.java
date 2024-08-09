@@ -58,6 +58,9 @@ public class UserService {
         return userRepository.saveAll(users);
     }
 
+    public User findByEmail(String email) {
+        return userRepository.findByWorkEmail(email).orElse(null);
+    }
     public List<User> saveAllUser(List<User> users) {
         return userRepository.saveAll(users);
     }
