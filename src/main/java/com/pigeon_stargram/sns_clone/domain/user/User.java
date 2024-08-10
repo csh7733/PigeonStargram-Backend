@@ -57,4 +57,8 @@ public class User {
         this.avatar = avatar;
         return this;
     }
+
+    public void updatePassword(String password) {
+        this.password = password;
+    }
 }

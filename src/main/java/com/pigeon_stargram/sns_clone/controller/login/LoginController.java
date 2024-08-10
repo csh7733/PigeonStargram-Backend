@@ -4,12 +4,12 @@ import com.pigeon_stargram.sns_clone.config.auth.annotation.NewUserEmail;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.login.request.LoginDto;
-import com.pigeon_stargram.sns_clone.dto.login.request.PasswordResetDto;
+import com.pigeon_stargram.sns_clone.dto.login.request.ForgotPasswordDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RegisterDto;
+import com.pigeon_stargram.sns_clone.dto.login.request.ResetPasswordDto;
 import com.pigeon_stargram.sns_clone.dto.login.response.UserEmailInfoDto;
 import com.pigeon_stargram.sns_clone.dto.login.response.UserInfoDto;
 import com.pigeon_stargram.sns_clone.service.login.LoginService;
-import com.pigeon_stargram.sns_clone.service.user.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,12 +53,20 @@ public class LoginController {
         loginService.logout();
     }
 
-    @PostMapping("/password-reset")
-    public ResponseEntity<String> sendPasswordResetLink(@RequestBody PasswordResetDto request) {
+    @PostMapping("/password")
+    public ResponseEntity<String> sendPasswordResetLink(@RequestBody ForgotPasswordDto request) {
         String email = request.getEmail();
 
         return loginService.sendPasswordResetLink(email)
                 ? ResponseEntity.ok("Password reset link has been sent to your email.")
                 : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Email address not found.");
     }
+
+    @PutMapping("/password")
+    public void resetPassword(@RequestBody ResetPasswordDto request) {
+        loginService.validateToken(request.getToken());
+        loginService.resetPassword(request.getToken(), request.getNewPassword());
+    }
+
+
 }

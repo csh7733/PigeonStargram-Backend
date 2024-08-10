@@ -1,6 +1,5 @@
 package com.pigeon_stargram.sns_clone.dto.login.request;
 
-import com.pigeon_stargram.sns_clone.domain.user.User;
 import lombok.*;
 
 @ToString
@@ -8,6 +7,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PasswordResetDto {
-    private String email;
+public class ResetPasswordDto {
+    private String token;
+    private String newPassword;
 }

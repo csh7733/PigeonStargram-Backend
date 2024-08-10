@@ -27,9 +27,16 @@ public class PasswordResetTokenService {
         return tokenRepository.save(passwordResetToken);
     }
 
-    public Boolean validateToken(String token, String email) {
-        return tokenRepository.findByTokenAndEmail(token, email)
+    public Boolean validateToken(String token) {
+        return tokenRepository.findByToken(token)
                 .filter(resetToken -> resetToken.getExpiryDate().isAfter(LocalDateTime.now()))
                 .isPresent();
     }
+
+    public String extractEmail(String token) {
+        return tokenRepository.findByToken(token)
+                .map(PasswordResetToken::getEmail)
+                .orElse(null);
+    }
+
 }

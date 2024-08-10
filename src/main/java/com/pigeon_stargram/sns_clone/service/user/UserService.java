@@ -23,9 +23,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final ChatService chatService;
 
-    public User login(LoginDto dto){
-        String email = dto.getEmail();
-        String password = dto.getPassword();
+    public User findByWorkEmailAndPassword(String email,String password){
         return userRepository.findByWorkEmailAndPassword(email,password)
                 .orElse(null);
     }
@@ -77,5 +75,9 @@ public class UserService {
     }
     public List<User> saveAllUser(List<User> users) {
         return userRepository.saveAll(users);
+    }
+
+    public void updatePassword(User user,String newPassword){
+        user.updatePassword(newPassword);
     }
 }

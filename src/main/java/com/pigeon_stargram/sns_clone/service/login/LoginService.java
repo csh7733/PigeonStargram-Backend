@@ -16,6 +16,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -34,7 +36,9 @@ public class LoginService {
     private String resetPasswordBaseUrl;
 
     public User login(LoginDto request) {
-        return userService.login(request);
+        String email = request.getEmail();
+        String password = request.getPassword();
+        return userService.findByWorkEmailAndPassword(email,password);
     }
 
     public void logout() {
@@ -92,6 +96,22 @@ public class LoginService {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public Boolean validateToken(String token) {
+        return Optional.of(passwordResetTokenService.validateToken(token))
+                .filter(isValid -> isValid)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired token"));
+    }
+
+    public void resetPassword(String token, String newPassword) {
+        String email = Optional.ofNullable(passwordResetTokenService.extractEmail(token))
+                .orElseThrow(() -> new IllegalArgumentException("Invalid token or email not found"));
+
+        User user = Optional.ofNullable(userService.findByEmail(email))
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        userService.updatePassword(user, newPassword);
     }
 
 }
