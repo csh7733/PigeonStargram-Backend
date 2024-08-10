@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -62,5 +63,12 @@ public class FollowService {
         return followRepository.findAll().stream()
                 .map(Follow::getToUser)
                 .collect(Collectors.toList());
+    }
+
+    public Boolean isFollowBack(AddFollowDto dto) {
+        User fromUser = userService.findById(dto.getFromId());
+        User toUser = userService.findById(dto.getToId());
+        Optional<Follow> follow = followRepository.findByFromUserAndToUser(toUser, fromUser);
+        return follow.isPresent();
     }
 }
