@@ -6,6 +6,7 @@ import com.pigeon_stargram.sns_clone.dto.Follow.AddFollowDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.DeleteFollowDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
 import com.pigeon_stargram.sns_clone.repository.follow.FollowRepository;
+import com.pigeon_stargram.sns_clone.aspect.NotificationAspect;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 public class FollowService {
 
     private final UserService userService;
+    private final NotificationAspect notificationService;
     private final FollowRepository followRepository;
 
     public Follow createFollow(AddFollowDto dto) {
@@ -41,6 +43,7 @@ public class FollowService {
 
     public List<FollowerDto> findFollowers(Long userId) {
         User user = userService.findById(userId);
+
         return followRepository.findByToUser(user).stream()
                 .map(Follow::getFromUser)
                 .map(fromUser -> new FollowerDto(fromUser, 1))
