@@ -30,10 +30,12 @@ public class LoginController {
     public UserEmailInfoDto getCurrentMemberEmail(@NewUserEmail String email){
         return new UserEmailInfoDto(email);
     }
+    
     @PostMapping("/register")
     public void register(@RequestBody RegisterDto request){
         loginService.register(request);
     }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDto request) {
         User user = loginService.login(request);
@@ -48,6 +50,7 @@ public class LoginController {
                     .body("Invalid username or password");
         }
     }
+
     @PostMapping("/logout")
     public void logout() {
         loginService.logout();
