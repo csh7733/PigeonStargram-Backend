@@ -23,7 +23,6 @@ import java.util.Optional;
 public class PostsController {
 
     private final PostsService postsService;
-    private final UserRepository userRepository;
     private final UserService userService;
 
     @GetMapping
@@ -35,7 +34,8 @@ public class PostsController {
     }
 
     @PostMapping
-    public List<PostsDto> createPosts(@LoginUser SessionUser loginUser, @RequestBody createPostDto request) {
+    public List<PostsDto> createPosts(@LoginUser SessionUser loginUser,
+                                      @RequestBody createPostDto request) {
         Long userId = loginUser.getId();
         User user = userService.findById(userId);
 
@@ -46,7 +46,9 @@ public class PostsController {
     }
 
     @PatchMapping("/{postId}")
-    public List<PostsDto> editPost(@PathVariable Long postId, @RequestBody EditPostDto request) {
+    public List<PostsDto> editPost(@LoginUser SessionUser loginUser,
+                                   @PathVariable Long postId,
+                                   @RequestBody EditPostDto request) {
         log.info("patch {}",postId);
         String content = request.getContent();
         postsService.editPost(postId,content);
@@ -55,7 +57,8 @@ public class PostsController {
     }
 
     @DeleteMapping("/{postId}")
-    public List<PostsDto> deletePost(@PathVariable Long postId) {
+    public List<PostsDto> deletePost(@LoginUser SessionUser loginUser,
+                                     @PathVariable Long postId) {
         log.info("delete {}",postId);
         postsService.deletePost(postId);
 
@@ -63,7 +66,8 @@ public class PostsController {
     }
 
     @PostMapping("/like")
-    public List<PostsDto> likePost(@LoginUser SessionUser loginUser, @RequestBody LikePostDto request) {
+    public List<PostsDto> likePost(@LoginUser SessionUser loginUser,
+                                   @RequestBody LikePostDto request) {
         Long userId = loginUser.getId();
         User user = userService.findById(userId);
 
