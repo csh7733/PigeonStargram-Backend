@@ -9,6 +9,5 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class newCommentDto {
-    private Long userId;
     private String content;
 }

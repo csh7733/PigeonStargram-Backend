@@ -30,12 +30,13 @@ public class ReplyController {
     private final UserService userService;
 
     @PostMapping
-    public List<PostsDto> addReply(@RequestBody AddReplyDto request) {
+    public List<PostsDto> addReply(@LoginUser SessionUser loginUser,
+                                   @RequestBody AddReplyDto request) {
         Long commentId = request.getCommentId();
         Comment comment = commentService.getCommentEntity(commentId);
         String content = request.getReply().getContent();
 
-        Long userId = request.getReply().getUserId();
+        Long userId = loginUser.getId();
         User user = userService.findById(userId);
         replyService.createReply(user,comment,content);
         return postsService.getAllPosts();
