@@ -2,9 +2,12 @@ package com.pigeon_stargram.sns_clone.service.login;
 
 import com.pigeon_stargram.sns_clone.domain.login.PasswordResetToken;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.login.request.LoginDto;
+import com.pigeon_stargram.sns_clone.dto.login.request.RegisterDto;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +28,22 @@ public class LoginService {
 
     private final PasswordResetTokenService passwordResetTokenService;
 
+    private final HttpSession httpSession;
+
     @Value("${app.reset-password.url}")
     private String resetPasswordBaseUrl;
+
+    public User login(LoginDto request) {
+        return userService.login(request);
+    }
+
+    public void logout() {
+        httpSession.invalidate();
+    }
+
+    public void register(RegisterDto request) {
+        userService.save(request);
+    }
 
     /**
      * TODO : 블로킹 비동기로 처리하기

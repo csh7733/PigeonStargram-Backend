@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class LoginController {
 
-    private final UserService userService;
     private final LoginService loginService;
     private final HttpSession httpSession;
 
@@ -33,11 +32,11 @@ public class LoginController {
     }
     @PostMapping("/register")
     public void register(@RequestBody RegisterDto request){
-        userService.save(request);
+        loginService.register(request);
     }
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDto request) {
-        User user = userService.login(request);
+        User user = loginService.login(request);
 
         if (user != null) {
             log.info("login success");
@@ -51,7 +50,7 @@ public class LoginController {
     }
     @PostMapping("/logout")
     public void logout() {
-        httpSession.invalidate();
+        loginService.logout();
     }
 
     @PostMapping("/password-reset")
