@@ -9,6 +9,5 @@ import lombok.*;
 @AllArgsConstructor
 public class createPostDto {
 
-    private Long userId;
     private String content;
 }
