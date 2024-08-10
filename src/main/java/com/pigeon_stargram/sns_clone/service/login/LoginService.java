@@ -28,6 +28,9 @@ public class LoginService {
     @Value("${app.reset-password.url}")
     private String resetPasswordBaseUrl;
 
+    /**
+     * TODO : 블로킹 비동기로 처리하기
+     */
     public Boolean sendPasswordResetLink(String email) {
         log.info("email = {}",email);
         User user = userService.findByEmail(email);

@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.config.auth;
+package com.pigeon_stargram.sns_clone.config.auth.service;
 
 import com.pigeon_stargram.sns_clone.config.auth.dto.OAuthAttributes;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;

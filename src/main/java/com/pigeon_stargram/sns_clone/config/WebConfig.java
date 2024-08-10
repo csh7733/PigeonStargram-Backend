@@ -1,8 +1,8 @@
 package com.pigeon_stargram.sns_clone.config;
 
-import com.pigeon_stargram.sns_clone.config.auth.LoginUserArgumentResolver;
-import com.pigeon_stargram.sns_clone.config.auth.NewUserEmailArgumentResolver;
-import com.pigeon_stargram.sns_clone.config.auth.SessionExpiredInterceptor;
+import com.pigeon_stargram.sns_clone.config.auth.resolver.LoginUserArgumentResolver;
+import com.pigeon_stargram.sns_clone.config.auth.resolver.NewUserEmailArgumentResolver;
+import com.pigeon_stargram.sns_clone.config.auth.config.SessionExpiredInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;

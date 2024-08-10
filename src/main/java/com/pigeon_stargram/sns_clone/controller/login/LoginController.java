@@ -1,7 +1,6 @@
 package com.pigeon_stargram.sns_clone.controller.login;
 
-import com.pigeon_stargram.sns_clone.config.auth.LoginUser;
-import com.pigeon_stargram.sns_clone.config.auth.NewUserEmail;
+import com.pigeon_stargram.sns_clone.config.auth.annotation.NewUserEmail;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.login.request.LoginDto;

@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.config.auth;
+package com.pigeon_stargram.sns_clone.config.auth.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,6 +7,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface NewUserEmail {
+public @interface LoginUser {
 
 }

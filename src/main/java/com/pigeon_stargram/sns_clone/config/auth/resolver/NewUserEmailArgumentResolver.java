@@ -1,5 +1,6 @@
-package com.pigeon_stargram.sns_clone.config.auth;
+package com.pigeon_stargram.sns_clone.config.auth.resolver;
 
+import com.pigeon_stargram.sns_clone.config.auth.annotation.NewUserEmail;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;

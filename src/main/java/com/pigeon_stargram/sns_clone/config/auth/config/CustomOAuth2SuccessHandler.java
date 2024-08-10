@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.config.auth;
+package com.pigeon_stargram.sns_clone.config.auth.config;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

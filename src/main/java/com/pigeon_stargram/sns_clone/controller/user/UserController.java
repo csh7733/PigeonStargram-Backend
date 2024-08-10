@@ -1,6 +1,6 @@
 package com.pigeon_stargram.sns_clone.controller.user;
 
-import com.pigeon_stargram.sns_clone.config.auth.LoginUser;
+import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.dto.user.response.LoginUserDto;
 import lombok.RequiredArgsConstructor;
