@@ -1,5 +1,6 @@
 package com.pigeon_stargram.sns_clone.domain.follow;
 
+import com.pigeon_stargram.sns_clone.domain.BaseTimeEntity;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,7 +10,7 @@ import lombok.*;
 @Getter
 @NoArgsConstructor
 @Entity
-public class Follow {
+public class Follow extends BaseTimeEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

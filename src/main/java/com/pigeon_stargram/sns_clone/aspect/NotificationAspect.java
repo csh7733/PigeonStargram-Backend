@@ -20,7 +20,7 @@ import java.util.List;
 @Component
 public class NotificationAspect {
 
-//    private final NotificationService notificationService;
+    private final NotificationService notificationService;
     private final FollowService followService;
 
     @After("com.pigeon_stargram.sns_clone" +

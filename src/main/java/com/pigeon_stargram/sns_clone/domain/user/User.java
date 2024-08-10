@@ -1,6 +1,8 @@
 package com.pigeon_stargram.sns_clone.domain.user;
 
+import com.pigeon_stargram.sns_clone.domain.BaseTimeEntity;
 import com.pigeon_stargram.sns_clone.domain.follow.Follow;
+import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
 import jakarta.persistence.*;
@@ -16,7 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @Table(name = "user_entity")
 @Entity
-public class User {
+public class User extends BaseTimeEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -44,6 +46,12 @@ public class User {
 
     @OneToMany(mappedBy = "toUser")
     private List<Follow> followings;
+
+    @OneToMany(mappedBy = "sender")
+    private List<Notification> sentNotifications;
+
+    @OneToMany(mappedBy = "recipient")
+    private List<Notification> receivedNotifications;
 
     public User(String name, String avatar) {
         this.name = name;
