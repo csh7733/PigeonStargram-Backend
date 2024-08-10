@@ -1,5 +1,7 @@
 package com.pigeon_stargram.sns_clone.controller.chat;
 
+import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
+import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.dto.chat.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ChatHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
@@ -30,10 +32,10 @@ public class ChatController {
     private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("/users")
-    public List<UserChatDto> getAllChatPartners() {
+    public List<UserChatDto> getAllChatPartners(@LoginUser SessionUser loginUser) {
+        Long userId = loginUser.getId();
 
-        //임시로 현재 유저ID = 15로 설정
-        return userService.findAllUsersForChat(15L);
+        return userService.findAllUsersForChat(userId);
     }
 
     @GetMapping("/users/{id}")
