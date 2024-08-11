@@ -47,9 +47,6 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "toUser")
     private List<Follow> followings;
 
-    @OneToMany(mappedBy = "sender")
-    private List<Notification> sentNotifications;
-
     @OneToMany(mappedBy = "recipient")
     private List<Notification> receivedNotifications;
 
