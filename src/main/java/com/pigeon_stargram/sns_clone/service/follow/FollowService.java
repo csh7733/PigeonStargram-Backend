@@ -5,14 +5,18 @@ import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.Follow.AddFollowDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.DeleteFollowDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
+import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
+import com.pigeon_stargram.sns_clone.dto.chat.response.UserChatDto;
 import com.pigeon_stargram.sns_clone.repository.follow.FollowRepository;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
+import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,6 +28,7 @@ import java.util.stream.Collectors;
 public class FollowService {
 
     private final UserService userService;
+    private final ChatService chatService;
     private final FollowRepository followRepository;
     private final NotificationService notificationService;
 
@@ -74,5 +79,20 @@ public class FollowService {
         User recipient = userService.findById(dto.getRecipientId());
         Optional<Follow> follow = followRepository.findBysenderAndRecipient(recipient, sender);
         return follow.isPresent();
+    }
+
+    public List<UserChatDto> findFollowersForChat(Long currentUserId) {
+        User currentUser = userService.findById(currentUserId);
+
+        return followRepository.findByRecipient(currentUser).stream()
+                .map(Follow::getSender)
+                .map(user -> {
+                    Integer unReadChatCount = chatService.getUnreadChatCount(currentUserId, user.getId());
+                    LastMessageDto lastMessage = chatService.getLastMessage(currentUserId, user.getId());
+
+                    return new UserChatDto(user, unReadChatCount, lastMessage);
+                })
+                .sorted(Comparator.comparing(UserChatDto::getLastMessage, Comparator.nullsLast(Comparator.reverseOrder())))
+                .collect(Collectors.toList());
     }
 }

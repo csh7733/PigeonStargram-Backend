@@ -1,11 +1,14 @@
 package com.pigeon_stargram.sns_clone.controller.chat;
 
+import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
+import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.dto.chat.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ChatHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.UnReadChatCountDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.UserChatDto;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
+import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,14 +29,15 @@ import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFor
 public class ChatController {
 
     private final ChatService chatService;
+    private final FollowService followService;
     private final UserService userService;
     private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("/users")
-    public List<UserChatDto> getAllChatPartners() {
+    public List<UserChatDto> getAllChatPartners(@LoginUser SessionUser loginUser) {
+        Long userId = loginUser.getId();
 
-        //임시로 현재 유저ID = 15로 설정
-        return userService.findAllUsersForChat(15L);
+        return followService.findFollowersForChat(userId);
     }
 
     @GetMapping("/users/{id}")

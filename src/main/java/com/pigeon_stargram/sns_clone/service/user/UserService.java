@@ -44,21 +44,6 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public List<UserChatDto> findAllUsersForChat(Long currentUserId) {
-        return userRepository.findAll().stream()
-                .map(user -> {
-                    UserChatDto userChatDto = new UserChatDto(user);
-                    Integer unReadChatCount = chatService.getUnreadChatCount(currentUserId, user.getId());
-                    LastMessageDto lastMessage = chatService.getLastMessage(currentUserId, user.getId());
-                    userChatDto.setUnReadChatCount(unReadChatCount);
-                    log.info(lastMessage.getLastMessage());
-                    userChatDto.setLastMessage(lastMessage.getTime());
-                    userChatDto.setStatus(lastMessage.getLastMessage());
-                    return userChatDto;
-                })
-                .collect(Collectors.toList());
-    }
-
     public UserChatDto findUserForChat(Long userId) {
         return new UserChatDto(findById(userId));
     }

@@ -46,6 +46,9 @@ public class UserDto {
     @JsonProperty("online_status")
     private String onlineStatus;
 
+    @Builder.Default
+    private String password = "test";
+
     public User toEntity() {
         return User.builder()
                 .name(name)
@@ -59,6 +62,7 @@ public class UserDto {
                 .avatar(avatar)
                 .birthdayText(birthdayText)
                 .onlineStatus(onlineStatus)
+                .password(password)
                 .build();
     }
 }
