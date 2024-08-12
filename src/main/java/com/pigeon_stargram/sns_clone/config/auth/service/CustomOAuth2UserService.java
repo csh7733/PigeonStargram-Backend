@@ -1,9 +1,9 @@
-package com.pigeon_stargram.sns_clone.config.auth;
+package com.pigeon_stargram.sns_clone.config.auth.service;
 
 import com.pigeon_stargram.sns_clone.config.auth.dto.OAuthAttributes;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
+import com.pigeon_stargram.sns_clone.service.user.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,7 +21,7 @@ import java.util.Collections;
 @Service
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User>{
 
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final HttpSession httpSession;
 
     @Override
@@ -40,21 +40,26 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         OAuthAttributes attributes = OAuthAttributes
                 .of(registrationId, userNameAttributeName, oAuth2User.getAttributes());
 
-        User user = saveOrUpdate(attributes);
-        httpSession.setAttribute("user", new SessionUser(user));
+        User user = userService.findByEmail(attributes.getEmail());
+        boolean isNewUser = (user == null);
 
-        return new DefaultOAuth2User(
-                Collections.singleton(new SimpleGrantedAuthority(user.getRole().getKey())),
-                attributes.getAttributes(),
-                attributes.getNameAttributeKey());
+        if (isNewUser) {
+            httpSession.setAttribute("isNewUser", true);
+            httpSession.setAttribute("email", attributes.getEmail());
 
-    }
+            return new DefaultOAuth2User(
+                    Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
+                    attributes.getAttributes(),
+                    attributes.getNameAttributeKey());
+        } else {
+            httpSession.setAttribute("user", new SessionUser(user));
+            httpSession.setAttribute("isNewUser", false);
 
-    private User saveOrUpdate(OAuthAttributes attributes) {
-        User user = userRepository.findByWorkEmail(attributes.getEmail())
-                .map(entity -> entity.update(attributes.getName(), attributes.getPicture()))
-                .orElse(attributes.toEntity());
+            return new DefaultOAuth2User(
+                    Collections.singleton(new SimpleGrantedAuthority(user.getRole().getKey())),
+                    attributes.getAttributes(),
+                    attributes.getNameAttributeKey());
+        }
 
-        return userRepository.save(user);
     }
 }

@@ -1,6 +1,6 @@
-package com.pigeon_stargram.sns_clone.config.auth;
+package com.pigeon_stargram.sns_clone.config.auth.resolver;
 
-import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
+import com.pigeon_stargram.sns_clone.config.auth.annotation.NewUserEmail;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
@@ -12,16 +12,16 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 @RequiredArgsConstructor
 @Component
-public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver {
+public class NewUserEmailArgumentResolver implements HandlerMethodArgumentResolver {
 
     private final HttpSession httpSession;
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        boolean isLoginUserAnnotation =
-                parameter.getParameterAnnotation(LoginUser.class) != null;
-        boolean isUserClass = SessionUser.class.equals(parameter.getParameterType());
-        return isLoginUserAnnotation && isUserClass;
+        boolean isNewUserEmailAnnotation =
+                parameter.getParameterAnnotation(NewUserEmail.class) != null;
+        boolean isString = String.class.equals(parameter.getParameterType());
+        return isNewUserEmailAnnotation && isString;
     }
 
     @Override
@@ -29,6 +29,6 @@ public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver 
                                   ModelAndViewContainer mavContainer,
                                   NativeWebRequest webRequest,
                                   WebDataBinderFactory binderFactory) throws Exception {
-        return httpSession.getAttribute("user");
+        return httpSession.getAttribute("email");
     }
 }

@@ -1,5 +1,7 @@
 package com.pigeon_stargram.sns_clone.controller.post;
 
+import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
+import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.post.request.createPostDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.PostsDto;
@@ -7,6 +9,7 @@ import com.pigeon_stargram.sns_clone.dto.post.request.EditPostDto;
 import com.pigeon_stargram.sns_clone.dto.post.request.LikePostDto;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
+import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -20,24 +23,21 @@ import java.util.Optional;
 public class PostsController {
 
     private final PostsService postsService;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @GetMapping
-    public List<PostsDto> getPosts(@RequestParam(required = false) Long userId) {
-        if (userId != null) {
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
-            return postsService.getPostsByUser(user);
-        } else {
-            return postsService.getAllPosts();
-        }
+    public List<PostsDto> getPosts(@LoginUser SessionUser loginUser) {
+        User user = userService.findById(loginUser.getId());
+
+//        return postsService.getPostsByUser(user);
+        return postsService.getAllPosts();
     }
 
     @PostMapping
-    public List<PostsDto> createPosts(@RequestBody createPostDto request) {
-        Long userId = request.getUserId();
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
+    public List<PostsDto> createPosts(@LoginUser SessionUser loginUser,
+                                      @RequestBody createPostDto request) {
+        Long userId = loginUser.getId();
+        User user = userService.findById(userId);
 
         String content = request.getContent();
         log.info("userId = {},content = {}",userId,content);
@@ -46,7 +46,9 @@ public class PostsController {
     }
 
     @PatchMapping("/{postId}")
-    public List<PostsDto> editPost(@PathVariable Long postId, @RequestBody EditPostDto request) {
+    public List<PostsDto> editPost(@LoginUser SessionUser loginUser,
+                                   @PathVariable Long postId,
+                                   @RequestBody EditPostDto request) {
         log.info("patch {}",postId);
         String content = request.getContent();
         postsService.editPost(postId,content);
@@ -55,7 +57,8 @@ public class PostsController {
     }
 
     @DeleteMapping("/{postId}")
-    public List<PostsDto> deletePost(@PathVariable Long postId) {
+    public List<PostsDto> deletePost(@LoginUser SessionUser loginUser,
+                                     @PathVariable Long postId) {
         log.info("delete {}",postId);
         postsService.deletePost(postId);
 
@@ -63,9 +66,10 @@ public class PostsController {
     }
 
     @PostMapping("/like")
-    public List<PostsDto> likePost(@RequestBody LikePostDto request) {
-        //테스트용 유저
-        User user = userRepository.findById(1L).get();
+    public List<PostsDto> likePost(@LoginUser SessionUser loginUser,
+                                   @RequestBody LikePostDto request) {
+        Long userId = loginUser.getId();
+        User user = userService.findById(userId);
 
         postsService.likePost(user,request.getPostId());
         return postsService.getAllPosts();

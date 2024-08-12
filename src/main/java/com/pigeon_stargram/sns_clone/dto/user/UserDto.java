@@ -57,7 +57,6 @@ public class UserDto {
                 .personalPhone(personalPhone)
                 .location(location)
                 .avatar(avatar)
-                .status(status)
                 .birthdayText(birthdayText)
                 .onlineStatus(onlineStatus)
                 .build();

@@ -3,6 +3,8 @@ package com.pigeon_stargram.sns_clone.service.user;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.UserChatDto;
+import com.pigeon_stargram.sns_clone.dto.login.request.LoginDto;
+import com.pigeon_stargram.sns_clone.dto.login.request.RegisterDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
@@ -21,12 +23,21 @@ public class UserService {
     private final UserRepository userRepository;
     private final ChatService chatService;
 
+    public User findByWorkEmailAndPassword(String email,String password){
+        return userRepository.findByWorkEmailAndPassword(email,password)
+                .orElse(null);
+    }
+
     public User findById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
     }
 
     public User save(User user) {
         return userRepository.save(user);
+    }
+
+    public User save(RegisterDto userDto) {
+        return userRepository.save(userDto.toEntity());
     }
 
     public List<User> findAll() {
@@ -40,6 +51,7 @@ public class UserService {
                     Integer unReadChatCount = chatService.getUnreadChatCount(currentUserId, user.getId());
                     LastMessageDto lastMessage = chatService.getLastMessage(currentUserId, user.getId());
                     userChatDto.setUnReadChatCount(unReadChatCount);
+                    log.info(lastMessage.getLastMessage());
                     userChatDto.setLastMessage(lastMessage.getTime());
                     userChatDto.setStatus(lastMessage.getLastMessage());
                     return userChatDto;
@@ -58,7 +70,14 @@ public class UserService {
         return userRepository.saveAll(users);
     }
 
+    public User findByEmail(String email) {
+        return userRepository.findByWorkEmail(email).orElse(null);
+    }
     public List<User> saveAllUser(List<User> users) {
         return userRepository.saveAll(users);
+    }
+
+    public void updatePassword(User user,String newPassword){
+        user.updatePassword(newPassword);
     }
 }

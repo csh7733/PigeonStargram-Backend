@@ -8,6 +8,5 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class newReplyDto {
-    private Long userId;
     private String content;
 }

@@ -30,12 +30,14 @@ public class User extends BaseTimeEntity {
     private String personalPhone;
     private String location;
     private String avatar;
-    private String status;
     private String birthdayText;
     private String onlineStatus;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private Role role = Role.USER;
+
+    private String password;
 
 //    @OneToMany(mappedBy = "user")
 //    private List<Posts> posts;
@@ -61,5 +63,9 @@ public class User extends BaseTimeEntity {
         this.name = name;
         this.avatar = avatar;
         return this;
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
     }
 }
