@@ -64,4 +64,22 @@ public class UserChatDto {
         this.onlineStatus = user.getOnlineStatus();
     }
 
+    public UserChatDto(User user,Integer unReadChatCount,LastMessageDto lastMessage) {
+        this.id = user.getId();
+        this.name = user.getName();
+        this.company = user.getCompany();
+        this.workEmail = user.getWorkEmail();
+        this.personalEmail = user.getPersonalEmail();
+        this.workPhone = user.getWorkPhone();
+        this.personalPhone = user.getPersonalPhone();
+        this.location = user.getLocation();
+        this.avatar = user.getAvatar();
+        this.status = lastMessage.getLastMessage();
+        this.lastMessage = lastMessage.getTime();
+        this.birthdayText = user.getBirthdayText();
+        //temp
+        this.unReadChatCount = unReadChatCount;
+        this.onlineStatus = user.getOnlineStatus();
+    }
+
 }

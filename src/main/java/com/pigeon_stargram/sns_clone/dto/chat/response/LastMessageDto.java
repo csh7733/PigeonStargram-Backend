@@ -8,7 +8,6 @@ import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.formatTime;
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
 @Builder
 public class LastMessageDto {
     private Long user1Id;
@@ -21,5 +20,9 @@ public class LastMessageDto {
         this.user2Id = lastMessage.getUser2Id();
         this.lastMessage = lastMessage.getLastMessage();
         this.time = formatTime(lastMessage.getCreatedDate());
+    }
+
+    public LastMessageDto(){
+        this.lastMessage = "대화 기록 없음";
     }
 }

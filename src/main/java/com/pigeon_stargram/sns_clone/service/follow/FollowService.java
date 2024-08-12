@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -67,18 +68,16 @@ public class FollowService {
 
     public List<UserChatDto> findFollowersForChat(Long currentUserId) {
         User currentUser = userService.findById(currentUserId);
+
         return followRepository.findByToUser(currentUser).stream()
                 .map(Follow::getFromUser)
                 .map(user -> {
-                    UserChatDto userChatDto = new UserChatDto(user);
                     Integer unReadChatCount = chatService.getUnreadChatCount(currentUserId, user.getId());
                     LastMessageDto lastMessage = chatService.getLastMessage(currentUserId, user.getId());
-                    userChatDto.setUnReadChatCount(unReadChatCount);
-                    log.info(lastMessage.getLastMessage());
-                    userChatDto.setLastMessage(lastMessage.getTime());
-                    userChatDto.setStatus(lastMessage.getLastMessage());
-                    return userChatDto;
+
+                    return new UserChatDto(user, unReadChatCount, lastMessage);
                 })
+                .sorted(Comparator.comparing(UserChatDto::getLastMessage, Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
     }
 }
