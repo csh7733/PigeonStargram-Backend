@@ -9,14 +9,14 @@ import lombok.*;
 @AllArgsConstructor
 public class LoginUserDto {
     private Boolean isLoggedIn;
-    private Long userId;
+    private Long user;
     private String name;
     private String company;
     private String avatar;
 
     public LoginUserDto(User user) {
         isLoggedIn = true;
-        this.userId = user.getId();
+        this.user = user.getId();
         this.name = user.getName();
         this.company = user.getCompany();
         this.avatar = user.getAvatar();
