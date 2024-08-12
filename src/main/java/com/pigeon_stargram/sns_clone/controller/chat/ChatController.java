@@ -8,6 +8,7 @@ import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.UnReadChatCountDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.UserChatDto;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
+import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFor
 public class ChatController {
 
     private final ChatService chatService;
+    private final FollowService followService;
     private final UserService userService;
     private final SimpMessagingTemplate messagingTemplate;
 
@@ -35,7 +37,7 @@ public class ChatController {
     public List<UserChatDto> getAllChatPartners(@LoginUser SessionUser loginUser) {
         Long userId = loginUser.getId();
 
-        return userService.findAllUsersForChat(userId);
+        return followService.findFollowersForChat(userId);
     }
 
     @GetMapping("/users/{id}")
