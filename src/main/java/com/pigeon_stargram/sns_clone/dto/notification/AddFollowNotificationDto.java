@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.dto.Follow;
+package com.pigeon_stargram.sns_clone.dto.notification;
 
 import lombok.*;
 
@@ -7,7 +7,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DeleteFollowDto {
+public class AddFollowNotificationDto {
 
     private Long senderId;
     private Long recipientId;

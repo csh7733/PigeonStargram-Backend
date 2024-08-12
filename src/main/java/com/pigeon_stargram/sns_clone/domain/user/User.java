@@ -1,16 +1,15 @@
 package com.pigeon_stargram.sns_clone.domain.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pigeon_stargram.sns_clone.domain.BaseTimeEntity;
 import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
-import com.pigeon_stargram.sns_clone.domain.post.Posts;
-import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
 
-@ToString(exclude = {"followers", "followings"})
+@ToString(exclude = {"followers", "followings", "receivedNotifications"})
 @EqualsAndHashCode
 @Getter
 @Builder
@@ -41,12 +40,15 @@ public class User extends BaseTimeEntity {
 //    @OneToMany(mappedBy = "user")
 //    private List<Posts> posts;
 
-    @OneToMany(mappedBy = "fromUser")
+    @JsonIgnore
+    @OneToMany(mappedBy = "sender")
     private List<Follow> followers;
 
-    @OneToMany(mappedBy = "toUser")
+    @JsonIgnore
+    @OneToMany(mappedBy = "recipient")
     private List<Follow> followings;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "recipient")
     private List<Notification> receivedNotifications;
 

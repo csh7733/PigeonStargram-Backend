@@ -11,9 +11,9 @@ import java.util.List;
 
 public interface ChatRepository extends JpaRepository<Chat, Long> {
 
-    @Query("SELECT c FROM TextChat c WHERE (c.fromUserId = :user1Id AND c.toUserId = :user2Id) OR (c.fromUserId = :user2Id AND c.toUserId = :user1Id)")
+    @Query("SELECT c FROM TextChat c WHERE (c.senderId = :user1Id AND c.recipientId = :user2Id) OR (c.senderId = :user2Id AND c.recipientId = :user1Id)")
     List<TextChat> findTextChatsBetweenUsers(@Param("user1Id") Long user1Id, @Param("user2Id") Long user2Id);
 
-    @Query("SELECT c FROM ImageChat c WHERE (c.fromUserId = :user1Id AND c.toUserId = :user2Id) OR (c.fromUserId = :user2Id AND c.toUserId = :user1Id)")
+    @Query("SELECT c FROM ImageChat c WHERE (c.senderId = :user1Id AND c.recipientId = :user2Id) OR (c.senderId = :user2Id AND c.recipientId = :user1Id)")
     List<ImageChat> findImageChatsBetweenUsers(@Param("user1Id") Long user1Id, @Param("user2Id") Long user2Id);
 }

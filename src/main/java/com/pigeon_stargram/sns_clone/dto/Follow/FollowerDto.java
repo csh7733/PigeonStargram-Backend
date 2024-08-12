@@ -38,8 +38,8 @@ public class FollowerDto {
     // temporary
     public Follow toEntity(User user) {
         return Follow.builder()
-                .fromUser(user)
-                .toUser(user)
+                .sender(user)
+                .recipient(user)
                 .build();
     }
 }

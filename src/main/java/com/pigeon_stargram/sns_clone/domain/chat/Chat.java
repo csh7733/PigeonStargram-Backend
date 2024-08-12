@@ -5,8 +5,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Getter
 @NoArgsConstructor
 @Entity
@@ -19,13 +17,13 @@ public abstract class Chat extends BaseTimeEntity {
     private Long id;
 
     @Column(nullable = false)
-    private Long fromUserId;
+    private Long senderId;
 
     @Column(nullable = false)
-    private Long toUserId;
+    private Long recipientId;
 
-    public Chat(Long fromUserId, Long toUserId) {
-        this.fromUserId = fromUserId;
-        this.toUserId = toUserId;
+    public Chat(Long senderId, Long recipientId) {
+        this.senderId = senderId;
+        this.recipientId = recipientId;
     }
 }

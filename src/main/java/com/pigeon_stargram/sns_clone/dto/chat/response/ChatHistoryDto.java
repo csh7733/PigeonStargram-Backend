@@ -21,15 +21,15 @@ public class ChatHistoryDto {
     private String time;
 
     public ChatHistoryDto(TextChat textChat) {
-        this.from = textChat.getFromUserId();
-        this.to = textChat.getToUserId();
+        this.from = textChat.getSenderId();
+        this.to = textChat.getRecipientId();
         this.text = textChat.getText();
         this.time = formatTime(textChat.getCreatedDate());
     }
 
     public ChatHistoryDto(ImageChat imageChat) {
-        this.from = imageChat.getFromUserId();
-        this.to = imageChat.getToUserId();
+        this.from = imageChat.getSenderId();
+        this.to = imageChat.getRecipientId();
         this.text = imageChat.getImagePath();
         this.time = formatTime(imageChat.getCreatedDate());
     }

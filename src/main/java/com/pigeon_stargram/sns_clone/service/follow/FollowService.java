@@ -6,11 +6,12 @@ import com.pigeon_stargram.sns_clone.dto.Follow.AddFollowDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.DeleteFollowDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
 import com.pigeon_stargram.sns_clone.repository.follow.FollowRepository;
-import com.pigeon_stargram.sns_clone.aspect.NotificationAspect;
+import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,57 +19,60 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 @Service
 public class FollowService {
 
     private final UserService userService;
-    private final NotificationAspect notificationService;
     private final FollowRepository followRepository;
+    private final NotificationService notificationService;
 
     public Follow createFollow(AddFollowDto dto) {
-        User fromUser = userService.findById(dto.getFromId());
-        User toUser = userService.findById(dto.getToId());
-        followRepository.findByFromUserAndToUser(fromUser, toUser)
+        User sender = userService.findById(dto.getSenderId());
+        User recipient = userService.findById(dto.getRecipientId());
+        followRepository.findBysenderAndRecipient(sender, recipient)
                 .ifPresent(follow -> {
                     throw new IllegalArgumentException("이미 팔로우 중입니다.");
                 });
-        return followRepository.save(dto.toEntity(fromUser, toUser));
+
+        notificationService.save(dto);
+        return followRepository.save(dto.toEntity(sender, recipient));
     }
 
     public void deleteFollow(DeleteFollowDto dto){
-        User fromUser = userService.findById(dto.getFromId());
-        User toUser = userService.findById(dto.getToId());
-        followRepository.findByFromUserAndToUser(fromUser, toUser)
+        User sender = userService.findById(dto.getSenderId());
+        User recipient = userService.findById(dto.getRecipientId());
+        followRepository.findBysenderAndRecipient(sender, recipient)
                 .ifPresent(followRepository::delete);
     }
 
     public List<FollowerDto> findFollowers(Long userId) {
         User user = userService.findById(userId);
 
-        return followRepository.findByToUser(user).stream()
-                .map(Follow::getFromUser)
-                .map(fromUser -> new FollowerDto(fromUser, 1))
+        return followRepository.findByRecipient(user).stream()
+                .map(Follow::getSender)
+                .map(sender -> new FollowerDto(sender, 1))
                 .toList();
     }
 
     public List<FollowerDto> findFollowings(Long userId) {
         User user = userService.findById(userId);
-        return followRepository.findByFromUser(user).stream()
-                .map(Follow::getToUser)
-                .map(toUser -> new FollowerDto(toUser, 1))
+        return followRepository.findBySender(user).stream()
+                .map(Follow::getRecipient)
+                .map(recipient -> new FollowerDto(recipient, 1))
                 .toList();
     }
 
     public List<User> findAll(){
         return followRepository.findAll().stream()
-                .map(Follow::getToUser)
+                .map(Follow::getRecipient)
                 .collect(Collectors.toList());
     }
 
     public Boolean isFollowBack(AddFollowDto dto) {
-        User fromUser = userService.findById(dto.getFromId());
-        User toUser = userService.findById(dto.getToId());
-        Optional<Follow> follow = followRepository.findByFromUserAndToUser(toUser, fromUser);
+        User sender = userService.findById(dto.getSenderId());
+        User recipient = userService.findById(dto.getRecipientId());
+        Optional<Follow> follow = followRepository.findBysenderAndRecipient(recipient, sender);
         return follow.isPresent();
     }
 }

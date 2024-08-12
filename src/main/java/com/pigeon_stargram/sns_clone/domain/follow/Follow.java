@@ -15,16 +15,18 @@ public class Follow extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "from_user_id")
-    private User fromUser;
+    @JoinColumn(name = "sender_id")
+    private User sender;
 
     @ManyToOne
-    @JoinColumn(name = "to_user_id")
-    private User toUser;
+    @JoinColumn(name = "recipient_id")
+    private User recipient;
 
     @Builder
-    public Follow(User fromUser, User toUser) {
-        this.fromUser = fromUser;
-        this.toUser = toUser;
+    public Follow(User sender, User recipient) {
+        this.sender = sender;
+        this.recipient = recipient;
     }
+
+
 }
