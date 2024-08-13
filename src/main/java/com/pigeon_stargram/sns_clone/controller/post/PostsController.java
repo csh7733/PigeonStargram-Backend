@@ -26,11 +26,11 @@ public class PostsController {
     private final UserService userService;
 
     @GetMapping
-    public List<PostsDto> getPosts(@LoginUser SessionUser loginUser) {
-        User user = userService.findById(loginUser.getId());
+    public List<PostsDto> getPosts(@RequestParam Long userId) {
+        User user = userService.findById(userId);
 
-//        return postsService.getPostsByUser(user);
-        return postsService.getAllPosts();
+        return postsService.getPostsByUser(user);
+//        return postsService.getAllPosts();
     }
 
     @PostMapping
