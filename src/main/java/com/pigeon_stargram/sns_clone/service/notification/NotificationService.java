@@ -4,6 +4,7 @@ package com.pigeon_stargram.sns_clone.service.notification;
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
 import com.pigeon_stargram.sns_clone.repository.notification.NotificationRepository;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import com.pigeon_stargram.sns_clone.worker.NotificationWorker;
@@ -35,7 +36,34 @@ public class NotificationService {
         return notificationRepository.saveAll(notifications);
     }
 
-    public Optional<Notification> findById(Long id) {
-        return notificationRepository.findById(id);
+    public List<Notification> findByUserId(Long userId) {
+        User recipient = userService.findById(userId);
+        return notificationRepository.findAllByRecipient(recipient);
     }
+
+    public ResponseNotificationDto readNotification(Long id) {
+        Notification notification = notificationRepository.findById(id).get();
+        notification.setRead(true);
+        return toResponseDto(notification);
+    }
+
+    public List<ResponseNotificationDto> readNotifications(User user) {
+        List<Notification> notifications = notificationRepository.findAllByRecipient(user);
+        notifications.forEach(notification -> {
+            notification.setRead(true);
+        });
+        return notifications.stream()
+                .map(this::toResponseDto)
+                .toList();
+    }
+
+    public ResponseNotificationDto toResponseDto(Notification notification) {
+        return ResponseNotificationDto.builder()
+                .name(notification.getSender().getName())
+                .content(notification.getMessage())
+                .createdTime(notification.getCreatedDate())
+                .isRead(notification.getIsRead())
+                .build();
+    }
+
 }

@@ -29,6 +29,10 @@ public class Notification extends BaseTimeEntity {
     private String redirectUrl;
     private Boolean isRead;
 
+    public void setRead(Boolean read) {
+        isRead = read;
+    }
+
     @Builder
     public Notification(User sender, User recipient,
                         NotificationType type, String message,

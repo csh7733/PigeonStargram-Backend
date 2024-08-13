@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final ChatService chatService;
 
     public User findByWorkEmailAndPassword(String email,String password){
         return userRepository.findByWorkEmailAndPassword(email,password)
