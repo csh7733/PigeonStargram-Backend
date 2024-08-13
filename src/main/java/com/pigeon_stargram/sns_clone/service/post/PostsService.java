@@ -17,6 +17,7 @@ import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -51,6 +52,7 @@ public class PostsService {
         dto.setNotificationRecipientIds(notificationRecipientIds);
 
         notificationService.save(dto);
+
         return postsRepository.save(post);
     }
 
@@ -98,14 +100,22 @@ public class PostsService {
 
     public List<PostsDto> getPostsByUser(User user) {
         List<Posts> posts = postsRepository.findByUserId(user.getId());
-        return posts.stream()
-                .sorted(Comparator.comparing(Posts::getId).reversed())
-                .map(post -> {
-                    List<CommentDto> comments = commentService.getCommentListByPost(post.getId());
-                    return new PostsDto(post, comments);
-                })
+
+        List<Long> postIds = getPostIdListByUser(posts);
+
+        return postIds.stream()
+                .map(this::getPostById)
                 .collect(Collectors.toList());
     }
+
+    private static List<Long> getPostIdListByUser(List<Posts> posts) {
+        List<Long> postIds = posts.stream()
+                .map(Posts::getId)
+                .sorted(Comparator.reverseOrder())
+                .collect(Collectors.toList());
+        return postIds;
+    }
+
 
     public List<PostsDto> getAllPosts() {
         List<Posts> posts = postsRepository.findAll();
@@ -117,6 +127,16 @@ public class PostsService {
                 })
                 .collect(Collectors.toList());
     }
+
+    public PostsDto getPostById(Long postId) {
+        Posts post = postsRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found with id " + postId));
+
+        List<CommentDto> comments = commentService.getCommentListByPost(post.getId());
+
+        return new PostsDto(post, comments);
+    }
+
 
     public Posts getPostEntity(Long postId) {
         return postsRepository.findById(postId)
