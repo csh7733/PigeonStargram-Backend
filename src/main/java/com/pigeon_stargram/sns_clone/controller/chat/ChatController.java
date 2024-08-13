@@ -3,6 +3,7 @@ package com.pigeon_stargram.sns_clone.controller.chat;
 import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
 import com.pigeon_stargram.sns_clone.dto.chat.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.request.RequestOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.*;
@@ -66,6 +67,8 @@ public class ChatController {
         String onlineStatus = request.getOnlineStatus();
 
         userService.updateOnlineStatus(user,onlineStatus);
+
+        sentOnlineStatus(id,onlineStatus);
     }
 
     @MessageMapping("/chat/{user1Id}/{user2Id}")
@@ -99,6 +102,16 @@ public class ChatController {
         messagingTemplate.convertAndSend(destination1, lastMessage);
         messagingTemplate.convertAndSend(destination2, lastMessage);
     }
-    
+
+    public void sentOnlineStatus(Long userId, String onlineStatus) {
+        List<FollowerDto> followers = followService.findFollowers(userId);
+
+        followers.stream()
+                .map(FollowerDto::getId)
+                .forEach(followerId -> {
+                    String destination = "/topic/users/status/" + followerId;
+                    messagingTemplate.convertAndSend(destination, new ResponseOnlineStatusDto(userId, onlineStatus));
+                });
+    }
 
 }

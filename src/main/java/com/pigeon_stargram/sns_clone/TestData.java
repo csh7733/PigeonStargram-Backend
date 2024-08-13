@@ -83,7 +83,6 @@ public class TestData {
         followService.createFollow(new AddFollowDto(8L, 8L));
         followService.createFollow(new AddFollowDto(9L, 9L));
         followService.createFollow(new AddFollowDto(10L, 10L));
-        followService.createFollow(new AddFollowDto(11L, 11L));
         followService.createFollow(new AddFollowDto(12L, 12L));
         followService.createFollow(new AddFollowDto(13L, 13L));
         followService.createFollow(new AddFollowDto(14L, 14L));
@@ -112,6 +111,7 @@ public class TestData {
         followService.createFollow(new AddFollowDto(9L, 4L));
         followService.createFollow(new AddFollowDto(10L, 5L));
         followService.createFollow(new AddFollowDto(11L, 6L));
+        followService.createFollow(new AddFollowDto(11L, 3L));
         followService.createFollow(new AddFollowDto(12L, 7L));
         followService.createFollow(new AddFollowDto(13L, 8L));
         followService.createFollow(new AddFollowDto(14L, 9L));

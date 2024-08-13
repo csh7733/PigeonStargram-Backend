@@ -8,5 +8,10 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class ResponseOnlineStatusDto {
+    private Long userId;
     private String onlineStatus;
+
+    public ResponseOnlineStatusDto(String onlineStatus){
+        this.onlineStatus = onlineStatus;
+    }
 }
