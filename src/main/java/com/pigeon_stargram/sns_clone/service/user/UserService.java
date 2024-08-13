@@ -8,6 +8,7 @@ import com.pigeon_stargram.sns_clone.dto.login.request.RegisterDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 @Service
 public class UserService {
 
@@ -53,6 +55,14 @@ public class UserService {
                 .map(UserDto::toEntity)
                 .collect(Collectors.toList());
         return userRepository.saveAll(users);
+    }
+
+    public void updateOnlineStatus(User user,String onlineStatus){
+        user.updateOnlineStatus(onlineStatus);
+    }
+
+    public String getOnlineStatus(User user){
+        return user.getOnlineStatus();
     }
 
     public User findByEmail(String email) {

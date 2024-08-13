@@ -2,11 +2,10 @@ package com.pigeon_stargram.sns_clone.controller.chat;
 
 import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
+import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.chat.NewChatDto;
-import com.pigeon_stargram.sns_clone.dto.chat.response.ChatHistoryDto;
-import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
-import com.pigeon_stargram.sns_clone.dto.chat.response.UnReadChatCountDto;
-import com.pigeon_stargram.sns_clone.dto.chat.response.UserChatDto;
+import com.pigeon_stargram.sns_clone.dto.chat.request.RequestOnlineStatusDto;
+import com.pigeon_stargram.sns_clone.dto.chat.response.*;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -52,6 +51,23 @@ public class ChatController {
         return chatService.getUserChats(user1Id, user2Id);
     }
 
+    @GetMapping("/users/{id}/online-status")
+    public ResponseOnlineStatusDto getOnlineStatus(@PathVariable Long id) {
+        User user = userService.findById(id);
+        String onlineStatus = userService.getOnlineStatus(user);
+
+        return new ResponseOnlineStatusDto(onlineStatus);
+    }
+
+    @PutMapping("/users/{id}/online-status")
+    public void setOnlineStatus(@PathVariable Long id,
+                                @RequestBody RequestOnlineStatusDto request) {
+        User user = userService.findById(id);
+        String onlineStatus = request.getOnlineStatus();
+
+        userService.updateOnlineStatus(user,onlineStatus);
+    }
+
     @MessageMapping("/chat/{user1Id}/{user2Id}")
     @SendTo("/topic/chat/{user1Id}/{user2Id}")
     public NewChatDto sendMessage(@Payload NewChatDto chatMessage) {
@@ -76,11 +92,13 @@ public class ChatController {
         String destination = "/topic/users/status/" + toUserId;
         messagingTemplate.convertAndSend(destination, new UnReadChatCountDto(fromUserId,count));
     }
+
     public void sentLastMessage(Long user1Id, Long user2Id,LastMessageDto lastMessage) {
         String destination1 = "/topic/users/status/" + user1Id;
         String destination2 = "/topic/users/status/" + user2Id;
         messagingTemplate.convertAndSend(destination1, lastMessage);
         messagingTemplate.convertAndSend(destination2, lastMessage);
     }
+    
 
 }
