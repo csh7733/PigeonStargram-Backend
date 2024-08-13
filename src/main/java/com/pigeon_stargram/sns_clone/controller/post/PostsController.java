@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone.controller.post;
 
 import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
+import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.post.CreatePostDto;
 import com.pigeon_stargram.sns_clone.dto.post.LikePostDto;
@@ -30,26 +31,26 @@ public class PostsController {
         User user = userService.findById(userId);
 
         return postsService.getPostsByUser(user);
-//        return postsService.getAllPosts();
     }
 
     @PostMapping
-    public List<PostsDto> createPosts(@LoginUser SessionUser loginUser,
+    public PostsDto createPosts(@LoginUser SessionUser loginUser,
                                       @RequestBody RequestCreatePostDto request) {
         Long userId = loginUser.getId();
         User user = userService.findById(userId);
 
         String content = request.getContent();
-        log.info("userId = {},content = {}",userId,content);
-        postsService.createPost(new CreatePostDto(user, content));
-        return postsService.getAllPosts();
+
+        Posts post = postsService.createPost(new CreatePostDto(user, content));
+
+        return postsService.getPostById(post.getId());
     }
 
     @PatchMapping("/{postId}")
     public List<PostsDto> editPost(@LoginUser SessionUser loginUser,
                                    @PathVariable Long postId,
                                    @RequestBody RequestEditPostDto request) {
-        log.info("patch {}",postId);
+
         String content = request.getContent();
         postsService.editPost(postId,content);
 
