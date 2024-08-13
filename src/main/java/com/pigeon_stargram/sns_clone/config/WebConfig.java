@@ -44,6 +44,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(sessionExpiredInterceptor)
                 .addPathPatterns("/**")
-                .excludePathPatterns("/api/session/**");
+                .excludePathPatterns("/api/session/**")
+                .excludePathPatterns("/api/chat/test/**");
     }
 }

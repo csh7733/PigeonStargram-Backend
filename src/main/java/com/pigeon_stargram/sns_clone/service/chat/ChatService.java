@@ -13,6 +13,7 @@ import com.pigeon_stargram.sns_clone.repository.chat.LastMessageRepository;
 import com.pigeon_stargram.sns_clone.repository.chat.UnReadChatRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
@@ -20,9 +21,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFormattedTime;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class ChatService {
 
     private final ChatRepository chatRepository;
@@ -100,7 +104,11 @@ public class ChatService {
 
         lastMessageEntity.update(lastMessageText);
 
-        return new LastMessageDto(lastMessageRepository.save(lastMessageEntity));
+        //실시간 반영
+        LastMessageDto lastMessageDto = new LastMessageDto(lastMessageRepository.save(lastMessageEntity));
+        lastMessageDto.setTime(getCurrentFormattedTime());
+
+        return lastMessageDto;
     }
 
 

@@ -8,6 +8,7 @@ import com.pigeon_stargram.sns_clone.dto.login.request.RegisterDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 @Service
 public class UserService {
 
@@ -44,21 +46,6 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public List<UserChatDto> findAllUsersForChat(Long currentUserId) {
-        return userRepository.findAll().stream()
-                .map(user -> {
-                    UserChatDto userChatDto = new UserChatDto(user);
-                    Integer unReadChatCount = chatService.getUnreadChatCount(currentUserId, user.getId());
-                    LastMessageDto lastMessage = chatService.getLastMessage(currentUserId, user.getId());
-                    userChatDto.setUnReadChatCount(unReadChatCount);
-                    log.info(lastMessage.getLastMessage());
-                    userChatDto.setLastMessage(lastMessage.getTime());
-                    userChatDto.setStatus(lastMessage.getLastMessage());
-                    return userChatDto;
-                })
-                .collect(Collectors.toList());
-    }
-
     public UserChatDto findUserForChat(Long userId) {
         return new UserChatDto(findById(userId));
     }
@@ -68,6 +55,14 @@ public class UserService {
                 .map(UserDto::toEntity)
                 .collect(Collectors.toList());
         return userRepository.saveAll(users);
+    }
+
+    public void updateOnlineStatus(User user,String onlineStatus){
+        user.updateOnlineStatus(onlineStatus);
+    }
+
+    public String getOnlineStatus(User user){
+        return user.getOnlineStatus();
     }
 
     public User findByEmail(String email) {
