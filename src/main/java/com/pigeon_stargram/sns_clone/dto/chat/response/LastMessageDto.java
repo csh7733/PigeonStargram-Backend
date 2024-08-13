@@ -19,7 +19,7 @@ public class LastMessageDto {
         this.user1Id = lastMessage.getUser1Id();
         this.user2Id = lastMessage.getUser2Id();
         this.lastMessage = lastMessage.getLastMessage();
-        this.time = formatTime(lastMessage.getCreatedDate());
+        this.time = formatTime(lastMessage.getModifiedDate());
     }
 
     public LastMessageDto(){
