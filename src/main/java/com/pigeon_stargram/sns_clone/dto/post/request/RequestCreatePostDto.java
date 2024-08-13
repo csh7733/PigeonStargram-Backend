@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.dto.reply.request;
+package com.pigeon_stargram.sns_clone.dto.post.request;
 
 import lombok.*;
 
@@ -7,6 +7,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class EditReplyDto {
+public class RequestCreatePostDto {
+
     private String content;
 }

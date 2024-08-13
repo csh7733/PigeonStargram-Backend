@@ -2,12 +2,14 @@ package com.pigeon_stargram.sns_clone.service.comment;
 
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.comment.CommentLike;
-import com.pigeon_stargram.sns_clone.domain.post.Posts;
-import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.comment.CreateCommentDto;
+import com.pigeon_stargram.sns_clone.dto.comment.LikeCommentDto;
+import com.pigeon_stargram.sns_clone.dto.comment.request.RequestLikeCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.CommentDto;
 import com.pigeon_stargram.sns_clone.dto.reply.response.ReplyDto;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentRepository;
+import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -24,15 +26,16 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentLikeRepository commentLikeRepository;
     private final ReplyService replyService;
+    private final NotificationService notificationService;
 
-    public Comment createComment(User user, Posts post, String content) {
+    public Comment createComment(CreateCommentDto dto) {
         Comment comment = Comment.builder()
-                .user(user)
-                .post(post)
-                .content(content)
+                .user(dto.getUser())
+                .post(dto.getPost())
+                .content(dto.getContent())
                 .build();
         commentRepository.save(comment);
-
+        notificationService.save(dto);
         return comment;
     }
 
@@ -66,10 +69,11 @@ public class CommentService {
         comment.modify(newContent);
     }
 
-    public void likeComment(User user, Long commentId) {
-        Comment comment = getCommentEntity(commentId);
+    public void likeComment(LikeCommentDto dto) {
+        Comment comment = getCommentEntity(dto.getCommentId());
+        dto.setWriterId(comment.getUser().getId());
 
-        commentLikeRepository.findByUserAndComment(user, comment)
+        commentLikeRepository.findByUserAndComment(dto.getUser(), comment)
                 .ifPresentOrElse(
                         existingLike -> {
                             commentLikeRepository.delete(existingLike);
@@ -77,11 +81,13 @@ public class CommentService {
                         },
                         () -> {
                             CommentLike commentLike = CommentLike.builder()
-                                    .user(user)
+                                    .user(dto.getUser())
                                     .comment(comment)
                                     .build();
                             commentLikeRepository.save(commentLike);
                             comment.incrementLikes();
+
+                            notificationService.save(dto);
                         }
                 );
     }

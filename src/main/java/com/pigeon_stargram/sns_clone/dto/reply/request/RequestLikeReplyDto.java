@@ -8,7 +8,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LikeReplyDto {
+public class RequestLikeReplyDto {
 
     @JsonProperty("replayId")
     private Long replyId;

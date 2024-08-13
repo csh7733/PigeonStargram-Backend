@@ -29,14 +29,15 @@ public class FollowService {
 
     public Follow createFollow(AddFollowDto dto) {
         User sender = userService.findById(dto.getSenderId());
-        User recipient = userService.findById(dto.getRecipientId());
+        User recipient = userService.findById(dto.getRecipientIds().getFirst());
         followRepository.findBysenderAndRecipient(sender, recipient)
                 .ifPresent(follow -> {
                     throw new IllegalArgumentException("이미 팔로우 중입니다.");
                 });
 
+        Follow follow = followRepository.save(dto.toEntity(sender, recipient));
         notificationService.save(dto);
-        return followRepository.save(dto.toEntity(sender, recipient));
+        return follow;
     }
 
     public void deleteFollow(DeleteFollowDto dto){
@@ -55,6 +56,13 @@ public class FollowService {
                 .toList();
     }
 
+    public List<Follow> findFollows(Long userId) {
+        User user = userService.findById(userId);
+
+        return followRepository.findByRecipient(user).stream()
+                .toList();
+    }
+
     public List<FollowerDto> findFollowings(Long userId) {
         User user = userService.findById(userId);
         return followRepository.findBySender(user).stream()
@@ -69,10 +77,10 @@ public class FollowService {
                 .collect(Collectors.toList());
     }
 
-    public Boolean isFollowBack(AddFollowDto dto) {
-        User sender = userService.findById(dto.getSenderId());
-        User recipient = userService.findById(dto.getRecipientId());
-        Optional<Follow> follow = followRepository.findBysenderAndRecipient(recipient, sender);
-        return follow.isPresent();
-    }
+//    public Boolean isFollowBack(AddFollowDto dto) {
+//        User sender = userService.findById(dto.getSenderId());
+//        User recipient = userService.findById(dto.getRecipientIds());
+//        Optional<Follow> follow = followRepository.findBysenderAndRecipient(recipient, sender);
+//        return follow.isPresent();
+//    }
 }

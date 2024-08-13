@@ -7,7 +7,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddReplyDto {
+public class RequestAddReplyDto {
     private Long commentId;
     private newReplyDto reply;
 }

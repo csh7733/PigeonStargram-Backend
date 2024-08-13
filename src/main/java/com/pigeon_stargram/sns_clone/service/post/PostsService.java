@@ -1,34 +1,56 @@
 package com.pigeon_stargram.sns_clone.service.post;
 
+import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.post.Image;
 import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.domain.post.PostsLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 
+import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.CommentDto;
+import com.pigeon_stargram.sns_clone.dto.post.CreatePostDto;
+import com.pigeon_stargram.sns_clone.dto.post.LikePostDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.PostsDto;
 import com.pigeon_stargram.sns_clone.repository.post.PostsLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.post.PostsRepository;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
+import com.pigeon_stargram.sns_clone.service.follow.FollowService;
+import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
+@Slf4j
 @RequiredArgsConstructor
+@Transactional
+@Service
 public class PostsService {
 
     private final PostsRepository postsRepository;
     private final PostsLikeRepository postsLikeRepository;
     private final CommentService commentService;
-    private final ReplyService replyService;
+    private final FollowService followService;
+    private final NotificationService notificationService;
 
-    public Posts createPost(User user, String content) {
-        Posts post = new Posts(user,content);
+    public Posts createPost(CreatePostDto dto) {
+        Posts post = new Posts(dto.getUser(), dto.getContent());
+
+        List<Follow> follows = followService.findFollows(dto.getUser().getId());
+        List<Long> notificationRecipientIds = followService.findFollows(dto.getUser().getId()).stream()
+                .filter(Follow::getIsNotificationEnabled)
+                .map(follow -> follow.getRecipient().getId())
+                .toList();
+        dto.setNotificationRecipientIds(notificationRecipientIds);
+
+        notificationService.save(dto);
         return postsRepository.save(post);
     }
 
@@ -55,19 +77,21 @@ public class PostsService {
         postsRepository.delete(post);
     }
 
-    public void likePost(User user, Long postId) {
-        Posts post = getPostEntity(postId);
+    public void likePost(LikePostDto dto) {
+        Posts post = getPostEntity(dto.getPostId());
+        dto.setWriterId(post.getUser().getId());
 
-        postsLikeRepository.findByUserAndPost(user, post)
+        postsLikeRepository.findByUserAndPost(dto.getUser(), post)
                 .ifPresentOrElse(
                         existingLike -> {
                             postsLikeRepository.delete(existingLike);
                             post.decrementLikes();
                         },
                         () -> {
-                            PostsLike postsLike = new PostsLike(user, post);
+                            PostsLike postsLike = new PostsLike(dto.getUser(), post);
                             postsLikeRepository.save(postsLike);
                             post.incrementLikes();
+                            notificationService.save(dto);
                         }
                 );
     }

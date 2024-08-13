@@ -22,11 +22,16 @@ public class Follow extends BaseTimeEntity {
     @JoinColumn(name = "recipient_id")
     private User recipient;
 
+    private Boolean isNotificationEnabled;
+
     @Builder
-    public Follow(User sender, User recipient) {
+    public Follow(User sender, User recipient, Boolean isNotificationEnabled) {
         this.sender = sender;
         this.recipient = recipient;
+        this.isNotificationEnabled = isNotificationEnabled;
     }
 
-
+    public void toggleNotificationEnabled() {
+        isNotificationEnabled = !isNotificationEnabled;
+    }
 }

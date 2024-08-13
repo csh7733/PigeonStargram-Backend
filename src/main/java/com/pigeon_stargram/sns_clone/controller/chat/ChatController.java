@@ -44,7 +44,6 @@ public class ChatController {
 
     @GetMapping("/chats")
     public List<ChatHistoryDto> getCurrentChatHistory(@RequestParam Long user1Id, @RequestParam Long user2Id) {
-
         return chatService.getUserChats(user1Id, user2Id);
     }
 

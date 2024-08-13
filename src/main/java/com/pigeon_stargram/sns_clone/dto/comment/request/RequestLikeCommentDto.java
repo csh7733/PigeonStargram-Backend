@@ -7,6 +7,6 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LikeCommentDto {
+public class RequestLikeCommentDto {
     private Long commentId;
 }

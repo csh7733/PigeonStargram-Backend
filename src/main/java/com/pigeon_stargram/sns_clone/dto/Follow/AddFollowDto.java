@@ -8,6 +8,7 @@ import com.pigeon_stargram.sns_clone.domain.user.User;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,7 @@ public class AddFollowDto implements NotificationConvertable {
         return Follow.builder()
                 .sender(sender)
                 .recipient(recipient)
+                .isNotificationEnabled(true)
                 .build();
     }
 
@@ -41,6 +43,10 @@ public class AddFollowDto implements NotificationConvertable {
     }
 
     @Override
+    public List<Long> getRecipientIds() {
+        return Arrays.asList(recipientId);
+    }
+
     public NotificationType getNotificationType(User sender, User recipient) {
         return isFollowBack(sender, recipient)
                 ? NotificationType.FOLLOW_BACK

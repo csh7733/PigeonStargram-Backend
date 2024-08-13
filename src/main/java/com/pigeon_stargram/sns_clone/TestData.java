@@ -4,7 +4,10 @@ import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.post.Image;
 import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.comment.CreateCommentDto;
+import com.pigeon_stargram.sns_clone.dto.post.CreatePostDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.PostsDto;
+import com.pigeon_stargram.sns_clone.dto.reply.internal.CreateReplyDto;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
@@ -32,7 +35,6 @@ import java.util.List;
 @Component
 public class TestData {
 
-    private final UserRepository userRepository;
     private final PostsService postsService;
     private final CommentService commentService;
     private final ReplyService replyService;
@@ -59,8 +61,8 @@ public class TestData {
                 objectMapper.getTypeFactory()
                         .constructCollectionType(List.class, UserDto.class));
         userService.saveAll(userDtoList);
-        followService.createFollow(new AddFollowDto(1L, 10L));
-        followService.createFollow(new AddFollowDto(1L, 11L));
+        followService.createFollow(new AddFollowDto(1L, 2L));
+        followService.createFollow(new AddFollowDto(1L, 3L));
     }
 
     public void initData2() {
@@ -70,28 +72,31 @@ public class TestData {
         User user3 = userService.findById(3L);
 
         // Post 1 by User 1 (John Doe)
-        Posts post1 = postsService.createPost(user1, "Hello from John Doe!");
-        Comment post1_comment1 = commentService.createComment(user2, post1, "Hi John!");
-        replyService.createReply(user3, post1_comment1, "Hello Jane!");
+        Posts post1 = postsService.createPost(new CreatePostDto(user1, "Hello from John Doe!"));
+        Comment post1_comment1 = commentService.createComment(new CreateCommentDto(user2, post1, "Hi John!"));
+        replyService.createReply(new CreateReplyDto(user3, post1_comment1, "Hello Jane!"));
+
+        // Post 2_1 by User 2 (Jane Smith)
+        Posts post2_1 = postsService.createPost(new CreatePostDto(user2, "Jane Smith"));
 
         // Post 2 by User 2 (Jane Smith)
         List<Image> images2 = List.of(new Image("img-profile1.png", true));
         Posts post2 = postsService.createPost(user2, "Jane's beautiful day at the park.", images2);
-        Comment post2_comment1 = commentService.createComment(user1, post2, "Looks great, Jane!");
-        replyService.createReply(user3, post2_comment1, "Amazing picture!");
-        Comment post2_comment2 = commentService.createComment(user3, post2, "Love the scenery.");
+        Comment post2_comment1 = commentService.createComment(new CreateCommentDto(user1, post2, "Looks great, Jane!"));
+        replyService.createReply(new CreateReplyDto(user3, post2_comment1, "Amazing picture!"));
+        Comment post2_comment2 = commentService.createComment(new CreateCommentDto(user3, post2, "Love the scenery."));
 
         // Post 3 by User 3 (Alice Brown)
         List<Image> images3 = List.of(new Image("img-profile2.jpg", true), new Image("img-profile3.jpg", true));
         Posts post3 = postsService.createPost(user3, "Alice's adventure in the mountains.", images3);
-        Comment post3_comment1 = commentService.createComment(user1, post3, "Wow, awesome view!");
-        replyService.createReply(user2, post3_comment1, "I agree, it's stunning!");
-        Comment post3_comment2 = commentService.createComment(user2, post3, "Wish I was there!");
+        Comment post3_comment1 = commentService.createComment(new CreateCommentDto(user1, post3, "Wow, awesome view!"));
+        replyService.createReply(new CreateReplyDto(user2, post3_comment1, "I agree, it's stunning!"));
+        Comment post3_comment2 = commentService.createComment(new CreateCommentDto(user2, post3, "Wish I was there!"));
 
         // Post 4 by User 1 (John Doe)
-        Posts post4 = postsService.createPost(user1, "Back to work after a great vacation.");
-        Comment post4_comment1 = commentService.createComment(user3, post4, "Hope you had a good time!");
-        replyService.createReply(user2, post4_comment1, "Welcome back!");
+        Posts post4 = postsService.createPost(new CreatePostDto(user1, "Back to work after a great vacation."));
+        Comment post4_comment1 = commentService.createComment(new CreateCommentDto(user3, post4, "Hope you had a good time!"));
+        replyService.createReply(new CreateReplyDto(user2, post4_comment1, "Welcome back!"));
 
         // Logging Posts
         List<PostsDto> postsByUser1 = postsService.getPostsByUser(user1);

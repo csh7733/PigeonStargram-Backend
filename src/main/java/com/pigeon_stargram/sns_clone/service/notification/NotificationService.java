@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -24,13 +25,14 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationWorker notificationWorker;
 
-    public Notification save(NotificationConvertable dto) {
+    public List<Notification> save(NotificationConvertable dto) {
         User sender = userService.findById(dto.getSenderId());
-        User recipient = userService.findById(dto.getRecipientId());
-        Notification notification = dto.toNotification(sender, recipient);
-
-        notificationWorker.enqueue(notification);
-        return notificationRepository.save(notification);
+        List<Notification> notifications = dto.getRecipientIds().stream()
+                .map(userService::findById)
+                .map(recipient -> dto.toNotification(sender, recipient))
+                .toList();
+        notifications.forEach(notificationWorker::enqueue);
+        return notificationRepository.saveAll(notifications);
     }
 
     public Optional<Notification> findById(Long id) {
