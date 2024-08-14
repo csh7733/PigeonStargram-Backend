@@ -21,9 +21,12 @@ public class FollowController {
     private final FollowService followService;
 
     // 특정유저가 팔로우중인 사람 조회 - 일반
-    @GetMapping("/following")
-    public List<ResponseFollowerDto> getFollowing(@RequestParam Long userId) {
-        return followService.findFollowings(userId);
+    @GetMapping("/followings")
+    public List<ResponseFollowerDto> getFollowing(@LoginUser SessionUser loginUser,
+                                                  @RequestParam Long userId) {
+        Long currentUserId = loginUser.getId();
+
+        return followService.findFollowings(currentUserId,userId);
     }
 
     // 특정유저를 팔로우중인 사람 조회 - 채팅
@@ -37,6 +40,7 @@ public class FollowController {
     public List<ResponseFollowerDto> getFollowers(@LoginUser SessionUser loginUser,
                                                   @RequestParam Long userId) {
         Long currentUserId = loginUser.getId();
+
         return followService.findFollowers(currentUserId,userId);
     }
 
@@ -51,10 +55,10 @@ public class FollowController {
     }
 
     // 팔로우 삭제
-    @DeleteMapping("")
+    @DeleteMapping("/{followeeId}")
     public List<ResponseFollowerDto> deleteFollower(@LoginUser SessionUser loginUser,
-                                                    @RequestBody RequestDeleteFollowerDto dto) {
-        followService.deleteFollow(new DeleteFollowDto(loginUser.getId(), dto.getId()));
+                                                    @PathVariable Long followeeId) {
+        followService.deleteFollow(new DeleteFollowDto(loginUser.getId(), followeeId));
 //        return getFollowers(dto.getId());
         return null;
     }

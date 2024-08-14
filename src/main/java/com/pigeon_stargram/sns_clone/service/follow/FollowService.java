@@ -87,11 +87,16 @@ public class FollowService {
                 .toList();
     }
 
-    public List<ResponseFollowerDto> findFollowings(Long userId) {
+    public List<ResponseFollowerDto> findFollowings(Long currentUserId, Long userId) {
         User user = userService.findById(userId);
+        User currentUser = userService.findById(currentUserId);
+
         return followRepository.findBySender(user).stream()
                 .map(Follow::getRecipient)
-                .map(recipient -> new ResponseFollowerDto(recipient, 1))
+                .map(recipient -> {
+                    Integer isFollowing = isFollowing(currentUser, recipient) ? 1 : 2;
+                    return new ResponseFollowerDto(recipient, isFollowing);
+                })
                 .toList();
     }
 
