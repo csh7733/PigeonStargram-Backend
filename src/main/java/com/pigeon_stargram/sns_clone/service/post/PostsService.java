@@ -6,25 +6,23 @@ import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.domain.post.PostsLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 
-import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
-import com.pigeon_stargram.sns_clone.dto.comment.response.CommentDto;
-import com.pigeon_stargram.sns_clone.dto.post.CreatePostDto;
-import com.pigeon_stargram.sns_clone.dto.post.LikePostDto;
-import com.pigeon_stargram.sns_clone.dto.post.response.PostsDto;
+import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseCommentDto;
+import com.pigeon_stargram.sns_clone.dto.post.internal.CreatePostDto;
+import com.pigeon_stargram.sns_clone.dto.post.internal.LikePostDto;
+import com.pigeon_stargram.sns_clone.dto.post.internal.PostsContentDto;
+import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
+import com.pigeon_stargram.sns_clone.dto.post.response.PostsLikeDto;
 import com.pigeon_stargram.sns_clone.repository.post.PostsLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.post.PostsRepository;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
-import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,16 +33,49 @@ import java.util.stream.Collectors;
 @Service
 public class PostsService {
 
-    private final PostsRepository postsRepository;
-    private final PostsLikeRepository postsLikeRepository;
     private final CommentService commentService;
     private final FollowService followService;
     private final NotificationService notificationService;
 
+    private final PostsRepository postsRepository;
+    private final PostsLikeRepository postsLikeRepository;
+
+    public List<ResponsePostsDto> getPostsByUser(User user) {
+        return postsRepository.findByUserId(user.getId()).stream()
+                .map(Posts::getId)
+                .sorted(Comparator.reverseOrder())
+                .map(this::getCombinedPost)
+                .toList();
+    }
+
+    public ResponsePostsDto getCombinedPost(Long postId) {
+        PostsContentDto postContentDto = getPostContent(postId);
+        PostsLikeDto postsLikeDto = getPostsLike(postId);
+        List<ResponseCommentDto> commentDtos = commentService.getCommentsByPostId(postId);
+        return new ResponsePostsDto(postContentDto, postsLikeDto, commentDtos);
+    }
+
+    public PostsContentDto getPostContent(Long postId) {
+        return new PostsContentDto(getPostEntity(postId));
+    }
+
+    public PostsLikeDto getPostsLike(Long postId) {
+        Integer count = postsLikeRepository.countByPostId(postId);
+        return new PostsLikeDto(false, count);
+    }
+
+    public ResponsePostsDto getPostById(Long postId) {
+        Posts post = postsRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found with id " + postId));
+
+        List<ResponseCommentDto> comments = commentService.getCommentListByPost(post.getId());
+
+        return new ResponsePostsDto(post, comments);
+    }
+
     public Posts createPost(CreatePostDto dto) {
         Posts post = new Posts(dto.getUser(), dto.getContent());
 
-        List<Follow> follows = followService.findFollows(dto.getUser().getId());
         List<Long> notificationRecipientIds = followService.findFollows(dto.getUser().getId()).stream()
                 .filter(Follow::getIsNotificationEnabled)
                 .map(follow -> follow.getRecipient().getId())
@@ -52,7 +83,6 @@ public class PostsService {
         dto.setNotificationRecipientIds(notificationRecipientIds);
 
         notificationService.save(dto);
-
         return postsRepository.save(post);
     }
 
@@ -98,17 +128,7 @@ public class PostsService {
                 );
     }
 
-    public List<PostsDto> getPostsByUser(User user) {
-        List<Posts> posts = postsRepository.findByUserId(user.getId());
-
-        List<Long> postIds = getPostIdListByUser(posts);
-
-        return postIds.stream()
-                .map(this::getPostById)
-                .collect(Collectors.toList());
-    }
-
-    private static List<Long> getPostIdListByUser(List<Posts> posts) {
+    private List<Long> getPostIdListByPosts(List<Posts> posts) {
         List<Long> postIds = posts.stream()
                 .map(Posts::getId)
                 .sorted(Comparator.reverseOrder())
@@ -117,29 +137,23 @@ public class PostsService {
     }
 
 
-    public List<PostsDto> getAllPosts() {
+    public List<ResponsePostsDto> getAllPosts() {
         List<Posts> posts = postsRepository.findAll();
         return posts.stream()
                 .sorted(Comparator.comparing(Posts::getId).reversed())
                 .map(post -> {
-                    List<CommentDto> comments = commentService.getCommentListByPost(post.getId());
-                    return new PostsDto(post, comments);
+                    List<ResponseCommentDto> comments = commentService.getCommentListByPost(post.getId());
+                    return new ResponsePostsDto(post, comments);
                 })
                 .collect(Collectors.toList());
     }
 
-    public PostsDto getPostById(Long postId) {
-        Posts post = postsRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Post not found with id " + postId));
-
-        List<CommentDto> comments = commentService.getCommentListByPost(post.getId());
-
-        return new PostsDto(post, comments);
-    }
 
 
     public Posts getPostEntity(Long postId) {
         return postsRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid comment ID"));
     }
+
+
 }

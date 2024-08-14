@@ -4,10 +4,10 @@ import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.post.CreatePostDto;
-import com.pigeon_stargram.sns_clone.dto.post.LikePostDto;
+import com.pigeon_stargram.sns_clone.dto.post.internal.CreatePostDto;
+import com.pigeon_stargram.sns_clone.dto.post.internal.LikePostDto;
 import com.pigeon_stargram.sns_clone.dto.post.request.RequestCreatePostDto;
-import com.pigeon_stargram.sns_clone.dto.post.response.PostsDto;
+import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
 import com.pigeon_stargram.sns_clone.dto.post.request.RequestEditPostDto;
 import com.pigeon_stargram.sns_clone.dto.post.request.RequestLikePostDto;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
@@ -27,15 +27,15 @@ public class PostsController {
     private final UserService userService;
 
     @GetMapping
-    public List<PostsDto> getPosts(@RequestParam Long userId) {
+    public List<ResponsePostsDto> getPosts(@RequestParam Long userId) {
         User user = userService.findById(userId);
 
         return postsService.getPostsByUser(user);
     }
 
     @PostMapping
-    public PostsDto createPosts(@LoginUser SessionUser loginUser,
-                                      @RequestBody RequestCreatePostDto request) {
+    public ResponsePostsDto createPosts(@LoginUser SessionUser loginUser,
+                                        @RequestBody RequestCreatePostDto request) {
         Long userId = loginUser.getId();
         User user = userService.findById(userId);
 
@@ -47,9 +47,9 @@ public class PostsController {
     }
 
     @PatchMapping("/{postId}")
-    public List<PostsDto> editPost(@LoginUser SessionUser loginUser,
-                                   @PathVariable Long postId,
-                                   @RequestBody RequestEditPostDto request) {
+    public List<ResponsePostsDto> editPost(@LoginUser SessionUser loginUser,
+                                           @PathVariable Long postId,
+                                           @RequestBody RequestEditPostDto request) {
 
         String content = request.getContent();
         postsService.editPost(postId,content);
@@ -58,8 +58,8 @@ public class PostsController {
     }
 
     @DeleteMapping("/{postId}")
-    public List<PostsDto> deletePost(@LoginUser SessionUser loginUser,
-                                     @PathVariable Long postId) {
+    public List<ResponsePostsDto> deletePost(@LoginUser SessionUser loginUser,
+                                             @PathVariable Long postId) {
         log.info("delete {}",postId);
         postsService.deletePost(postId);
 
@@ -67,8 +67,8 @@ public class PostsController {
     }
 
     @PostMapping("/like")
-    public List<PostsDto> likePost(@LoginUser SessionUser loginUser,
-                                   @RequestBody RequestLikePostDto request) {
+    public List<ResponsePostsDto> likePost(@LoginUser SessionUser loginUser,
+                                           @RequestBody RequestLikePostDto request) {
         Long userId = loginUser.getId();
         User user = userService.findById(userId);
 

@@ -1,6 +1,7 @@
 package com.pigeon_stargram.sns_clone.dto.reply.response;
 
 import com.pigeon_stargram.sns_clone.domain.reply.Reply;
+import com.pigeon_stargram.sns_clone.dto.reply.internal.ReplyContentDto;
 import lombok.*;
 
 @Getter
@@ -8,14 +9,21 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReplyDto {
+public class ResponseReplyDto {
     private Long id;
     private ReplyProfileDto profile;
     private ReplyDataDto data;
 
-    public ReplyDto(Reply reply) {
+    public ResponseReplyDto(Reply reply) {
         this.id = reply.getId();
         this.profile = new ReplyProfileDto(reply.getUser(),reply.getModifiedDate());
         this.data = new ReplyDataDto(reply);
+    }
+
+    public ResponseReplyDto(ReplyContentDto contentDto,
+                            ReplyLikeDto likeDto) {
+        this.id = contentDto.getId();
+        this.profile = contentDto.getProfile();
+        this.data = new ReplyDataDto(contentDto, likeDto);
     }
 }

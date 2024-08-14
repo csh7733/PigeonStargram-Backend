@@ -1,16 +1,11 @@
-package com.pigeon_stargram.sns_clone.dto.comment;
+package com.pigeon_stargram.sns_clone.dto.post.internal;
 
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
-import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.repository.notification.NotificationRepository;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @Getter
@@ -18,20 +13,25 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateCommentDto implements NotificationConvertable {
+public class CreatePostDto implements NotificationConvertable {
 
     private User user;
-    private Posts post;
     private String content;
+    private List<Long> notificationRecipientIds;
+
+    public CreatePostDto(User user, String content) {
+        this.user = user;
+        this.content = content;
+    }
 
     @Override
     public Notification toNotification(User sender, User recipient) {
         return Notification.builder()
-                .type(NotificationType.MY_POST_COMMENT)
-                .message(generateMessage(sender, recipient))
-                .isRead(false)
                 .recipient(recipient)
                 .sender(sender)
+                .type(NotificationType.FOLLOWING_POST)
+                .isRead(false)
+                .message(generateMessage(sender, recipient))
                 .redirectUrl(generateRedirectUrl(sender, recipient))
                 .build();
     }
@@ -43,17 +43,16 @@ public class CreateCommentDto implements NotificationConvertable {
 
     @Override
     public List<Long> getRecipientIds() {
-        return Arrays.asList(post.getUser().getId());
+        return notificationRecipientIds;
     }
 
     @Override
     public String generateMessage(User sender, User recipient) {
-        return sender.getName() + "님이 댓글을 남겼어요.";
+        return user.getName() + "님이 새 글을 등록했어요.";
     }
 
     @Override
     public String generateRedirectUrl(User sender, User recipient) {
-        return "";  //todo
+        return "";
     }
 }
-

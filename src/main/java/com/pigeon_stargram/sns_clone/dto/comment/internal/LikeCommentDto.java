@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.dto.post;
+package com.pigeon_stargram.sns_clone.dto.comment.internal;
 
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
@@ -7,7 +7,6 @@ import com.pigeon_stargram.sns_clone.domain.user.User;
 import lombok.*;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @Getter
@@ -15,26 +14,26 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LikePostDto implements NotificationConvertable {
+public class LikeCommentDto implements NotificationConvertable {
 
     private User user;
-    private Long postId;
+    private Long commentId;
     private Long writerId;
 
-    public LikePostDto(User user, Long postId) {
+    public LikeCommentDto(User user, Long commentId) {
         this.user = user;
-        this.postId = postId;
+        this.commentId = commentId;
     }
 
     @Override
     public Notification toNotification(User sender, User recipient) {
         return Notification.builder()
+                .type(NotificationType.MY_COMMENT_LIKE)
                 .redirectUrl(generateRedirectUrl(sender, recipient))
                 .message(generateMessage(sender, recipient))
                 .isRead(false)
                 .sender(sender)
                 .recipient(recipient)
-                .type(NotificationType.MY_POST_LIKE)
                 .build();
     }
 
@@ -50,7 +49,7 @@ public class LikePostDto implements NotificationConvertable {
 
     @Override
     public String generateMessage(User sender, User recipient) {
-        return sender.getName() + "님이 내 글을 좋아합니다.";
+        return "";
     }
 
     @Override

@@ -4,12 +4,12 @@ import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.comment.CreateCommentDto;
-import com.pigeon_stargram.sns_clone.dto.comment.LikeCommentDto;
+import com.pigeon_stargram.sns_clone.dto.comment.internal.CreateCommentDto;
+import com.pigeon_stargram.sns_clone.dto.comment.internal.LikeCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.request.RequestAddCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.request.RequestEditCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.request.RequestLikeCommentDto;
-import com.pigeon_stargram.sns_clone.dto.post.response.PostsDto;
+import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -30,8 +30,8 @@ public class CommentController {
     private final UserService userService;
 
     @PostMapping
-    public List<PostsDto> addComment(@LoginUser SessionUser loginUser,
-                                     @RequestBody RequestAddCommentDto request) {
+    public List<ResponsePostsDto> addComment(@LoginUser SessionUser loginUser,
+                                             @RequestBody RequestAddCommentDto request) {
         Long postId = request.getPostId();
         Posts post = postsService.getPostEntity(postId);
         String content = request.getComment().getContent();
@@ -44,9 +44,9 @@ public class CommentController {
     }
 
     @PatchMapping("/{commentId}")
-    public List<PostsDto> editComment(@LoginUser SessionUser loginUser,
-                                      @PathVariable Long commentId,
-                                      @RequestBody RequestEditCommentDto request) {
+    public List<ResponsePostsDto> editComment(@LoginUser SessionUser loginUser,
+                                              @PathVariable Long commentId,
+                                              @RequestBody RequestEditCommentDto request) {
         log.info("patch {}",commentId);
         String content = request.getContent();
         commentService.editComment(commentId,content);
@@ -55,8 +55,8 @@ public class CommentController {
     }
 
     @DeleteMapping("/{commentId}")
-    public List<PostsDto> deleteComment(@LoginUser SessionUser loginUser,
-                                        @PathVariable Long commentId) {
+    public List<ResponsePostsDto> deleteComment(@LoginUser SessionUser loginUser,
+                                                @PathVariable Long commentId) {
         log.info("delete {}",commentId);
         commentService.deleteComment(commentId);
 
@@ -64,8 +64,8 @@ public class CommentController {
     }
 
     @PostMapping("/like")
-    public List<PostsDto> likeComment(@LoginUser SessionUser loginUser,
-                                      @RequestBody RequestLikeCommentDto request) {
+    public List<ResponsePostsDto> likeComment(@LoginUser SessionUser loginUser,
+                                              @RequestBody RequestLikeCommentDto request) {
         Long userId = loginUser.getId();
         User user = userService.findById(userId);
 

@@ -21,9 +21,7 @@ public class NotificationController {
     // 로그인유저에 대한 알림 조회
     @GetMapping("")
     public List<ResponseNotificationDto> getNotifications(@LoginUser User user) {
-        return notificationService.findByUserId(user.getId()).stream()
-                .map(notificationService::toResponseDto)
-                .toList();
+        return notificationService.findByUserId(user.getId());
     }
 
     // 단일 알림 읽음 처리요청

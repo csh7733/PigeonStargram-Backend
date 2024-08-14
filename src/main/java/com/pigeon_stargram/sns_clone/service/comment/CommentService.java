@@ -2,11 +2,13 @@ package com.pigeon_stargram.sns_clone.service.comment;
 
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.comment.CommentLike;
-import com.pigeon_stargram.sns_clone.dto.comment.CreateCommentDto;
-import com.pigeon_stargram.sns_clone.dto.comment.LikeCommentDto;
-import com.pigeon_stargram.sns_clone.dto.comment.request.RequestLikeCommentDto;
-import com.pigeon_stargram.sns_clone.dto.comment.response.CommentDto;
-import com.pigeon_stargram.sns_clone.dto.reply.response.ReplyDto;
+import com.pigeon_stargram.sns_clone.dto.comment.internal.CommentContentDto;
+import com.pigeon_stargram.sns_clone.dto.comment.internal.CreateCommentDto;
+import com.pigeon_stargram.sns_clone.dto.comment.internal.LikeCommentDto;
+import com.pigeon_stargram.sns_clone.dto.comment.response.CommentLikeDto;
+import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseCommentDto;
+import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
+import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentRepository;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
@@ -15,6 +17,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,10 +26,37 @@ import java.util.stream.Collectors;
 @Transactional
 public class CommentService {
 
-    private final CommentRepository commentRepository;
-    private final CommentLikeRepository commentLikeRepository;
     private final ReplyService replyService;
     private final NotificationService notificationService;
+
+    private final CommentRepository commentRepository;
+    private final CommentLikeRepository commentLikeRepository;
+
+    public List<ResponseCommentDto> getCommentsByPostId(Long postId) {
+        return commentRepository.findByPostId(postId).stream()
+                .map(Comment::getId)
+                .sorted(Comparator.reverseOrder())
+                .map(this::getCombinedComment)
+                .toList();
+    }
+
+    public ResponseCommentDto getCombinedComment(Long commentId) {
+        CommentContentDto commentContentDto = getCommentContent(commentId);
+        CommentLikeDto commentLikeDto = getCommentLike(commentId);
+        List<ResponseReplyDto> replyDtos = replyService.getRepliesByCommentId(commentId);
+        return new ResponseCommentDto(commentContentDto, commentLikeDto, replyDtos);
+
+    }
+
+    public CommentContentDto getCommentContent(Long commentId) {
+        return new CommentContentDto(getCommentEntity(commentId));
+    }
+
+    public CommentLikeDto getCommentLike(Long commentId) {
+        Integer count = commentLikeRepository.countByCommentId(commentId);
+        return new CommentLikeDto(false, count);
+    }
+
 
     public Comment createComment(CreateCommentDto dto) {
         Comment comment = Comment.builder()
@@ -45,12 +75,12 @@ public class CommentService {
 //        return new CommentDto(comment);
 //    }
 
-    public List<CommentDto> getCommentListByPost(Long postId) {
+    public List<ResponseCommentDto> getCommentListByPost(Long postId) {
         List<Comment> comments = commentRepository.findByPostId(postId);
         return comments.stream()
                 .map(comment -> {
-                    List<ReplyDto> replies = replyService.getReplyListByComment(comment.getId());
-                    return new CommentDto(comment, replies);
+                    List<ResponseReplyDto> replies = replyService.getReplyListByComment(comment.getId());
+                    return new ResponseCommentDto(comment, replies);
                 })
                 .collect(Collectors.toList());
     }

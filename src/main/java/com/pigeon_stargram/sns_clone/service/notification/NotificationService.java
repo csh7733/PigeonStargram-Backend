@@ -10,6 +10,7 @@ import com.pigeon_stargram.sns_clone.service.user.UserService;
 import com.pigeon_stargram.sns_clone.worker.NotificationWorker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.Response;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,9 +37,11 @@ public class NotificationService {
         return notificationRepository.saveAll(notifications);
     }
 
-    public List<Notification> findByUserId(Long userId) {
+    public List<ResponseNotificationDto> findByUserId(Long userId) {
         User recipient = userService.findById(userId);
-        return notificationRepository.findAllByRecipient(recipient);
+        return notificationRepository.findAllByRecipient(recipient).stream()
+                .map(this::toResponseDto)
+                .toList();
     }
 
     public ResponseNotificationDto readNotification(Long id) {
