@@ -74,7 +74,7 @@ public class FollowService {
                 .toList();
     }
 
-    private Boolean isFollowing(User source, User target) {
+    public Boolean isFollowing(User source, User target) {
         return followRepository.findByRecipient(target)
                 .stream()
                 .anyMatch(follow -> follow.getSender().equals(source));

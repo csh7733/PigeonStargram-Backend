@@ -2,10 +2,12 @@ package com.pigeon_stargram.sns_clone.controller.follow;
 
 import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
+import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.Follow.*;
 import com.pigeon_stargram.sns_clone.dto.Follow.request.RequestAddFollowerDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.request.RequestDeleteFollowerDto;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
+import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +21,7 @@ import java.util.List;
 public class FollowController {
 
     private final FollowService followService;
+    private final UserService userService;
 
     // 특정유저가 팔로우중인 사람 조회 - 일반
     @GetMapping("/followings")
@@ -28,6 +31,17 @@ public class FollowController {
 
         return followService.findFollowings(currentUserId,userId);
     }
+
+    @GetMapping("/following/check")
+    public Boolean isFollowing(@LoginUser SessionUser loginUser, @RequestParam Long followeeId) {
+        Long currentUserId = loginUser.getId();
+        User currentUser = userService.findById(currentUserId);
+
+        User followeeUser = userService.findById(followeeId);
+
+        return followService.isFollowing(currentUser, followeeUser);
+    }
+
 
     // 특정유저를 팔로우중인 사람 조회 - 채팅
 //    @GetMapping("/following")
