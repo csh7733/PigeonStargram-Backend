@@ -9,7 +9,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FollowerDto {
+public class ResponseFollowerDto {
 
     private Long id;
     private String avatar;
@@ -17,7 +17,7 @@ public class FollowerDto {
     private String location;
     private Integer follow;
 
-    public FollowerDto(User user, Integer follow) {
+    public ResponseFollowerDto(User user, Integer follow) {
         this.id = user.getId();
         this.avatar = user.getAvatar();
         this.name = user.getName();

@@ -22,7 +22,7 @@ public class FollowController {
 
     // 특정유저가 팔로우중인 사람 조회 - 일반
     @GetMapping("/following")
-    public List<FollowerDto> getFollowing(@RequestParam Long userId) {
+    public List<ResponseFollowerDto> getFollowing(@RequestParam Long userId) {
         return followService.findFollowings(userId);
     }
 
@@ -34,27 +34,27 @@ public class FollowController {
     
     // 특정유저를 팔로우중인 조회
     @GetMapping("/followers")
-    public List<FollowerDto> getFollowers(@LoginUser SessionUser user,
-                                          @RequestParam Long userId) {
-        log.info("user: {}", user.getId());
-        return followService.findFollowers(userId);
+    public List<ResponseFollowerDto> getFollowers(@LoginUser SessionUser loginUser,
+                                                  @RequestParam Long userId) {
+        Long currentUserId = loginUser.getId();
+        return followService.findFollowers(currentUserId,userId);
     }
 
     // 팔로우 추가
     @PostMapping("")
-    public List<FollowerDto> addFollower(@LoginUser SessionUser user,
-                                         @RequestBody RequestAddFollowerDto dto) {
-        log.info("user: {}", user.getId());
-        followService.createFollow(new AddFollowDto(user.getId(), dto.getId()));
+    public List<ResponseFollowerDto> addFollower(@LoginUser SessionUser loginUser,
+                                                 @RequestBody RequestAddFollowerDto dto) {
+        log.info("user: {}", loginUser.getId());
+        followService.createFollow(new AddFollowDto(loginUser.getId(), dto.getId()));
 //        return getFollowers(dto.getId());
         return null;
     }
 
     // 팔로우 삭제
     @DeleteMapping("")
-    public List<FollowerDto> deleteFollower(@LoginUser SessionUser user,
-                                            @RequestBody RequestDeleteFollowerDto dto) {
-        followService.deleteFollow(new DeleteFollowDto(user.getId(), dto.getId()));
+    public List<ResponseFollowerDto> deleteFollower(@LoginUser SessionUser loginUser,
+                                                    @RequestBody RequestDeleteFollowerDto dto) {
+        followService.deleteFollow(new DeleteFollowDto(loginUser.getId(), dto.getId()));
 //        return getFollowers(dto.getId());
         return null;
     }

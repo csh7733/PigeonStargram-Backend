@@ -6,7 +6,6 @@ import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.domain.post.PostsLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 
-import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.CommentDto;
 import com.pigeon_stargram.sns_clone.dto.post.CreatePostDto;
 import com.pigeon_stargram.sns_clone.dto.post.LikePostDto;
@@ -16,15 +15,12 @@ import com.pigeon_stargram.sns_clone.repository.post.PostsRepository;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
-import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
