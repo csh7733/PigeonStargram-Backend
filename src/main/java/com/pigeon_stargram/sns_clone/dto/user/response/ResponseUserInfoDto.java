@@ -12,10 +12,12 @@ public class ResponseUserInfoDto {
     private Long userId;
     private String name;
     private String avatar;
+    private String company;
 
     public ResponseUserInfoDto(User user) {
         this.userId = user.getId();
         this.name = user.getName();
         this.avatar = user.getAvatar();
+        this.company = user.getCompany();
     }
 }

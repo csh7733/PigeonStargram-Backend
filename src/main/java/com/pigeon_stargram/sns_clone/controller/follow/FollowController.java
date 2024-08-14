@@ -60,21 +60,29 @@ public class FollowController {
 
     // 팔로우 추가
     @PostMapping("")
-    public List<ResponseFollowerDto> addFollower(@LoginUser SessionUser loginUser,
+    public void addFollower(@LoginUser SessionUser loginUser,
                                                  @RequestBody RequestAddFollowerDto dto) {
         log.info("user: {}", loginUser.getId());
         followService.createFollow(new AddFollowDto(loginUser.getId(), dto.getId()));
-//        return getFollowers(dto.getId());
-        return null;
     }
 
     // 팔로우 삭제
     @DeleteMapping("/{followeeId}")
-    public List<ResponseFollowerDto> deleteFollower(@LoginUser SessionUser loginUser,
+    public void deleteFollower(@LoginUser SessionUser loginUser,
                                                     @PathVariable Long followeeId) {
         followService.deleteFollow(new DeleteFollowDto(loginUser.getId(), followeeId));
-//        return getFollowers(dto.getId());
-        return null;
+    }
+
+    @GetMapping("/count/followers")
+    public Long getFollowersCount(@RequestParam Long userId) {
+        User user = userService.findById(userId);
+        return followService.countFollowers(user);
+    }
+
+    @GetMapping("/count/followings")
+    public Long getFollowingsCount(@RequestParam Long userId) {
+        User user = userService.findById(userId);
+        return followService.countFollowings(user);
     }
 
 }

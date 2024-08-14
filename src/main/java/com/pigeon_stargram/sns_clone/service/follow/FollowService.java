@@ -120,4 +120,12 @@ public class FollowService {
                 .sorted(Comparator.comparing(UserChatDto::getLastMessage, Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
     }
+
+    public Long countFollowings(User user) {
+        return followRepository.countBySender(user);
+    }
+
+    public Long countFollowers(User user) {
+        return followRepository.countByRecipient(user);
+    }
 }

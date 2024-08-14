@@ -21,7 +21,7 @@ public class ResponseFollowerDto {
         this.id = user.getId();
         this.avatar = user.getAvatar();
         this.name = user.getName();
-        this.location = user.getLocation();
+        this.location = user.getCompany();
         this.follow = follow;
     }
 
@@ -31,7 +31,7 @@ public class ResponseFollowerDto {
                 .id(this.id)
                 .avatar(this.avatar)
                 .name(this.name)
-                .location(this.location)
+                .company(this.location)
                 .build();
     }
 
