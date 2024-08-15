@@ -11,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 @ToString
-public class UserChatDto {
+public class ResponseUserChatDto {
     private Long id;
     private String name;
     private String company;
@@ -45,7 +45,12 @@ public class UserChatDto {
     @JsonProperty("online_status")
     private String onlineStatus;
 
-    public UserChatDto(User user) {
+    // 0이면 나만 팔로우 (<-)
+    // 1이면 나만 팔로잉 (->)
+    // 2이면 서로 맞팔 (<- && ->)
+    private Integer state;
+
+    public ResponseUserChatDto(User user) {
         this.id = user.getId();
         this.name = user.getName();
         this.company = user.getCompany();
@@ -64,7 +69,7 @@ public class UserChatDto {
         this.onlineStatus = user.getOnlineStatus();
     }
 
-    public UserChatDto(User user,Integer unReadChatCount,LastMessageDto lastMessage) {
+    public ResponseUserChatDto(User user, Integer unReadChatCount, LastMessageDto lastMessage, Integer state) {
         this.id = user.getId();
         this.name = user.getName();
         this.company = user.getCompany();
@@ -80,6 +85,7 @@ public class UserChatDto {
         //temp
         this.unReadChatCount = unReadChatCount;
         this.onlineStatus = user.getOnlineStatus();
+        this.state = state;
     }
 
 }

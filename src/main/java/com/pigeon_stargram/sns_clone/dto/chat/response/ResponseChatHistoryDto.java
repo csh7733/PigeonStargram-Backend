@@ -12,7 +12,7 @@ import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.formatTime;
 @NoArgsConstructor
 @Builder
 @ToString
-public class ChatHistoryDto {
+public class ResponseChatHistoryDto {
     //곧 삭제예정
     private int id;
     private Long from;
@@ -20,14 +20,14 @@ public class ChatHistoryDto {
     private String text;
     private String time;
 
-    public ChatHistoryDto(TextChat textChat) {
+    public ResponseChatHistoryDto(TextChat textChat) {
         this.from = textChat.getSenderId();
         this.to = textChat.getRecipientId();
         this.text = textChat.getText();
         this.time = formatTime(textChat.getCreatedDate());
     }
 
-    public ChatHistoryDto(ImageChat imageChat) {
+    public ResponseChatHistoryDto(ImageChat imageChat) {
         this.from = imageChat.getSenderId();
         this.to = imageChat.getRecipientId();
         this.text = imageChat.getImagePath();

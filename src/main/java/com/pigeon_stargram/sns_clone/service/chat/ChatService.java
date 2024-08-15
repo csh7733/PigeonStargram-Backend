@@ -5,7 +5,7 @@ import com.pigeon_stargram.sns_clone.domain.chat.LastMessage;
 import com.pigeon_stargram.sns_clone.domain.chat.TextChat;
 import com.pigeon_stargram.sns_clone.domain.chat.UnReadChat;
 import com.pigeon_stargram.sns_clone.dto.chat.NewChatDto;
-import com.pigeon_stargram.sns_clone.dto.chat.response.ChatHistoryDto;
+import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseChatHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
 import com.pigeon_stargram.sns_clone.event.UserConnectEvent;
 import com.pigeon_stargram.sns_clone.repository.chat.ChatRepository;
@@ -59,10 +59,10 @@ public class ChatService {
         chatRepository.save(imageChat);
     }
 
-    public List<ChatHistoryDto> getUserChats(Long user1Id, Long user2Id) {
+    public List<ResponseChatHistoryDto> getUserChats(Long user1Id, Long user2Id) {
         List<TextChat> chatHistories = chatRepository.findTextChatsBetweenUsers(user1Id, user2Id);
         return chatHistories.stream()
-                .map(ChatHistoryDto::new)
+                .map(ResponseChatHistoryDto::new)
                 .collect(Collectors.toList());
     }
 

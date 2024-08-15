@@ -1,13 +1,10 @@
 package com.pigeon_stargram.sns_clone.service.user;
 
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
-import com.pigeon_stargram.sns_clone.dto.chat.response.UserChatDto;
-import com.pigeon_stargram.sns_clone.dto.login.request.LoginDto;
+import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseUserChatDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RegisterDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
-import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,8 +42,8 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public UserChatDto findUserForChat(Long userId) {
-        return new UserChatDto(findById(userId));
+    public ResponseUserChatDto findUserForChat(Long userId) {
+        return new ResponseUserChatDto(findById(userId));
     }
 
     public List<User> saveAll(List<UserDto> userDtoList) {
