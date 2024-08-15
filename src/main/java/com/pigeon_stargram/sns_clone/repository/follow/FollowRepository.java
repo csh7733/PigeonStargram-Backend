@@ -11,5 +11,6 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     List<Follow> findBySender(User sender);
     List<Follow> findByRecipient(User recipient);
     Optional<Follow> findBysenderAndRecipient(User sender, User recipient);
-
+    Long countBySender(User sender);
+    Long countByRecipient(User recipient);
 }

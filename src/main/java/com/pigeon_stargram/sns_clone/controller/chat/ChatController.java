@@ -3,7 +3,7 @@ package com.pigeon_stargram.sns_clone.controller.chat;
 import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.Follow.FollowerDto;
+import com.pigeon_stargram.sns_clone.dto.Follow.ResponseFollowerDto;
 import com.pigeon_stargram.sns_clone.dto.chat.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.request.RequestOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.*;
@@ -103,10 +103,10 @@ public class ChatController {
     }
 
     public void sentOnlineStatus(Long userId, String onlineStatus) {
-        List<FollowerDto> followers = followService.findFollowers(userId);
+        List<ResponseFollowerDto> followers = followService.findFollowers(userId);
 
         followers.stream()
-                .map(FollowerDto::getId)
+                .map(ResponseFollowerDto::getId)
                 .forEach(followerId -> {
                     String destination = "/topic/users/status/" + followerId;
                     messagingTemplate.convertAndSend(destination, new ResponseOnlineStatusDto(userId, onlineStatus));

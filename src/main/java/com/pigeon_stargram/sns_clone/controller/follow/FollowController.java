@@ -2,10 +2,12 @@ package com.pigeon_stargram.sns_clone.controller.follow;
 
 import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
+import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.Follow.*;
 import com.pigeon_stargram.sns_clone.dto.Follow.request.RequestAddFollowerDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.request.RequestDeleteFollowerDto;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
+import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +21,27 @@ import java.util.List;
 public class FollowController {
 
     private final FollowService followService;
+    private final UserService userService;
 
     // 특정유저가 팔로우중인 사람 조회 - 일반
-    @GetMapping("/following")
-    public List<FollowerDto> getFollowing(@RequestParam Long userId) {
-        return followService.findFollowings(userId);
+    @GetMapping("/followings")
+    public List<ResponseFollowerDto> getFollowing(@LoginUser SessionUser loginUser,
+                                                  @RequestParam Long userId) {
+        Long currentUserId = loginUser.getId();
+
+        return followService.findFollowings(currentUserId,userId);
     }
+
+    @GetMapping("/following/check")
+    public Boolean isFollowing(@LoginUser SessionUser loginUser, @RequestParam Long followeeId) {
+        Long currentUserId = loginUser.getId();
+        User currentUser = userService.findById(currentUserId);
+
+        User followeeUser = userService.findById(followeeId);
+
+        return followService.isFollowing(currentUser, followeeUser);
+    }
+
 
     // 특정유저를 팔로우중인 사람 조회 - 채팅
 //    @GetMapping("/following")
@@ -34,29 +51,38 @@ public class FollowController {
     
     // 특정유저를 팔로우중인 조회
     @GetMapping("/followers")
-    public List<FollowerDto> getFollowers(@LoginUser SessionUser user,
-                                          @RequestParam Long userId) {
-        log.info("user: {}", user.getId());
-        return followService.findFollowers(userId);
+    public List<ResponseFollowerDto> getFollowers(@LoginUser SessionUser loginUser,
+                                                  @RequestParam Long userId) {
+        Long currentUserId = loginUser.getId();
+
+        return followService.findFollowers(currentUserId,userId);
     }
 
     // 팔로우 추가
     @PostMapping("")
-    public List<FollowerDto> addFollower(@LoginUser SessionUser user,
-                                         @RequestBody RequestAddFollowerDto dto) {
-        log.info("user: {}", user.getId());
-        followService.createFollow(new AddFollowDto(user.getId(), dto.getId()));
-//        return getFollowers(dto.getId());
-        return null;
+    public void addFollower(@LoginUser SessionUser loginUser,
+                                                 @RequestBody RequestAddFollowerDto dto) {
+        log.info("user: {}", loginUser.getId());
+        followService.createFollow(new AddFollowDto(loginUser.getId(), dto.getId()));
     }
 
     // 팔로우 삭제
-    @DeleteMapping("")
-    public List<FollowerDto> deleteFollower(@LoginUser SessionUser user,
-                                            @RequestBody RequestDeleteFollowerDto dto) {
-        followService.deleteFollow(new DeleteFollowDto(user.getId(), dto.getId()));
-//        return getFollowers(dto.getId());
-        return null;
+    @DeleteMapping("/{followeeId}")
+    public void deleteFollower(@LoginUser SessionUser loginUser,
+                                                    @PathVariable Long followeeId) {
+        followService.deleteFollow(new DeleteFollowDto(loginUser.getId(), followeeId));
+    }
+
+    @GetMapping("/count/followers")
+    public Long getFollowersCount(@RequestParam Long userId) {
+        User user = userService.findById(userId);
+        return followService.countFollowers(user);
+    }
+
+    @GetMapping("/count/followings")
+    public Long getFollowingsCount(@RequestParam Long userId) {
+        User user = userService.findById(userId);
+        return followService.countFollowings(user);
     }
 
 }
