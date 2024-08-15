@@ -1,12 +1,12 @@
 package com.pigeon_stargram.sns_clone.service.reply;
 
-import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.reply.Reply;
 import com.pigeon_stargram.sns_clone.domain.reply.ReplyLike;
-import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.CreateReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.LikeReplyDto;
-import com.pigeon_stargram.sns_clone.dto.reply.response.ReplyDto;
+import com.pigeon_stargram.sns_clone.dto.reply.internal.ReplyContentDto;
+import com.pigeon_stargram.sns_clone.dto.reply.response.ReplyLikeDto;
+import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyRepository;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
@@ -14,6 +14,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,9 +23,34 @@ import java.util.stream.Collectors;
 @Transactional
 public class ReplyService {
 
+    private final NotificationService notificationService;
+
     private final ReplyRepository replyRepository;
     private final ReplyLikeRepository replyLikeRepository;
-    private final NotificationService notificationService;
+
+    public List<ResponseReplyDto> getRepliesByCommentId(Long commentId) {
+        return replyRepository.findByCommentId(commentId).stream()
+                .map(Reply::getId)
+                .sorted(Comparator.reverseOrder())
+                .map(this::getCombinedReply)
+                .toList();
+    }
+
+    public ResponseReplyDto getCombinedReply(Long replyId) {
+        ReplyContentDto replyContentDto = getReplyContent(replyId);
+        ReplyLikeDto replyLikeDto = getReplyLike(replyId);
+        return new ResponseReplyDto(replyContentDto, replyLikeDto);
+    }
+
+    public ReplyContentDto getReplyContent(Long replyId) {
+        return new ReplyContentDto(getReplyEntity(replyId));
+    }
+
+    public ReplyLikeDto getReplyLike(Long replyId) {
+        Integer count = replyLikeRepository.countByReplyId(replyId);
+        return new ReplyLikeDto(false, count);
+    }
+
 
     public Reply createReply(CreateReplyDto dto) {
         Reply reply = Reply.builder()
@@ -44,9 +70,9 @@ public class ReplyService {
 //        return new ReplyDto(reply);
 //    }
 
-    public List<ReplyDto> getReplyListByComment(Long commentId) {
+    public List<ResponseReplyDto> getReplyListByComment(Long commentId) {
         return replyRepository.findByCommentId(commentId).stream()
-                .map(ReplyDto::new)
+                .map(ResponseReplyDto::new)
                 .collect(Collectors.toList());
     }
 

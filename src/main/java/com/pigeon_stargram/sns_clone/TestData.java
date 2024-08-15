@@ -4,9 +4,9 @@ import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.post.Image;
 import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.comment.CreateCommentDto;
-import com.pigeon_stargram.sns_clone.dto.post.CreatePostDto;
-import com.pigeon_stargram.sns_clone.dto.post.response.PostsDto;
+import com.pigeon_stargram.sns_clone.dto.comment.internal.CreateCommentDto;
+import com.pigeon_stargram.sns_clone.dto.post.internal.CreatePostDto;
+import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.CreateReplyDto;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
@@ -158,9 +158,9 @@ public class TestData {
         replyService.createReply(new CreateReplyDto(user2, post4_comment1, "Welcome back!"));
 
         // Logging Posts
-        List<PostsDto> postsByUser1 = postsService.getPostsByUser(user1);
-        List<PostsDto> postsByUser2 = postsService.getPostsByUser(user2);
-        List<PostsDto> postsByUser3 = postsService.getPostsByUser(user3);
+        List<ResponsePostsDto> postsByUser1 = postsService.getPostsByUser(user1);
+        List<ResponsePostsDto> postsByUser2 = postsService.getPostsByUser(user2);
+        List<ResponsePostsDto> postsByUser3 = postsService.getPostsByUser(user3);
 
         logPosts(postsByUser1);
         logPosts(postsByUser2);
@@ -228,7 +228,7 @@ public class TestData {
     }
 
 
-    private void logPosts(List<PostsDto> posts) {
+    private void logPosts(List<ResponsePostsDto> posts) {
         posts.forEach(post -> {
             String jsonString = jsonUtil.toJson(post);
             log.info(jsonString);

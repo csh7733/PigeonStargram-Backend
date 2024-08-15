@@ -1,6 +1,7 @@
 package com.pigeon_stargram.sns_clone.dto.reply.response;
 
 import com.pigeon_stargram.sns_clone.domain.reply.Reply;
+import com.pigeon_stargram.sns_clone.dto.reply.internal.ReplyContentDto;
 import lombok.*;
 
 @Getter
@@ -15,5 +16,11 @@ public class ReplyDataDto {
     public ReplyDataDto(Reply reply) {
         this.comment = reply.getContent();
         this.likes = new ReplyLikeDto(reply);
+    }
+
+    public ReplyDataDto(ReplyContentDto contentDto,
+                        ReplyLikeDto likeDto) {
+        this.comment = contentDto.getComment();
+        this.likes = likeDto;
     }
 }

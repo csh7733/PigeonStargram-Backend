@@ -39,9 +39,6 @@ public class User extends BaseTimeEntity {
 
     private String password;
 
-//    @OneToMany(mappedBy = "user")
-//    private List<Posts> posts;
-
     @JsonIgnore
     @OneToMany(mappedBy = "sender")
     private List<Follow> followers;

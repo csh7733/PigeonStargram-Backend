@@ -12,8 +12,4 @@ public class PostsLikeDto {
     private Boolean like;
     private Integer value;
 
-    public PostsLikeDto(Posts post) {
-        this.like = false;
-        this.value = post.getLikes();
-    }
 }
