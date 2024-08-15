@@ -5,7 +5,7 @@ import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.login.request.LoginDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.ForgotPasswordDto;
-import com.pigeon_stargram.sns_clone.dto.login.request.RegisterDto;
+import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.ResetPasswordDto;
 import com.pigeon_stargram.sns_clone.dto.login.response.UserEmailInfoDto;
 import com.pigeon_stargram.sns_clone.dto.login.response.UserInfoDto;
@@ -32,7 +32,7 @@ public class LoginController {
     }
     
     @PostMapping("/register")
-    public void register(@RequestBody RegisterDto request){
+    public void register(@RequestBody RequestRegisterDto request){
         loginService.register(request);
     }
 

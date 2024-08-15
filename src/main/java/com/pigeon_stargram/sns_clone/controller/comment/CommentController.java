@@ -12,7 +12,7 @@ import com.pigeon_stargram.sns_clone.dto.comment.request.RequestLikeCommentDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
-import com.pigeon_stargram.sns_clone.service.user.UserService;
+import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +27,7 @@ public class CommentController {
 
     private final PostsService postsService;
     private final CommentService commentService;
-    private final UserService userService;
+    private final BasicUserService userService;
 
     @PostMapping
     public List<ResponsePostsDto> addComment(@LoginUser SessionUser loginUser,

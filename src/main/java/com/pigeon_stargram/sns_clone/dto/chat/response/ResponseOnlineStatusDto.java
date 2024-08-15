@@ -1,5 +1,6 @@
 package com.pigeon_stargram.sns_clone.dto.chat.response;
 
+import com.pigeon_stargram.sns_clone.domain.user.User;
 import lombok.*;
 
 @Getter
@@ -11,7 +12,8 @@ public class ResponseOnlineStatusDto {
     private Long userId;
     private String onlineStatus;
 
-    public ResponseOnlineStatusDto(String onlineStatus){
-        this.onlineStatus = onlineStatus;
+    public ResponseOnlineStatusDto(User user) {
+        this.userId = user.getId();
+        this.onlineStatus = user.getOnlineStatus();
     }
 }

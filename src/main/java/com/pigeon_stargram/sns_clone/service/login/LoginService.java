@@ -3,8 +3,8 @@ package com.pigeon_stargram.sns_clone.service.login;
 import com.pigeon_stargram.sns_clone.domain.login.PasswordResetToken;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.login.request.LoginDto;
-import com.pigeon_stargram.sns_clone.dto.login.request.RegisterDto;
-import com.pigeon_stargram.sns_clone.service.user.UserService;
+import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
+import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpSession;
@@ -26,7 +26,7 @@ public class LoginService {
 
     private final JavaMailSender mailSender;
 
-    private final UserService userService;
+    private final BasicUserService userService;
 
     private final PasswordResetTokenService passwordResetTokenService;
 
@@ -45,7 +45,7 @@ public class LoginService {
         httpSession.invalidate();
     }
 
-    public void register(RegisterDto request) {
+    public void register(RequestRegisterDto request) {
         userService.save(request);
     }
 
@@ -54,7 +54,7 @@ public class LoginService {
      */
     public Boolean sendPasswordResetLink(String email) {
         log.info("email = {}",email);
-        User user = userService.findByEmail(email);
+        User user = userService.findByWorkEmail(email);
         if (user == null) {
             return false;
         }
@@ -108,7 +108,7 @@ public class LoginService {
         String email = Optional.ofNullable(passwordResetTokenService.extractEmail(token))
                 .orElseThrow(() -> new IllegalArgumentException("Invalid token or email not found"));
 
-        User user = Optional.ofNullable(userService.findByEmail(email))
+        User user = Optional.ofNullable(userService.findByWorkEmail(email))
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         userService.updatePassword(user, newPassword);

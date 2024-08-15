@@ -9,7 +9,7 @@ import com.pigeon_stargram.sns_clone.dto.chat.request.RequestOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.*;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
-import com.pigeon_stargram.sns_clone.service.user.UserService;
+import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -30,20 +30,20 @@ public class ChatController {
 
     private final ChatService chatService;
     private final FollowService followService;
-    private final UserService userService;
+    private final BasicUserService userService;
     private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("/users")
-    public List<UserChatDto> getAllChatPartners(@LoginUser SessionUser loginUser) {
+    public List<ResponseUserChatDto> getAllChatPartners(@LoginUser SessionUser loginUser) {
         Long userId = loginUser.getId();
 
         return followService.findFollowersForChat(userId);
     }
 
     @GetMapping("/users/{id}")
-    public UserChatDto getChatPartner(@PathVariable Long id) {
+    public ResponseUserChatDto getChatPartner(@PathVariable Long id) {
 
-        return userService.findUserForChat(id);
+        return userService.findUserChatById(id);
     }
 
     @GetMapping("/chats")
@@ -53,10 +53,7 @@ public class ChatController {
 
     @GetMapping("/users/{id}/online-status")
     public ResponseOnlineStatusDto getOnlineStatus(@PathVariable Long id) {
-        User user = userService.findById(id);
-        String onlineStatus = userService.getOnlineStatus(user);
-
-        return new ResponseOnlineStatusDto(onlineStatus);
+        return userService.getOnlineStatus(id);
     }
 
     @PutMapping("/users/{id}/online-status")

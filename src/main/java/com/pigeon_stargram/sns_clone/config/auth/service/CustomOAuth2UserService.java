@@ -3,7 +3,7 @@ package com.pigeon_stargram.sns_clone.config.auth.service;
 import com.pigeon_stargram.sns_clone.config.auth.dto.OAuthAttributes;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.service.user.UserService;
+import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,7 +21,7 @@ import java.util.Collections;
 @Service
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User>{
 
-    private final UserService userService;
+    private final BasicUserService userService;
     private final HttpSession httpSession;
 
     @Override
@@ -40,7 +40,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         OAuthAttributes attributes = OAuthAttributes
                 .of(registrationId, userNameAttributeName, oAuth2User.getAttributes());
 
-        User user = userService.findByEmail(attributes.getEmail());
+        User user = userService.findByWorkEmail(attributes.getEmail());
         boolean isNewUser = (user == null);
 
         if (isNewUser) {

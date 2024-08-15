@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pigeon_stargram.sns_clone.dto.Follow.AddFollowDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
-import com.pigeon_stargram.sns_clone.service.user.UserService;
+import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class TestData {
     private final ReplyService replyService;
     private final JsonUtil jsonUtil;
 
-    private final UserService userService;
+    private final BasicUserService userService;
     private final FollowService followService;
     private final ChatService chatService;
 

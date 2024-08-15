@@ -1,77 +1,41 @@
 package com.pigeon_stargram.sns_clone.service.user;
 
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
-import com.pigeon_stargram.sns_clone.dto.chat.response.UserChatDto;
-import com.pigeon_stargram.sns_clone.dto.login.request.LoginDto;
-import com.pigeon_stargram.sns_clone.dto.login.request.RegisterDto;
+import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseOnlineStatusDto;
+import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseUserChatDto;
+import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
-import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
-import com.pigeon_stargram.sns_clone.service.chat.ChatService;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import com.pigeon_stargram.sns_clone.exception.user.MultipleUsersFoundException;
+import com.pigeon_stargram.sns_clone.exception.user.UserNotFoundException;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Slf4j
-@RequiredArgsConstructor
-@Transactional
-@Service
-public class UserService {
+import static com.pigeon_stargram.sns_clone.exception.ExceptionConst.*;
 
-    private final UserRepository userRepository;
+interface UserService {
 
-    public User findByWorkEmailAndPassword(String email,String password){
-        return userRepository.findByWorkEmailAndPassword(email,password)
-                .orElse(null);
-    }
+    User findById(Long id);
 
-    public User findById(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
-    }
+    User findByWorkEmail(String email);
 
-    public User save(User user) {
-        return userRepository.save(user);
-    }
+    User findByWorkEmailAndPassword(String email, String password);
 
-    public User save(RegisterDto userDto) {
-        return userRepository.save(userDto.toEntity());
-    }
+    List<User> findAll();
 
-    public List<User> findAll() {
-        return userRepository.findAll();
-    }
+    ResponseUserChatDto findUserChatById(Long userId);
 
-    public UserChatDto findUserForChat(Long userId) {
-        return new UserChatDto(findById(userId));
-    }
+    User save(User user);
 
-    public List<User> saveAll(List<UserDto> userDtoList) {
-        List<User> users = userDtoList.stream()
-                .map(UserDto::toEntity)
-                .collect(Collectors.toList());
-        return userRepository.saveAll(users);
-    }
+    User save(RequestRegisterDto userDto);
 
-    public void updateOnlineStatus(User user,String onlineStatus){
-        user.updateOnlineStatus(onlineStatus);
-    }
+    List<User> saveAll(List<UserDto> userDtoList);
 
-    public String getOnlineStatus(User user){
-        return user.getOnlineStatus();
-    }
+    List<User> saveAllUser(List<User> users);
 
-    public User findByEmail(String email) {
-        return userRepository.findByWorkEmail(email).orElse(null);
-    }
-    public List<User> saveAllUser(List<User> users) {
-        return userRepository.saveAll(users);
-    }
+    void updateOnlineStatus(User user, String onlineStatus);
 
-    public void updatePassword(User user,String newPassword){
-        user.updatePassword(newPassword);
-    }
+    void updatePassword(User user, String newPassword);
+
+    ResponseOnlineStatusDto getOnlineStatus(Long id);
+
 }
