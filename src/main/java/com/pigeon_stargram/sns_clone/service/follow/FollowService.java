@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -80,6 +81,10 @@ public class FollowService {
                 .anyMatch(follow -> follow.getSender().equals(source));
     }
 
+    private Boolean checkMutualFollow(User user1, User user2) {
+        return isFollowing(user1, user2) && isFollowing(user2, user1);
+    }
+
     public List<Follow> findFollows(Long userId) {
         User user = userService.findById(userId);
 
@@ -106,20 +111,43 @@ public class FollowService {
                 .collect(Collectors.toList());
     }
 
-    public List<ResponseUserChatDto> findFollowersForChat(Long currentUserId) {
+    public List<ResponseUserChatDto> findPartnersForChat(Long currentUserId) {
         User currentUser = userService.findById(currentUserId);
 
-        return followRepository.findByRecipient(currentUser).stream()
+        List<User> followers = followRepository.findByRecipient(currentUser)
+                .stream()
                 .map(Follow::getSender)
+                .collect(Collectors.toList());
+
+        List<User> following = followRepository.findBySender(currentUser)
+                .stream()
+                .map(Follow::getRecipient)
+                .collect(Collectors.toList());
+
+        return Stream.concat(followers.stream(), following.stream())
+                .distinct()
                 .map(user -> {
                     Integer unReadChatCount = chatService.getUnreadChatCount(currentUserId, user.getId());
                     LastMessageDto lastMessage = chatService.getLastMessage(currentUserId, user.getId());
 
-                    return new ResponseUserChatDto(user, unReadChatCount, lastMessage);
+                    Integer state;
+                    boolean isFollowing = following.contains(user);
+                    boolean isFollowedBy = followers.contains(user);
+
+                    if (isFollowing && isFollowedBy) {
+                        state = 2;
+                    } else if (isFollowing) {
+                        state = 1;
+                    } else {
+                        state = 0;
+                    }
+
+                    return new ResponseUserChatDto(user, unReadChatCount, lastMessage, state);
                 })
                 .sorted(Comparator.comparing(ResponseUserChatDto::getLastMessage, Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
     }
+
 
     public Long countFollowings(User user) {
         return followRepository.countBySender(user);

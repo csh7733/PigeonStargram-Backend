@@ -37,7 +37,7 @@ public class ChatController {
     public List<ResponseUserChatDto> getAllChatPartners(@LoginUser SessionUser loginUser) {
         Long userId = loginUser.getId();
 
-        return followService.findFollowersForChat(userId);
+        return followService.findPartnersForChat(userId);
     }
 
     @GetMapping("/users/{id}")
@@ -47,7 +47,7 @@ public class ChatController {
     }
 
     @GetMapping("/chats")
-    public List<ChatHistoryDto> getCurrentChatHistory(@RequestParam Long user1Id, @RequestParam Long user2Id) {
+    public List<ResponseChatHistoryDto> getCurrentChatHistory(@RequestParam Long user1Id, @RequestParam Long user2Id) {
         return chatService.getUserChats(user1Id, user2Id);
     }
 
