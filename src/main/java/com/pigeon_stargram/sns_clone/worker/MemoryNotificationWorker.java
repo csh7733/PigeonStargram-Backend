@@ -1,7 +1,9 @@
 package com.pigeon_stargram.sns_clone.worker;
 
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
+import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
 import com.pigeon_stargram.sns_clone.repository.notification.NotificationRepository;
+import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -18,8 +20,7 @@ import java.util.Queue;
 @Component
 public class MemoryNotificationWorker implements NotificationWorker{
 
-    private final Queue<Notification> queue = new LinkedList<>();
-    private final NotificationRepository notificationRepository;
+    private final Queue<ResponseNotificationDto> queue = new LinkedList<>();
     private final SimpMessagingTemplate messagingTemplate;
 
     @Override
@@ -27,16 +28,15 @@ public class MemoryNotificationWorker implements NotificationWorker{
     @Scheduled(fixedRate = 1000)
     public void work() {
         Optional.ofNullable(queue.poll())
-                .ifPresent(front -> {
-                    Notification notification = notificationRepository.findById(front.getId()).get();
-                    String destination = "/topic/notification/" + notification.getRecipient().getId();
+                .ifPresent(notification -> {
+                    String destination = "/topic/notification/" + notification.getTargetUserId();
                     messagingTemplate.convertAndSend(destination, notification);
-                    log.info("notification sent = {}", notification);
+                    log.info("notification sent = {}", notification.toString());
                 });
     }
 
     @Override
-    public void enqueue(Notification notification) {
+    public void enqueue(ResponseNotificationDto notification) {
         queue.add(notification);
     }
 }

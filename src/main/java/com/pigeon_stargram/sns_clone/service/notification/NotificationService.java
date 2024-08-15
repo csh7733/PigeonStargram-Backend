@@ -31,7 +31,11 @@ public class NotificationService {
                 .map(userService::findById)
                 .map(recipient -> dto.toNotification(sender, recipient))
                 .toList();
-        notifications.forEach(notificationWorker::enqueue);
+
+        notifications.stream()
+                .map(ResponseNotificationDto::new)
+                .forEach(notificationWorker::enqueue);
+
         return notificationRepository.saveAll(notifications);
     }
 
@@ -57,6 +61,12 @@ public class NotificationService {
         return notifications.stream()
                 .map(ResponseNotificationDto::new)
                 .toList();
+    }
+
+    public ResponseNotificationDto getNotificationResponse(Long id) {
+        return notificationRepository.findById(id)
+                .map(ResponseNotificationDto::new)
+                .orElseThrow(() -> new RuntimeException("Notification not found"));
     }
 
 }
