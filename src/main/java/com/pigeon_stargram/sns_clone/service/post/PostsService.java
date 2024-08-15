@@ -69,8 +69,9 @@ public class PostsService {
                 .orElseThrow(() -> new EntityNotFoundException("Post not found with id " + postId));
 
         List<ResponseCommentDto> comments = commentService.getCommentListByPost(post.getId());
+        Integer likeCount = postsLikeRepository.countByPostId(postId);
 
-        return new ResponsePostsDto(post, comments);
+        return new ResponsePostsDto(post, comments, likeCount);
     }
 
     public Posts createPost(CreatePostDto dto) {
@@ -117,12 +118,10 @@ public class PostsService {
                 .ifPresentOrElse(
                         existingLike -> {
                             postsLikeRepository.delete(existingLike);
-                            post.decrementLikes();
                         },
                         () -> {
                             PostsLike postsLike = new PostsLike(dto.getUser(), post);
                             postsLikeRepository.save(postsLike);
-                            post.incrementLikes();
                             notificationService.save(dto);
                         }
                 );
@@ -143,7 +142,8 @@ public class PostsService {
                 .sorted(Comparator.comparing(Posts::getId).reversed())
                 .map(post -> {
                     List<ResponseCommentDto> comments = commentService.getCommentListByPost(post.getId());
-                    return new ResponsePostsDto(post, comments);
+                    Integer likeCount = postsLikeRepository.countByPostId(post.getId());
+                    return new ResponsePostsDto(post, comments, likeCount);
                 })
                 .collect(Collectors.toList());
     }

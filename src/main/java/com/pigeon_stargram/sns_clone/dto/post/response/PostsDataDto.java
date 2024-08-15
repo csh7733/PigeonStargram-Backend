@@ -18,12 +18,14 @@ public class PostsDataDto {
     private PostsLikeDto likes;
     private List<ResponseCommentDto> comments;
 
-    public PostsDataDto(Posts post, List<ResponseCommentDto> comments) {
+    public PostsDataDto(Posts post,
+                        List<ResponseCommentDto> comments,
+                        Integer likeCount) {
         this.content = post.getContent();
         this.images = post.getImages().stream()
                 .map(ImageDto::new)
                 .collect(Collectors.toList());
-        this.likes = new PostsLikeDto(post);
+        this.likes = new PostsLikeDto(false, likeCount);
         this.comments = comments;
     }
 

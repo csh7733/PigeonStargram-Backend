@@ -21,6 +21,7 @@ public class NotificationController {
     // 로그인유저에 대한 알림 조회
     @GetMapping("")
     public List<ResponseNotificationDto> getNotifications(@LoginUser User user) {
+        log.info("getNotifications UserId={}", user.getId());
         return notificationService.findByUserId(user.getId());
     }
 

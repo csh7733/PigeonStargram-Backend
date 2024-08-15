@@ -17,10 +17,12 @@ public class ResponsePostsDto {
     private PostsProfileDto profile;
     private PostsDataDto data;
 
-    public ResponsePostsDto(Posts post, List<ResponseCommentDto> comments) {
+    public ResponsePostsDto(Posts post,
+                            List<ResponseCommentDto> comments,
+                            Integer likeCount) {
         this.id = post.getId();
         this.profile = new PostsProfileDto(post.getUser(), post.getModifiedDate());
-        this.data = new PostsDataDto(post, comments);
+        this.data = new PostsDataDto(post, comments, likeCount);
     }
 
     public ResponsePostsDto(PostsContentDto contentDto,
