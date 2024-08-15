@@ -38,14 +38,14 @@ public class NotificationService {
     public List<ResponseNotificationDto> findByUserId(Long userId) {
         User recipient = userService.findById(userId);
         return notificationRepository.findAllByRecipient(recipient).stream()
-                .map(this::toResponseDto)
+                .map(ResponseNotificationDto::new)
                 .toList();
     }
 
     public ResponseNotificationDto readNotification(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId).get();
         notification.setRead(true);
-        return toResponseDto(notification);
+        return new ResponseNotificationDto(notification);
     }
 
     public List<ResponseNotificationDto> readNotifications(Long userId) {
@@ -55,17 +55,8 @@ public class NotificationService {
             notification.setRead(true);
         });
         return notifications.stream()
-                .map(this::toResponseDto)
+                .map(ResponseNotificationDto::new)
                 .toList();
-    }
-
-    public ResponseNotificationDto toResponseDto(Notification notification) {
-        return ResponseNotificationDto.builder()
-                .name(notification.getSender().getName())
-                .content(notification.getMessage())
-                .createdTime(notification.getCreatedDate())
-                .isRead(notification.getIsRead())
-                .build();
     }
 
 }
