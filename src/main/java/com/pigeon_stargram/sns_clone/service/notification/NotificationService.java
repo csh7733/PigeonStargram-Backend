@@ -1,6 +1,7 @@
 package com.pigeon_stargram.sns_clone.service.notification;
 
 
+import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.user.User;
@@ -44,13 +45,14 @@ public class NotificationService {
                 .toList();
     }
 
-    public ResponseNotificationDto readNotification(Long id) {
-        Notification notification = notificationRepository.findById(id).get();
+    public ResponseNotificationDto readNotification(Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId).get();
         notification.setRead(true);
         return toResponseDto(notification);
     }
 
-    public List<ResponseNotificationDto> readNotifications(User user) {
+    public List<ResponseNotificationDto> readNotifications(Long userId) {
+        User user = userService.findById(userId);
         List<Notification> notifications = notificationRepository.findAllByRecipient(user);
         notifications.forEach(notification -> {
             notification.setRead(true);
