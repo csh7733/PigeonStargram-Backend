@@ -17,10 +17,12 @@ public class ResponseCommentDto {
     private CommentProfileDto profile;
     private CommentDataDto data;
 
-    public ResponseCommentDto(Comment comment, List<ResponseReplyDto> replies) {
+    public ResponseCommentDto(Comment comment,
+                              List<ResponseReplyDto> replies,
+                              Integer likeCount) {
         this.id = comment.getId();
         this.profile = new CommentProfileDto(comment.getUser(), comment.getModifiedDate());
-        this.data = new CommentDataDto(comment, replies);
+        this.data = new CommentDataDto(comment, replies, likeCount);
     }
 
     public ResponseCommentDto(CommentContentDto contentDto,

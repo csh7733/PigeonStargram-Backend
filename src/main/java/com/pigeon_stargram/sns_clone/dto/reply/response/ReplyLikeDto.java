@@ -11,9 +11,4 @@ import lombok.*;
 public class ReplyLikeDto {
     private Boolean like;
     private Integer value;
-
-    public ReplyLikeDto(Reply reply) {
-        this.like = false;
-        this.value = reply.getLikes();
-    }
 }

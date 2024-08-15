@@ -80,7 +80,8 @@ public class CommentService {
         return comments.stream()
                 .map(comment -> {
                     List<ResponseReplyDto> replies = replyService.getReplyListByComment(comment.getId());
-                    return new ResponseCommentDto(comment, replies);
+                    Integer likeCount = commentLikeRepository.countByCommentId(comment.getId());
+                    return new ResponseCommentDto(comment, replies, likeCount);
                 })
                 .collect(Collectors.toList());
     }
@@ -107,7 +108,6 @@ public class CommentService {
                 .ifPresentOrElse(
                         existingLike -> {
                             commentLikeRepository.delete(existingLike);
-                            comment.decrementLikes();
                         },
                         () -> {
                             CommentLike commentLike = CommentLike.builder()
@@ -115,8 +115,6 @@ public class CommentService {
                                     .comment(comment)
                                     .build();
                             commentLikeRepository.save(commentLike);
-                            comment.incrementLikes();
-
                             notificationService.save(dto);
                         }
                 );

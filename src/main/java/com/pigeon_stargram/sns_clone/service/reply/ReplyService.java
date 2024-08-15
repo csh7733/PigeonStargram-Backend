@@ -72,8 +72,11 @@ public class ReplyService {
 
     public List<ResponseReplyDto> getReplyListByComment(Long commentId) {
         return replyRepository.findByCommentId(commentId).stream()
-                .map(ResponseReplyDto::new)
-                .collect(Collectors.toList());
+                .map(reply -> {
+                    Integer likeCount = replyLikeRepository.countByReplyId(reply.getId());
+                    return new ResponseReplyDto(reply, likeCount);
+                })
+                .toList();
     }
 
     public void editReply(Long replyId, String newContent) {
@@ -89,7 +92,6 @@ public class ReplyService {
                 .ifPresentOrElse(
                         existingLike -> {
                             replyLikeRepository.delete(existingLike);
-                            reply.decrementLikes();
                         },
                         () -> {
                             ReplyLike replyLike = ReplyLike.builder()
@@ -97,7 +99,6 @@ public class ReplyService {
                                     .reply(reply)
                                     .build();
                             replyLikeRepository.save(replyLike);
-                            reply.incrementLikes();
                             notificationService.save(dto);
                         }
                 );
