@@ -9,4 +9,5 @@ import lombok.*;
 @AllArgsConstructor
 public class RequestLikeCommentDto {
     private Long commentId;
+    private Long postUserId;
 }

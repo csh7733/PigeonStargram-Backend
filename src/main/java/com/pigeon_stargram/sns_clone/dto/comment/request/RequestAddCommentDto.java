@@ -10,5 +10,6 @@ import lombok.*;
 @AllArgsConstructor
 public class RequestAddCommentDto {
     private Long postId;
+    private Long postUserId;
     private newCommentDto comment;
 }
