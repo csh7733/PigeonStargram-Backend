@@ -14,10 +14,10 @@ public class ResponseReplyDto {
     private ReplyProfileDto profile;
     private ReplyDataDto data;
 
-    public ResponseReplyDto(Reply reply) {
+    public ResponseReplyDto(Reply reply, Integer likeCount) {
         this.id = reply.getId();
         this.profile = new ReplyProfileDto(reply.getUser(),reply.getModifiedDate());
-        this.data = new ReplyDataDto(reply);
+        this.data = new ReplyDataDto(reply, likeCount);
     }
 
     public ResponseReplyDto(ReplyContentDto contentDto,

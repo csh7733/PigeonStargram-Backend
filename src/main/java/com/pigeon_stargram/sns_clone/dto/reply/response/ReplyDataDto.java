@@ -13,9 +13,9 @@ public class ReplyDataDto {
     private String comment;
     private ReplyLikeDto likes;
 
-    public ReplyDataDto(Reply reply) {
+    public ReplyDataDto(Reply reply, Integer likeCount) {
         this.comment = reply.getContent();
-        this.likes = new ReplyLikeDto(reply);
+        this.likes = new ReplyLikeDto(false, likeCount);
     }
 
     public ReplyDataDto(ReplyContentDto contentDto,

@@ -13,9 +13,4 @@ import lombok.Setter;
 public class CommentLikeDto {
     private Boolean like;
     private Integer value;
-
-    public CommentLikeDto(Comment comment) {
-        this.like = false;
-        this.value = comment.getLikes();
-    }
 }

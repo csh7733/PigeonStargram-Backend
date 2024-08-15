@@ -31,8 +31,6 @@ public class Reply extends BaseTimeEntity {
 
     private String content;
 
-    private Integer likes;
-
     //CascadeType.Remove를 위해 필요한 필드(실제로는 사용X)
     //fetch = FetchType.LAZY(기본값)로 두어 프록시를 fetch 하지않음
     @OneToMany(mappedBy = "reply", cascade = CascadeType.REMOVE, orphanRemoval = true)
@@ -43,23 +41,9 @@ public class Reply extends BaseTimeEntity {
         this.user = user;
         this.comment = comment;
         this.content = content;
-        this.likes = 0;
     }
 
     public void modify(String content) {
         this.content = content;
-    }
-
-    public void incrementLikes() {
-        if (this.likes == null) {
-            this.likes = 0;
-        }
-        this.likes += 1;
-    }
-
-    public void decrementLikes() {
-        if (this.likes != null && this.likes > 0) {
-            this.likes -= 1;
-        }
     }
 }

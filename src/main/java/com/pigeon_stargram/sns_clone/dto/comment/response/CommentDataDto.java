@@ -17,9 +17,11 @@ public class CommentDataDto {
     private CommentLikeDto likes;
     private List<ResponseReplyDto> replies;
 
-    public CommentDataDto(Comment comment, List<ResponseReplyDto> replies) {
+    public CommentDataDto(Comment comment,
+                          List<ResponseReplyDto> replies,
+                          Integer likeCount) {
         this.comment = comment.getContent();
-        this.likes = new CommentLikeDto(comment);
+        this.likes = new CommentLikeDto(false, likeCount);
         this.replies = replies;
     }
 
