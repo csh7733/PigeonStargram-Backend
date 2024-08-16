@@ -29,7 +29,8 @@ public class CreateCommentDto implements NotificationConvertable {
                 .isRead(false)
                 .recipient(recipient)
                 .sender(sender)
-                .redirectUrl(generateRedirectUrl(sender, recipient))
+                .sourceId(post.getUser().getId())
+                .sourceId2(post.getId())
                 .build();
     }
 
@@ -45,7 +46,7 @@ public class CreateCommentDto implements NotificationConvertable {
 
     @Override
     public String generateMessage(User sender, User recipient) {
-        return sender.getName() + "님이 댓글을 남겼어요.";
+        return sender.getName() + "님이 댓글을 남겼습니다.";
     }
 
     @Override

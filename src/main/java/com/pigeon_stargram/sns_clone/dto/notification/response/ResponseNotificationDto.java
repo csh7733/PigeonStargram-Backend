@@ -4,10 +4,7 @@ import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.formatTime;
-import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFormattedTime;
 
 @Getter
 @Builder
@@ -24,8 +21,19 @@ public class ResponseNotificationDto {
     private Boolean isRead;
     private String time;
     private Long targetUserId;
-    private Long noticeSourceId;
     private NotificationType type;
+    private Long sourceId;
+
+    // Type이 일경우 필요한 필드
+    // MY_POST_COMMENT ||
+    // MY_POST_LIKE ||
+    // MY_COMMENT_REPLY ||
+    // MY_COMMENT_LIKE ||
+    // MY_REPLY_LIKE
+
+    private Long sourceId2;
+
+
 
     public ResponseNotificationDto (Notification notification) {
         this.id = notification.getId();
@@ -36,6 +44,7 @@ public class ResponseNotificationDto {
         this.isRead = notification.getIsRead();
         this.time = formatTime(notification.getCreatedDate());
         this.targetUserId = notification.getRecipient().getId();
-        this.noticeSourceId =  notification.getNoticeSourceId();
+        this.sourceId =  notification.getSourceId();
+        this.sourceId2 = notification.getSourceId2();
     }
 }

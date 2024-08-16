@@ -38,8 +38,7 @@ public class AddFollowDto implements NotificationConvertable {
                 .isRead(false)
                 .type(getNotificationType(sender, recipient))
                 .message(generateMessage(sender, recipient))
-                .redirectUrl(generateRedirectUrl(sender, recipient))
-                .noticeSourceId(senderId)
+                .sourceId(senderId)
                 .build();
     }
 

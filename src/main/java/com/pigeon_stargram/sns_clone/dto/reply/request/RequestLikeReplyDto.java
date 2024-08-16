@@ -11,6 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 @ToString
 public class RequestLikeReplyDto {
+    private Long postId;
     private Long postUserId;
     private Long replyId;
 }

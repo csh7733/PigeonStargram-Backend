@@ -77,6 +77,8 @@ public class CommentController {
     @PostMapping("/like")
     public List<ResponsePostsDto> likeComment(@LoginUser SessionUser loginUser,
                                               @RequestBody RequestLikeCommentDto request) {
+        Long postId = request.getPostId();
+
         Long userId = loginUser.getId();
         User user = userService.findById(userId);
 
@@ -85,7 +87,14 @@ public class CommentController {
 
         Long commentId = request.getCommentId();
 
-        commentService.likeComment(new LikeCommentDto(user, commentId));
+        LikeCommentDto likeCommentDto = LikeCommentDto.builder()
+                .user(user)
+                .commentId(commentId)
+                .postUserId(postUserId)
+                .postId(postId)
+                .build();
+
+        commentService.likeComment(likeCommentDto);
 
         return postsService.getPostsByUser(postUser);
     }

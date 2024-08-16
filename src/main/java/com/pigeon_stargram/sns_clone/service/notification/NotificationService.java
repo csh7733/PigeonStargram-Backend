@@ -55,27 +55,17 @@ public class NotificationService {
                 .toList();
     }
 
-    public ResponseNotificationDto readNotification(Long notificationId) {
+    public void readNotification(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId).get();
         notification.setRead(true);
-        return new ResponseNotificationDto(notification);
     }
 
-    public List<ResponseNotificationDto> readNotifications(Long userId) {
+    public void readNotifications(Long userId) {
         User user = userService.findById(userId);
         List<Notification> notifications = notificationRepository.findAllByRecipient(user);
         notifications.forEach(notification -> {
             notification.setRead(true);
         });
-        return notifications.stream()
-                .map(ResponseNotificationDto::new)
-                .toList();
-    }
-
-    public ResponseNotificationDto getNotificationResponse(Long id) {
-        return notificationRepository.findById(id)
-                .map(ResponseNotificationDto::new)
-                .orElseThrow(() -> new RuntimeException("Notification not found"));
     }
 
 }

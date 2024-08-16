@@ -32,7 +32,7 @@ public class CreatePostDto implements NotificationConvertable {
                 .type(NotificationType.FOLLOWING_POST)
                 .isRead(false)
                 .message(generateMessage(sender, recipient))
-                .redirectUrl(generateRedirectUrl(sender, recipient))
+                .sourceId(user.getId())
                 .build();
     }
 
@@ -48,7 +48,8 @@ public class CreatePostDto implements NotificationConvertable {
 
     @Override
     public String generateMessage(User sender, User recipient) {
-        return user.getName() + "님이 새 글을 등록했습니다.";
+        return user.getName() + "님이 새 글을 등록했습니다. 지금 " +
+                user.getName() +"님의 프로필로 가서 확인하세요!";
     }
 
     @Override

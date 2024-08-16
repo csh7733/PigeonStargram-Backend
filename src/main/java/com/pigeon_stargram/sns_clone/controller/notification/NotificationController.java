@@ -26,15 +26,17 @@ public class NotificationController {
 
     // 단일 알림 읽음 처리요청
     @PatchMapping("/{notificationId}/read")
-    public ResponseNotificationDto readNotification(@LoginUser SessionUser loginUser,
+    public void readNotification(@LoginUser SessionUser loginUser,
                                                     @PathVariable Long notificationId) {
-        return notificationService.readNotification(notificationId);
+
+        notificationService.readNotification(notificationId);
     }
 
     // 전체 알림 읽음 처리요청
     @PatchMapping("read")
-    public List<ResponseNotificationDto> readNotifications(@LoginUser SessionUser loginUser) {
-        return notificationService.readNotifications(loginUser.getId());
+    public void readNotifications(@LoginUser SessionUser loginUser) {
+
+        notificationService.readNotifications(loginUser.getId());
     }
 
 }

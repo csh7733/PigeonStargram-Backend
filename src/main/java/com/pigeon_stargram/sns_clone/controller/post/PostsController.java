@@ -73,13 +73,21 @@ public class PostsController {
     @PostMapping("/like")
     public List<ResponsePostsDto> likePost(@LoginUser SessionUser loginUser,
                                            @RequestBody RequestLikePostDto request) {
+        Long postId = request.getPostId();
+
         Long userId = loginUser.getId();
         User user = userService.findById(userId);
 
         Long postUserId = request.getPostUserId();
         User postUser = userService.findById(postUserId);
 
-        postsService.likePost(new LikePostDto(user, request.getPostId()));
+        LikePostDto likePostDto = LikePostDto.builder()
+                .user(user)
+                .postId(postId)
+                .writerId(postUserId)
+                .build();
+
+        postsService.likePost(likePostDto);
 
         return postsService.getPostsByUser(postUser);
     }

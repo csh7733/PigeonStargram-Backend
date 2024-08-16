@@ -8,6 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RequestAddReplyDto {
+    private Long postId;
     private Long commentId;
     private Long postUserId;
     private newReplyDto reply;

@@ -35,6 +35,8 @@ public class ReplyController {
     @PostMapping
     public List<ResponsePostsDto> addReply(@LoginUser SessionUser loginUser,
                                            @RequestBody RequestAddReplyDto request) {
+        Long postId = request.getPostId();
+
         Long commentId = request.getCommentId();
         Comment comment = commentService.getCommentEntity(commentId);
         String content = request.getReply().getContent();
@@ -45,7 +47,16 @@ public class ReplyController {
         Long postUserId = request.getPostUserId();
         User postUser = userService.findById(postUserId);
 
-        replyService.createReply(new CreateReplyDto(user,comment,content));
+        CreateReplyDto createReplyDto = CreateReplyDto.builder()
+                .user(user)
+                .comment(comment)
+                .content(content)
+                .postUserId(postUserId)
+                .postId(postId)
+                .build();
+
+        replyService.createReply(createReplyDto);
+
 
         return postsService.getPostsByUser(postUser);
     }
@@ -77,6 +88,8 @@ public class ReplyController {
     @PostMapping("/like")
     public List<ResponsePostsDto> likeReply(@LoginUser SessionUser loginUser,
                                             @RequestBody RequestLikeReplyDto request) {
+        Long postId = request.getPostId();
+
         Long userId = loginUser.getId();
         User user = userService.findById(userId);
 
@@ -85,7 +98,14 @@ public class ReplyController {
 
         Long replyId = request.getReplyId();
 
-        replyService.likeReply(new LikeReplyDto(user,replyId));
+        LikeReplyDto likeReplyDto = LikeReplyDto.builder()
+                .user(user)
+                .replyId(replyId)
+                .postUserId(postUserId)
+                .postId(postId)
+                .build();
+
+        replyService.likeReply(likeReplyDto);
 
         return postsService.getPostsByUser(postUser);
     }

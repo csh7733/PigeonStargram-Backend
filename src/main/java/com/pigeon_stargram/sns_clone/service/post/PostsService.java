@@ -110,7 +110,6 @@ public class PostsService {
 
     public void likePost(LikePostDto dto) {
         Posts post = getPostEntity(dto.getPostId());
-        dto.setWriterId(post.getUser().getId());
 
         postsLikeRepository.findByUserAndPost(dto.getUser(), post)
                 .ifPresentOrElse(

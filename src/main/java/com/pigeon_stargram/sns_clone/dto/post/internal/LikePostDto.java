@@ -20,20 +20,16 @@ public class LikePostDto implements NotificationConvertable {
     private Long postId;
     private Long writerId;
 
-    public LikePostDto(User user, Long postId) {
-        this.user = user;
-        this.postId = postId;
-    }
-
     @Override
     public Notification toNotification(User sender, User recipient) {
         return Notification.builder()
-                .redirectUrl(generateRedirectUrl(sender, recipient))
                 .message(generateMessage(sender, recipient))
                 .isRead(false)
                 .sender(sender)
                 .recipient(recipient)
                 .type(NotificationType.MY_POST_LIKE)
+                .sourceId(writerId)
+                .sourceId2(postId)
                 .build();
     }
 

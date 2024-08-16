@@ -21,6 +21,8 @@ public class CreateReplyDto implements NotificationConvertable {
     private User user;
     private Comment comment;
     private String content;
+    private Long postUserId;
+    private Long postId;
 
     @Override
     public Notification toNotification(User sender, User recipient) {
@@ -30,7 +32,8 @@ public class CreateReplyDto implements NotificationConvertable {
                 .type(NotificationType.MY_COMMENT_REPLY)
                 .isRead(false)
                 .message(generateMessage(sender, recipient))
-                .redirectUrl(generateRedirectUrl(sender, recipient))
+                .sourceId(postUserId)
+                .sourceId2(postId)
                 .build();
     }
 
@@ -46,7 +49,7 @@ public class CreateReplyDto implements NotificationConvertable {
 
     @Override
     public String generateMessage(User sender, User recipient) {
-        return sender.getName() + "님이 답글을 남기셨습니다.";
+        return sender.getName() + "님이 답글을 남겼습니다.";
     }
 
     @Override
