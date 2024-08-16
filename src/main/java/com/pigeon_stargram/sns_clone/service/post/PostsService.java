@@ -78,10 +78,7 @@ public class PostsService {
     public Posts createPost(CreatePostDto dto) {
         Posts post = new Posts(dto.getUser(), dto.getContent());
 
-        List<Long> notificationRecipientIds = followService.findFollows(dto.getUser().getId()).stream()
-                .filter(Follow::getIsNotificationEnabled)
-                .map(follow -> follow.getRecipient().getId())
-                .toList();
+        List<Long> notificationRecipientIds = followService.findFollows(dto.getUser().getId());
         dto.setNotificationRecipientIds(notificationRecipientIds);
 
         notificationService.save(dto);

@@ -29,8 +29,11 @@ public class NotificationService {
      * TODO : ID생성방식 변화시키기 (지연쓰기를 위해서)
      */
     public List<Notification> save(NotificationConvertable dto) {
-        User sender = userService.findById(dto.getSenderId());
+        Long senderId = dto.getSenderId();
+        User sender = userService.findById(senderId);
+
         List<Notification> notifications = dto.getRecipientIds().stream()
+                .filter(recipientId -> !recipientId.equals(senderId))
                 .map(userService::findById)
                 .map(recipient -> dto.toNotification(sender, recipient))
                 .toList();

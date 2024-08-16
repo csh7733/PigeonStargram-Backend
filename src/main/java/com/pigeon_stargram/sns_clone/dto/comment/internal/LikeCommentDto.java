@@ -49,7 +49,7 @@ public class LikeCommentDto implements NotificationConvertable {
 
     @Override
     public String generateMessage(User sender, User recipient) {
-        return "";
+        return sender.getName() + "님이 내 댓글을 좋아합니다.";
     }
 
     @Override

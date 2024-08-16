@@ -46,7 +46,7 @@ public class CreateReplyDto implements NotificationConvertable {
 
     @Override
     public String generateMessage(User sender, User recipient) {
-        return sender.getName() + "님이 대댓글을 남기셨습니다.";
+        return sender.getName() + "님이 답글을 남기셨습니다.";
     }
 
     @Override

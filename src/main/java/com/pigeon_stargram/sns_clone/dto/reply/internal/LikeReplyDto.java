@@ -50,7 +50,7 @@ public class LikeReplyDto implements NotificationConvertable {
 
     @Override
     public String generateMessage(User sender, User recipient) {
-        return sender.getName() + "님이 내 대댓글을 좋아합니다.";
+        return sender.getName() + "님이 내 답글을 좋아합니다.";
     }
 
     @Override

@@ -48,7 +48,7 @@ public class CreatePostDto implements NotificationConvertable {
 
     @Override
     public String generateMessage(User sender, User recipient) {
-        return user.getName() + "님이 새 글을 등록했어요.";
+        return user.getName() + "님이 새 글을 등록했습니다.";
     }
 
     @Override

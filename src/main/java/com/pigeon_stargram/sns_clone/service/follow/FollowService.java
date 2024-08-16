@@ -85,10 +85,12 @@ public class FollowService {
         return isFollowing(user1, user2) && isFollowing(user2, user1);
     }
 
-    public List<Follow> findFollows(Long userId) {
+    public List<Long> findFollows(Long userId) {
         User user = userService.findById(userId);
 
         return followRepository.findByRecipient(user).stream()
+                .filter(Follow::getIsNotificationEnabled)
+                .map(follow -> follow.getSender().getId())
                 .toList();
     }
 
