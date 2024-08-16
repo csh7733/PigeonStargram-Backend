@@ -4,7 +4,9 @@ package com.pigeon_stargram.sns_clone.service.notification;
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyPostTaggedUsersDto;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
+import com.pigeon_stargram.sns_clone.dto.post.request.RequestCreatePostDto;
 import com.pigeon_stargram.sns_clone.repository.notification.NotificationRepository;
 import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
 import com.pigeon_stargram.sns_clone.worker.NotificationWorker;
@@ -68,4 +70,7 @@ public class NotificationService {
         });
     }
 
+    public void notifyTaggedUsers(NotificationConvertable dto) {
+        if(!dto.getRecipientIds().isEmpty()) save(dto);
+    }
 }
