@@ -150,7 +150,6 @@ public class FollowService {
                 .collect(Collectors.toList());
     }
 
-
     public Long countFollowings(User user) {
         return followRepository.countBySender(user);
     }
@@ -158,4 +157,15 @@ public class FollowService {
     public Long countFollowers(User user) {
         return followRepository.countByRecipient(user);
     }
+
+    public void toggleNotificationEnabled(User sender, User recipient) {
+        followRepository.findBysenderAndRecipient(sender, recipient)
+                .ifPresent(Follow::toggleNotificationEnabled);
+    }
+    public Boolean getNotificationEnabled(User sender, User recipient) {
+        return followRepository.findBysenderAndRecipient(sender, recipient)
+                .map(Follow::getIsNotificationEnabled)
+                .orElse(false);
+    }
+
 }

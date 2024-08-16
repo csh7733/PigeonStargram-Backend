@@ -84,4 +84,26 @@ public class FollowController {
         return followService.countFollowings(user);
     }
 
+    @GetMapping("/notice")
+    public Boolean getNotificationEnabled(@LoginUser SessionUser loginUser,
+                                          @RequestParam Long targetUserId) {
+        Long currentUserId = loginUser.getId();
+        User currentUser = userService.findById(currentUserId);
+
+        User targetUser = userService.findById(targetUserId);
+
+        return followService.getNotificationEnabled(currentUser,targetUser);
+    }
+
+    @PatchMapping("/notice")
+    public void toggleNotificationEnabled(@LoginUser SessionUser loginUser,
+                                          @RequestParam Long targetUserId) {
+        Long currentUserId = loginUser.getId();
+        User currentUser = userService.findById(currentUserId);
+
+        User targetUser = userService.findById(targetUserId);
+
+        followService.toggleNotificationEnabled(currentUser, targetUser);
+    }
+
 }

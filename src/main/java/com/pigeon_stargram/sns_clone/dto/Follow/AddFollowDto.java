@@ -26,7 +26,7 @@ public class AddFollowDto implements NotificationConvertable {
         return Follow.builder()
                 .sender(sender)
                 .recipient(recipient)
-                .isNotificationEnabled(true)
+                .isNotificationEnabled(false)
                 .build();
     }
 
