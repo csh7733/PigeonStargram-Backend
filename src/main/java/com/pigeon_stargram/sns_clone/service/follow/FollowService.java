@@ -10,7 +10,7 @@ import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseUserChatDto;
 import com.pigeon_stargram.sns_clone.repository.follow.FollowRepository;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
-import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
+import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 @Service
 public class FollowService {
 
-    private final BasicUserService userService;
+    private final UserService userService;
     private final ChatService chatService;
     private final FollowRepository followRepository;
     private final NotificationService notificationService;

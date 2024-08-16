@@ -13,7 +13,7 @@ import com.pigeon_stargram.sns_clone.dto.reply.request.RequestLikeReplyDto;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
-import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
+import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +29,7 @@ public class ReplyController {
     private final PostsService postsService;
     private final CommentService commentService;
     private final ReplyService replyService;
-    private final BasicUserService userService;
+    private final UserService userService;
 
     @PostMapping
     public List<ResponsePostsDto> addReply(@LoginUser SessionUser loginUser,

@@ -1,14 +1,17 @@
 package com.pigeon_stargram.sns_clone.service.login;
 
 import com.pigeon_stargram.sns_clone.domain.login.PasswordResetToken;
+import com.pigeon_stargram.sns_clone.exception.login.TokenExpiredException;
+import com.pigeon_stargram.sns_clone.exception.login.TokenNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.login.PasswordResetTokenRepository;
 import com.pigeon_stargram.sns_clone.util.PasswordResetTokenGenerator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+
+import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
 
 @Service
 @RequiredArgsConstructor
@@ -27,16 +30,20 @@ public class PasswordResetTokenService {
         return tokenRepository.save(passwordResetToken);
     }
 
-    public Boolean validateToken(String token) {
-        return tokenRepository.findByToken(token)
-                .filter(resetToken -> resetToken.getExpiryDate().isAfter(LocalDateTime.now()))
-                .isPresent();
+    public PasswordResetToken validateToken(String token) {
+        PasswordResetToken resetToken = tokenRepository.findByToken(token)
+                .orElseThrow(() -> new TokenNotFoundException(TOKEN_NOT_FOUND));
+
+        if (!resetToken.getExpiryDate().isAfter(LocalDateTime.now())) {
+            throw new TokenExpiredException(TOKEN_EXPIRED);
+        }
+        return resetToken;
     }
 
     public String extractEmail(String token) {
         return tokenRepository.findByToken(token)
                 .map(PasswordResetToken::getEmail)
-                .orElse(null);
+                .orElseThrow(() -> new TokenNotFoundException(TOKEN_NOT_FOUND));
     }
 
 }

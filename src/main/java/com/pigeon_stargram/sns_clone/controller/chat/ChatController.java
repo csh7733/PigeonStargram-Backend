@@ -9,7 +9,7 @@ import com.pigeon_stargram.sns_clone.dto.chat.request.RequestOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.*;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
-import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
+import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -30,7 +30,7 @@ public class ChatController {
 
     private final ChatService chatService;
     private final FollowService followService;
-    private final BasicUserService userService;
+    private final UserService userService;
     private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("/users")
@@ -59,12 +59,10 @@ public class ChatController {
     @PutMapping("/users/{id}/online-status")
     public void setOnlineStatus(@PathVariable Long id,
                                 @RequestBody RequestOnlineStatusDto request) {
-        User user = userService.findById(id);
         String onlineStatus = request.getOnlineStatus();
+        userService.updateOnlineStatus(id, onlineStatus);
 
-        userService.updateOnlineStatus(user,onlineStatus);
-
-        sentOnlineStatus(id,onlineStatus);
+        sentOnlineStatus(id, onlineStatus);
     }
 
     @MessageMapping("/chat/{user1Id}/{user2Id}")

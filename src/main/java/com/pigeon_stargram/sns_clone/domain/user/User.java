@@ -24,6 +24,7 @@ public class User extends BaseTimeEntity {
 
     private String name;
     private String company;
+    @Column(unique = true)
     private String workEmail;
     private String personalEmail;
     private String workPhone;

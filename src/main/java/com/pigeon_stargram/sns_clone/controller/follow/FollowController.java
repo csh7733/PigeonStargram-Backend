@@ -6,7 +6,7 @@ import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.Follow.*;
 import com.pigeon_stargram.sns_clone.dto.Follow.request.RequestAddFollowerDto;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
-import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
+import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +20,7 @@ import java.util.List;
 public class FollowController {
 
     private final FollowService followService;
-    private final BasicUserService userService;
+    private final UserService userService;
 
     // 특정유저가 팔로우중인 사람 조회 - 일반
     @GetMapping("/followings")

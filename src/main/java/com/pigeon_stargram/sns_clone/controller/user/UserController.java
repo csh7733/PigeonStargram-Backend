@@ -5,7 +5,7 @@ import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.user.response.LoginUserDto;
 import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
-import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
+import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class UserController {
 
-    private final BasicUserService userService;
+    private final UserService userService;
     @GetMapping("/me")
     public LoginUserDto getCurrentMember(@LoginUser SessionUser loginUser){
         User user = userService.findById(loginUser.getId());

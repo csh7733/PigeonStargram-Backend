@@ -6,7 +6,7 @@ import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
 import com.pigeon_stargram.sns_clone.repository.notification.NotificationRepository;
-import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
+import com.pigeon_stargram.sns_clone.service.user.UserService;
 import com.pigeon_stargram.sns_clone.worker.NotificationWorker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ import java.util.List;
 @Service
 public class NotificationService {
 
-    private final BasicUserService userService;
+    private final UserService userService;
     private final NotificationRepository notificationRepository;
     private final NotificationWorker notificationWorker;
 

@@ -11,7 +11,7 @@ import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
 import com.pigeon_stargram.sns_clone.dto.post.request.RequestEditPostDto;
 import com.pigeon_stargram.sns_clone.dto.post.request.RequestLikePostDto;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
-import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
+import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +24,7 @@ import java.util.List;
 public class PostsController {
 
     private final PostsService postsService;
-    private final BasicUserService userService;
+    private final UserService userService;
 
     @GetMapping
     public List<ResponsePostsDto> getPosts(@RequestParam Long userId) {
