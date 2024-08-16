@@ -5,7 +5,6 @@ import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
-import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseWebSocketNotificationDto;
 import com.pigeon_stargram.sns_clone.repository.notification.NotificationRepository;
 import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
 import com.pigeon_stargram.sns_clone.worker.NotificationWorker;
@@ -39,7 +38,7 @@ public class NotificationService {
         List<Notification> save = notificationRepository.saveAll(notifications);
 
         notifications.stream()
-                .map(ResponseWebSocketNotificationDto::new)
+                .map(ResponseNotificationDto::new)
                 .forEach(notificationWorker::enqueue);
 
         return save;

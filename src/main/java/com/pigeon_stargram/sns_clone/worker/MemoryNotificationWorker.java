@@ -2,7 +2,6 @@ package com.pigeon_stargram.sns_clone.worker;
 
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
-import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseWebSocketNotificationDto;
 import com.pigeon_stargram.sns_clone.repository.notification.NotificationRepository;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,7 @@ import java.util.Queue;
 @Component
 public class MemoryNotificationWorker implements NotificationWorker{
 
-    private final Queue<ResponseWebSocketNotificationDto> queue = new LinkedList<>();
+    private final Queue<ResponseNotificationDto> queue = new LinkedList<>();
     private final SimpMessagingTemplate messagingTemplate;
 
     @Override
@@ -37,7 +36,7 @@ public class MemoryNotificationWorker implements NotificationWorker{
     }
 
     @Override
-    public void enqueue(ResponseWebSocketNotificationDto notification) {
+    public void enqueue(ResponseNotificationDto notification) {
         queue.add(notification);
     }
 }
