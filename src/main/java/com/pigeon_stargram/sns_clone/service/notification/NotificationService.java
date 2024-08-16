@@ -5,6 +5,7 @@ import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
+import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseWebSocketNotificationDto;
 import com.pigeon_stargram.sns_clone.repository.notification.NotificationRepository;
 import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
 import com.pigeon_stargram.sns_clone.worker.NotificationWorker;
@@ -25,6 +26,9 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationWorker notificationWorker;
 
+    /**
+     * TODO : ID생성방식 변화시키기 (지연쓰기를 위해서)
+     */
     public List<Notification> save(NotificationConvertable dto) {
         User sender = userService.findById(dto.getSenderId());
         List<Notification> notifications = dto.getRecipientIds().stream()
@@ -32,16 +36,19 @@ public class NotificationService {
                 .map(recipient -> dto.toNotification(sender, recipient))
                 .toList();
 
+        List<Notification> save = notificationRepository.saveAll(notifications);
+
         notifications.stream()
-                .map(ResponseNotificationDto::new)
+                .map(ResponseWebSocketNotificationDto::new)
                 .forEach(notificationWorker::enqueue);
 
-        return notificationRepository.saveAll(notifications);
+        return save;
     }
 
-    public List<ResponseNotificationDto> findByUserId(Long userId) {
+    public List<ResponseNotificationDto> findUnReadNotifications(Long userId) {
         User recipient = userService.findById(userId);
         return notificationRepository.findAllByRecipient(recipient).stream()
+                .filter(notification -> !notification.getIsRead())
                 .map(ResponseNotificationDto::new)
                 .toList();
     }

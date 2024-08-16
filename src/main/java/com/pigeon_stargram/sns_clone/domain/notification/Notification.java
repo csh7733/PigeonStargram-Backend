@@ -27,6 +27,7 @@ public class Notification extends BaseTimeEntity {
     private NotificationType type;
     private String message;
     private String redirectUrl;
+    private Long noticeSourceId;
     private Boolean isRead;
 
     public void setRead(Boolean read) {
@@ -36,12 +37,13 @@ public class Notification extends BaseTimeEntity {
     @Builder
     public Notification(User sender, User recipient,
                         NotificationType type, String message,
-                        String redirectUrl, Boolean isRead) {
+                        String redirectUrl, Boolean isRead, Long noticeSourceId) {
         this.sender = sender;
         this.recipient = recipient;
         this.type = type;
         this.message = message;
         this.redirectUrl = redirectUrl;
+        this.noticeSourceId = noticeSourceId;
         this.isRead = isRead;
     }
 }

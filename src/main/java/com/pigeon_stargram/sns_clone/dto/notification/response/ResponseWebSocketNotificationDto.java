@@ -4,8 +4,6 @@ import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.formatTime;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFormattedTime;
 
@@ -15,7 +13,7 @@ import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFor
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class ResponseNotificationDto {
+public class ResponseWebSocketNotificationDto {
 
     private Long id;
     private String name;
@@ -27,14 +25,14 @@ public class ResponseNotificationDto {
     private Long noticeSourceId;
     private NotificationType type;
 
-    public ResponseNotificationDto (Notification notification) {
+    public ResponseWebSocketNotificationDto(Notification notification) {
         this.id = notification.getId();
         this.type = notification.getType();
         this.name = notification.getSender().getName();
         this.avatar = notification.getSender().getAvatar();
         this.content = notification.getMessage();
         this.isRead = notification.getIsRead();
-        this.time = formatTime(notification.getCreatedDate());
+        this.time = getCurrentFormattedTime();
         this.targetUserId = notification.getRecipient().getId();
         this.noticeSourceId =  notification.getNoticeSourceId();
     }

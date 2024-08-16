@@ -39,6 +39,7 @@ public class AddFollowDto implements NotificationConvertable {
                 .type(getNotificationType(sender, recipient))
                 .message(generateMessage(sender, recipient))
                 .redirectUrl(generateRedirectUrl(sender, recipient))
+                .noticeSourceId(senderId)
                 .build();
     }
 
@@ -64,7 +65,7 @@ public class AddFollowDto implements NotificationConvertable {
     public String generateMessage(User sender, User recipient) {
         return sender.getName() +
                 (isFollowBack(sender, recipient)
-                ? "님이 나를 맞팔 했습니다."
+                ? "님이 나를 맞팔로우 했습니다."
                 : "님이 나를 팔로우 했습니다.");
     }
 
