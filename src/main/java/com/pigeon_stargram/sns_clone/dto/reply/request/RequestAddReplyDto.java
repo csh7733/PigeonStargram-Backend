@@ -9,5 +9,6 @@ import lombok.*;
 @AllArgsConstructor
 public class RequestAddReplyDto {
     private Long commentId;
+    private Long postUserId;
     private newReplyDto reply;
 }

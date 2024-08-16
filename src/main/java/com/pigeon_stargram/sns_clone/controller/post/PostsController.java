@@ -34,7 +34,7 @@ public class PostsController {
     }
 
     @PostMapping
-    public ResponsePostsDto createPosts(@LoginUser SessionUser loginUser,
+    public List<ResponsePostsDto> createPosts(@LoginUser SessionUser loginUser,
                                         @RequestBody RequestCreatePostDto request) {
         Long userId = loginUser.getId();
         User user = userService.findById(userId);
@@ -43,27 +43,31 @@ public class PostsController {
 
         Posts post = postsService.createPost(new CreatePostDto(user, content));
 
-        return postsService.getPostById(post.getId());
+        return postsService.getPostsByUser(user);
     }
 
     @PatchMapping("/{postId}")
     public List<ResponsePostsDto> editPost(@LoginUser SessionUser loginUser,
                                            @PathVariable Long postId,
                                            @RequestBody RequestEditPostDto request) {
+        Long loginUserId = loginUser.getId();
+        User user = userService.findById(loginUserId);
 
         String content = request.getContent();
         postsService.editPost(postId,content);
 
-        return postsService.getAllPosts();
+        return postsService.getPostsByUser(user);
     }
 
     @DeleteMapping("/{postId}")
     public List<ResponsePostsDto> deletePost(@LoginUser SessionUser loginUser,
                                              @PathVariable Long postId) {
-        log.info("delete {}",postId);
+        Long loginUserId = loginUser.getId();
+        User user = userService.findById(loginUserId);
+
         postsService.deletePost(postId);
 
-        return postsService.getAllPosts();
+        return postsService.getPostsByUser(user);
     }
 
     @PostMapping("/like")
@@ -72,8 +76,12 @@ public class PostsController {
         Long userId = loginUser.getId();
         User user = userService.findById(userId);
 
+        Long postUserId = request.getPostUserId();
+        User postUser = userService.findById(postUserId);
+
         postsService.likePost(new LikePostDto(user, request.getPostId()));
-        return postsService.getAllPosts();
+
+        return postsService.getPostsByUser(postUser);
     }
 
 }

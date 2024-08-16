@@ -9,4 +9,5 @@ import lombok.*;
 @AllArgsConstructor
 public class RequestEditReplyDto {
     private String content;
+    private Long postUserId;
 }

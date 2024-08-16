@@ -7,7 +7,6 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequestEditCommentDto {
-    private String content;
+public class RequestDeleteCommentDto {
     private Long postUserId;
 }

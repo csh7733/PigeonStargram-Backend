@@ -8,6 +8,7 @@ import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.CreateReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.LikeReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.request.RequestAddReplyDto;
+import com.pigeon_stargram.sns_clone.dto.reply.request.RequestDeleteReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.request.RequestEditReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.request.RequestLikeReplyDto;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
@@ -40,27 +41,37 @@ public class ReplyController {
 
         Long userId = loginUser.getId();
         User user = userService.findById(userId);
+
+        Long postUserId = request.getPostUserId();
+        User postUser = userService.findById(postUserId);
+
         replyService.createReply(new CreateReplyDto(user,comment,content));
-        return postsService.getAllPosts();
+
+        return postsService.getPostsByUser(postUser);
     }
 
     @PatchMapping("/{replyId}")
     public List<ResponsePostsDto> editReply(@LoginUser SessionUser loginUser,
                                             @PathVariable Long replyId,
                                             @RequestBody RequestEditReplyDto request) {
-        log.info("patch {}",replyId);
+        Long postUserId = request.getPostUserId();
+        User postUser = userService.findById(postUserId);
+
         String content = request.getContent();
         replyService.editReply(replyId,content);
 
-        return postsService.getAllPosts();
+        return postsService.getPostsByUser(postUser);
     }
     @DeleteMapping("/{replyId}")
     public List<ResponsePostsDto> deleteReply(@LoginUser SessionUser loginUser,
-                                              @PathVariable Long replyId) {
-        log.info("delete {}",replyId);
+                                              @PathVariable Long replyId,
+                                              @RequestBody RequestDeleteReplyDto request) {
+        Long postUserId = request.getPostUserId();
+        User postUser = userService.findById(postUserId);
+
         replyService.deleteReply(replyId);
 
-        return postsService.getAllPosts();
+        return postsService.getPostsByUser(postUser);
     }
 
     @PostMapping("/like")
@@ -69,9 +80,13 @@ public class ReplyController {
         Long userId = loginUser.getId();
         User user = userService.findById(userId);
 
+        Long postUserId = request.getPostUserId();
+        User postUser = userService.findById(postUserId);
+
         Long replyId = request.getReplyId();
 
         replyService.likeReply(new LikeReplyDto(user,replyId));
-        return postsService.getAllPosts();
+
+        return postsService.getPostsByUser(postUser);
     }
 }
