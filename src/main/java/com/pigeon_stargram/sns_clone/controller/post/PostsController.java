@@ -46,13 +46,13 @@ public class PostsController {
 
         Posts post = postsService.createPost(new CreatePostDto(user, content));
 
-        NotifyPostTaggedUsersDto notifyPostTaggedUsers = NotifyPostTaggedUsersDto.builder()
+        NotifyPostTaggedUsersDto notifyTaggedUsers = NotifyPostTaggedUsersDto.builder()
                 .user(user)
                 .content(content)
                 .notificationRecipientIds(request.getTaggedUserIds())
                 .build();
 
-        notificationService.notifyTaggedUsers(notifyPostTaggedUsers);
+        notificationService.notifyTaggedUsers(notifyTaggedUsers);
 
         return postsService.getPostsByUser(user);
     }

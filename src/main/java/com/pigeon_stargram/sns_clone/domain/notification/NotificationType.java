@@ -14,5 +14,6 @@ public enum NotificationType {
     MY_COMMENT_REPLY,
     MY_COMMENT_LIKE,
     MY_REPLY_LIKE,
-    POST_TAG
+    POST_TAG,
+    COMMENT_TAG
 }

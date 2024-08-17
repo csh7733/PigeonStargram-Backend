@@ -10,8 +10,10 @@ import com.pigeon_stargram.sns_clone.dto.comment.request.RequestAddCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.request.RequestDeleteCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.request.RequestEditCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.request.RequestLikeCommentDto;
+import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyCommentTaggedUsersDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
+import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
 import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ public class CommentController {
     private final PostsService postsService;
     private final CommentService commentService;
     private final BasicUserService userService;
+    private final NotificationService notificationService;
 
     @PostMapping
     public List<ResponsePostsDto> addComment(@LoginUser SessionUser loginUser,
@@ -42,6 +45,16 @@ public class CommentController {
 
         Long postUserId = request.getPostUserId();
         User postUser = userService.findById(postUserId);
+
+        NotifyCommentTaggedUsersDto notifyTaggedUsers = NotifyCommentTaggedUsersDto.builder()
+                .user(user)
+                .content(content)
+                .notificationRecipientIds(request.getComment().getTaggedUserIds())
+                .postUserId(postUserId)
+                .postId(postId)
+                .build();
+
+        notificationService.notifyTaggedUsers(notifyTaggedUsers);
 
         commentService.createComment(new CreateCommentDto(user, post, content));
 
