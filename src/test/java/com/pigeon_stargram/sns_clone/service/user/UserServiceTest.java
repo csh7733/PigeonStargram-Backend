@@ -4,6 +4,8 @@ import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseUserChatDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
+import com.pigeon_stargram.sns_clone.exception.user.MultipleUsersFoundException;
+import com.pigeon_stargram.sns_clone.exception.login.RegisterFailException;
 import com.pigeon_stargram.sns_clone.exception.user.UserNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,18 +26,23 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
+    private UserService userService;
+
     @Mock
     private UserRepository userRepository;
 
     @InjectMocks
-    private BasicUserService userService;
+    private BasicUserService basicUserService;
 
     private User user;
+
     @Mock
     private RequestRegisterDto requestRegisterDto;
 
     @BeforeEach
     public void setUp() {
+        userService = basicUserService;
+
         user = User.builder()
                 .id(1L)
                 .name("John Doe")
@@ -53,7 +61,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("ID로 User 찾기 - 성공")
-    public void TestFindByIdSuccess(){
+    public void testFindByIdSuccess(){
         //given
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(user));
@@ -67,7 +75,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("ID로 User 찾기 - 유저 없음")
-    public void TestFindByIdUserNotFound(){
+    public void testFindByIdUserNotFound(){
         //given
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.empty());
@@ -82,7 +90,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("WorkEmail과 Password로 User 찾기 - 성공")
-    public void TestFindByWorkEmailAndPasswordSuccess(){
+    public void testFindByWorkEmailAndPasswordSuccess(){
         //given
         when(userRepository.findByWorkEmailAndPassword(anyString(), anyString()))
                 .thenReturn(List.of(user));
@@ -96,7 +104,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("WorkEmail과 Password로 User 찾기 - 유저 없음")
-    public void TestFindByWorkEmailAndPasswordUserNotFound(){
+    public void testFindByWorkEmailAndPasswordUserNotFound(){
         //given
         when(userRepository.findByWorkEmailAndPassword(anyString(), anyString()))
                 .thenReturn(List.of());
@@ -110,8 +118,23 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("RequestRegisterDto로 User 저장")
-    public void TestSave() {
+    @DisplayName("WorkEmail과 Password로 User 찾기 - 여러 유저")
+    public void testFindByWorkEmailAndPasswordMultipleUsersFound(){
+        //given
+        when(userRepository.findByWorkEmailAndPassword(anyString(), anyString()))
+                .thenReturn(List.of(user, user));
+
+        //when
+
+        //then
+        assertThatThrownBy(() -> {
+            userService.findByWorkEmailAndPassword("test@gmail.com", "test_password");
+        }).isInstanceOf(MultipleUsersFoundException.class);
+    }
+
+    @Test
+    @DisplayName("RequestRegisterDto로 User 저장 - 성공")
+    public void testSaveSuccess() {
         //given
         when(requestRegisterDto.toEntity()).thenReturn(user);
         when(userRepository.save(any(User.class))).thenReturn(user);
@@ -124,8 +147,24 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("RequestRegisterDto로 User 저장 - 중복된 이메일")
+    public void testSave() {
+        //given
+        when(requestRegisterDto.toEntity()).thenReturn(user);
+        when(userRepository.save(any(User.class)))
+                .thenThrow(DataIntegrityViolationException.class);
+
+        //when
+
+        //then
+        assertThatThrownBy(() -> {
+            userService.save(requestRegisterDto);
+        }).isInstanceOf(RegisterFailException.class);
+    }
+
+    @Test
     @DisplayName("User ID로 User 찾아서 ResponseUserChatDto로 변환")
-    public void TestFindUserChatById() {
+    public void testFindUserChatById() {
         //given
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(user));
@@ -152,11 +191,11 @@ class UserServiceTest {
 
     @Test
     @DisplayName("유저의 온라인상태 변경")
-    public void TestUpdateOnlineStatus() {
+    public void testUpdateOnlineStatus() {
         //given
 
         //when
-        userService.updateOnlineStatus(user, "test-online");
+        userService.updateOnlineStatus(user.getId(), "test-online");
 
         //then
         assertThat(user.getOnlineStatus()).isEqualTo("test-online");
@@ -164,11 +203,11 @@ class UserServiceTest {
 
     @Test
     @DisplayName("유저의 비밀번호 변경")
-    public void TestUpdatePassword() {
+    public void testUpdatePassword() {
         //given
 
         //when
-        userService.updatePassword(user, "test-password");
+        userService.updatePassword(user.getId(), "test-password");
 
         //then
         assertThat(user.getPassword()).isEqualTo("test-password");
@@ -176,7 +215,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("유저의 온라인상태 확인")
-    public void TestGetOnlineStatus() {
+    public void testGetOnlineStatus() {
         //given
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(user));

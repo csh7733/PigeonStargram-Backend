@@ -3,8 +3,8 @@ package com.pigeon_stargram.sns_clone.controller.login;
 import com.pigeon_stargram.sns_clone.config.auth.annotation.NewUserEmail;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.login.request.LoginDto;
-import com.pigeon_stargram.sns_clone.dto.login.request.ForgotPasswordDto;
+import com.pigeon_stargram.sns_clone.dto.login.request.RequestLoginDto;
+import com.pigeon_stargram.sns_clone.dto.login.request.RequestForgotPasswordDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.ResetPasswordDto;
 import com.pigeon_stargram.sns_clone.dto.login.response.UserEmailInfoDto;
@@ -37,8 +37,8 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginDto request) {
-        User user = loginService.login(request);
+    public ResponseEntity<?> login(@RequestBody RequestLoginDto request) {
+        User user = loginService.findLoginUser(request);
 
         if (user != null) {
             log.info("login success");
@@ -57,17 +57,15 @@ public class LoginController {
     }
 
     @PostMapping("/password")
-    public ResponseEntity<String> sendPasswordResetLink(@RequestBody ForgotPasswordDto request) {
+    public ResponseEntity<String> sendPasswordResetLink(@RequestBody RequestForgotPasswordDto request) {
         String email = request.getEmail();
+        loginService.sendPasswordResetLink(email);
 
-        return loginService.sendPasswordResetLink(email)
-                ? ResponseEntity.ok("Password reset link has been sent to your email.")
-                : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Email address not found.");
+        return ResponseEntity.ok("Password reset link has been sent to your email.");
     }
 
     @PutMapping("/password")
     public void resetPassword(@RequestBody ResetPasswordDto request) {
-        loginService.validateToken(request.getToken());
         loginService.resetPassword(request.getToken(), request.getNewPassword());
     }
 
