@@ -4,6 +4,8 @@ import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyCommentTaggedUsersDto;
+import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyReplyTaggedUsersDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.CreateReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.LikeReplyDto;
@@ -12,6 +14,7 @@ import com.pigeon_stargram.sns_clone.dto.reply.request.RequestDeleteReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.request.RequestEditReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.request.RequestLikeReplyDto;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
+import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
@@ -31,6 +34,7 @@ public class ReplyController {
     private final CommentService commentService;
     private final ReplyService replyService;
     private final BasicUserService userService;
+    private final NotificationService notificationService;
 
     @PostMapping
     public List<ResponsePostsDto> addReply(@LoginUser SessionUser loginUser,
@@ -57,6 +61,15 @@ public class ReplyController {
 
         replyService.createReply(createReplyDto);
 
+        NotifyReplyTaggedUsersDto notifyTaggedUsers = NotifyReplyTaggedUsersDto.builder()
+                .user(user)
+                .content(content)
+                .notificationRecipientIds(request.getReply().getTaggedUserIds())
+                .postUserId(postUserId)
+                .postId(postId)
+                .build();
+
+        notificationService.notifyTaggedUsers(notifyTaggedUsers);
 
         return postsService.getPostsByUser(postUser);
     }

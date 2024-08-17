@@ -46,6 +46,8 @@ public class CommentController {
         Long postUserId = request.getPostUserId();
         User postUser = userService.findById(postUserId);
 
+        commentService.createComment(new CreateCommentDto(user, post, content));
+
         NotifyCommentTaggedUsersDto notifyTaggedUsers = NotifyCommentTaggedUsersDto.builder()
                 .user(user)
                 .content(content)
@@ -55,8 +57,6 @@ public class CommentController {
                 .build();
 
         notificationService.notifyTaggedUsers(notifyTaggedUsers);
-
-        commentService.createComment(new CreateCommentDto(user, post, content));
 
         return postsService.getPostsByUser(postUser);
     }
