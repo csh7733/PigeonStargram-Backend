@@ -108,11 +108,8 @@ public class PostsService {
     }
 
     public void deletePost(Long postId) {
-        Posts post = getPostEntity(postId);
-
         commentService.deleteAllCommentsAndReplyByPostId(postId);
-
-        postsRepository.delete(post);
+        postsRepository.deleteById(postId);
     }
 
     public void likePost(LikePostDto dto) {

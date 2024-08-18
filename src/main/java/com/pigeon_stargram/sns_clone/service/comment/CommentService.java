@@ -9,6 +9,8 @@ import com.pigeon_stargram.sns_clone.dto.comment.response.CommentLikeDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseCommentDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
 import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
+import com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst;
+import com.pigeon_stargram.sns_clone.exception.comment.CommentNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentRepository;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
@@ -21,6 +23,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -31,6 +35,11 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final CommentLikeRepository commentLikeRepository;
+
+    public Comment getCommentEntity(Long commentId) {
+        return commentRepository.findById(commentId)
+                .orElseThrow(() -> new CommentNotFoundException(COMMENT_NOT_FOUND_ID));
+    }
 
     public List<ResponseCommentDto> getCommentsByPostId(Long postId) {
         return commentRepository.findByPostId(postId).stream()
@@ -64,9 +73,8 @@ public class CommentService {
                 .post(dto.getPost())
                 .content(dto.getContent())
                 .build();
-        commentRepository.save(comment);
         notificationService.save(dto);
-        return comment;
+        return commentRepository.save(comment);
     }
 
 //    public CommentDto getComment(Long commentId) {
@@ -90,7 +98,7 @@ public class CommentService {
         List<Comment> comments = commentRepository.findByPostId(postId);
 
         comments.forEach(comment -> {
-            replyService.deleteByCommentId(comment.getId());
+            replyService.deleteAllRepliesByCommentId(comment.getId());
             commentRepository.delete(comment);
         });
     }
@@ -104,7 +112,7 @@ public class CommentService {
         Comment comment = getCommentEntity(dto.getCommentId());
         dto.setWriterId(comment.getUser().getId());
 
-        commentLikeRepository.findByUserAndComment(dto.getUser(), comment)
+        commentLikeRepository.findByUserIdAndCommentId(dto.getUser().getId(), comment.getId())
                 .ifPresentOrElse(
                         existingLike -> {
                             commentLikeRepository.delete(existingLike);
@@ -121,12 +129,7 @@ public class CommentService {
     }
 
     public void deleteComment(Long commentId) {
-        replyService.deleteByCommentId(commentId);
+        replyService.deleteAllRepliesByCommentId(commentId);
         commentRepository.deleteById(commentId);
-    }
-
-    public Comment getCommentEntity(Long commentId) {
-        return commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid comment ID"));
     }
 }

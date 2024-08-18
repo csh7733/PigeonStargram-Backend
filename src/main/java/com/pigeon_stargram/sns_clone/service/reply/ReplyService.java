@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -110,6 +109,11 @@ public class ReplyService {
 
     public void deleteByCommentId(Long commentId) {
         replyRepository.deleteByCommentId(commentId);
+    }
+
+    public void deleteAllRepliesByCommentId(Long commentId) {
+        List<Reply> replies = replyRepository.findByCommentId(commentId);
+        replyRepository.deleteAll(replies);
     }
 
     private Reply getReplyEntity(Long replyId) {

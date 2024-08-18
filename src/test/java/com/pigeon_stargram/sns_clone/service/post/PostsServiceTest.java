@@ -90,7 +90,6 @@ class PostsServiceTest {
         when(postsRepository.findById(anyLong()))
                 .thenReturn(Optional.of(post));
 
-
         //when
         Posts postEntity = postsService.getPostEntity(1L);
 
@@ -114,7 +113,7 @@ class PostsServiceTest {
     }
 
     @Test
-    @DisplayName("")
+    @DisplayName("유저 id로 모든 포스트 가져오기")
     public void testGetPostsByUser() {
         // Given
         when(posts.get(0).getId()).thenReturn(2L);
@@ -214,7 +213,6 @@ class PostsServiceTest {
         assertThat(postsLikeDto.getValue()).isEqualTo(5);
     }
 
-
     @Test
     @DisplayName("포스트 생성")
     public void testCreatePost() {
@@ -256,8 +254,6 @@ class PostsServiceTest {
     @DisplayName("포스트 삭제")
     public void testDeletePost() {
         //given
-        when(postsRepository.findById(anyLong()))
-                .thenReturn(Optional.of(post));
         doNothing().when(commentService)
                 .deleteAllCommentsAndReplyByPostId(anyLong());
 
@@ -265,7 +261,8 @@ class PostsServiceTest {
         postsService.deletePost(1L);
 
         //then
-        verify(postsRepository, times(1)).delete(post);
+        verify(commentService, times(1)).deleteAllCommentsAndReplyByPostId(1L);
+        verify(postsRepository, times(1)).deleteById(1L);
     }
 
     @Test
