@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentTime;
+
 @Getter
 @NoArgsConstructor
 @Entity
@@ -30,4 +32,12 @@ public class SearchHistory extends BaseTimeEntity {
         this.user = user;
         this.searchQuery = searchQuery;
     }
+    public void updateModifiedDate() {
+        setModifiedDate(getCurrentTime());
+    }
+
+    protected void setModifiedDate(LocalDateTime modifiedDate) {
+        super.setModifiedDate(modifiedDate);
+    }
+
 }

@@ -20,9 +20,9 @@ public class SearchTerm {
     
     private Long score; // score
 
-    public SearchTerm(String prefix,String term){
-        this.prefix = prefix;
+    public SearchTerm(String term,String prefix){
         this.term = term;
+        this.prefix = prefix;
         this.score = 0L;
     }
 

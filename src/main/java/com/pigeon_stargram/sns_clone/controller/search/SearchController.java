@@ -33,4 +33,30 @@ public class SearchController {
         return searchService.getTopSearchHistory(userId);
     }
 
+    @DeleteMapping("/history")
+    public void deleteSearchHistory(@LoginUser SessionUser loginUser,
+                                    @RequestParam String query) {
+        Long userId = loginUser.getId();
+
+        searchService.deleteSearchHistory(userId, query);
+    }
+
+    @DeleteMapping("/history/all")
+    public void deleteAllSearchHistory(@LoginUser SessionUser loginUser) {
+        Long userId = loginUser.getId();
+
+        searchService.deleteAllSearchHistory(userId);
+    }
+
+    @PostMapping
+    public void saveSearchAndScore(@LoginUser SessionUser loginUser,
+                                   @RequestParam String query) {
+        Long userId = loginUser.getId();
+
+        searchService.saveSearchHistory(userId, query);
+
+        searchService.updateSearchTermScores(query);
+    }
+
+
 }
