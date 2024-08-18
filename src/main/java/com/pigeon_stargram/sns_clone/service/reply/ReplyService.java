@@ -7,6 +7,8 @@ import com.pigeon_stargram.sns_clone.dto.reply.internal.LikeReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.ReplyContentDto;
 import com.pigeon_stargram.sns_clone.dto.reply.response.ReplyLikeDto;
 import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
+import com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst;
+import com.pigeon_stargram.sns_clone.exception.reply.ReplyNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyRepository;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
@@ -16,6 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
+
+import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
 
 @Service
 @RequiredArgsConstructor
@@ -57,10 +61,8 @@ public class ReplyService {
                 .comment(dto.getComment())
                 .content(dto.getContent())
                 .build();
-        replyRepository.save(reply);
-
         notificationService.save(dto);
-        return reply;
+        return replyRepository.save(reply);
     }
 
 //    public ReplyDto getReply(Long replyId) {
@@ -87,7 +89,7 @@ public class ReplyService {
         Reply reply = getReplyEntity(dto.getReplyId());
         dto.setWriterId(reply.getUser().getId());
 
-        replyLikeRepository.findByUserAndReply(dto.getUser(), reply)
+        replyLikeRepository.findByUserIdAndReplyId(dto.getUser().getId(), reply.getId())
                 .ifPresentOrElse(
                         existingLike -> {
                             replyLikeRepository.delete(existingLike);
@@ -116,8 +118,8 @@ public class ReplyService {
         replyRepository.deleteAll(replies);
     }
 
-    private Reply getReplyEntity(Long replyId) {
+    public Reply getReplyEntity(Long replyId) {
         return replyRepository.findById(replyId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid reply ID"));
+                .orElseThrow(() -> new ReplyNotFoundException(REPLY_NOT_FOUND_ID));
     }
 }

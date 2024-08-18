@@ -41,36 +41,36 @@ class PostsServiceTest {
 
     @Spy
     @InjectMocks
-    private PostsService postsService;
+    PostsService postsService;
 
     @Mock
-    private UserService userService;
+    UserService userService;
     @Mock
-    private CommentService commentService;
+    CommentService commentService;
     @Mock
-    private FollowService followService;
+    FollowService followService;
     @Mock
-    private NotificationService notificationService;
+    NotificationService notificationService;
 
     @Mock
-    private CommentRepository commentRepository;
+    CommentRepository commentRepository;
 
     @Mock
-    private PostsRepository postsRepository;
+    PostsRepository postsRepository;
     @Mock
-    private PostsLikeRepository postsLikeRepository;
+    PostsLikeRepository postsLikeRepository;
 
-    private User user;
-    private Posts post;
-    private PostsLike postsLike;
+    User user;
+    Posts post;
+    PostsLike postsLike;
 
-    private List<Posts> posts = new ArrayList<>();
-    private List<ResponsePostsDto> postsDtos = new ArrayList<>();
+    List<Posts> posts = new ArrayList<>();
+    List<ResponsePostsDto> postsDtos = new ArrayList<>();
 
-    private List<Comment> comments = new ArrayList<>();
+    List<Comment> comments = new ArrayList<>();
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         user = mock(User.class);
         post = mock(Posts.class);
         postsLike = mock(PostsLike.class);
@@ -85,7 +85,7 @@ class PostsServiceTest {
 
     @Test
     @DisplayName("포스트 id로 엔티티 조회 - 성공")
-    public void testGetPostEntitySuccess() {
+    void testGetPostEntitySuccess() {
         //given
         when(postsRepository.findById(anyLong()))
                 .thenReturn(Optional.of(post));
@@ -99,7 +99,7 @@ class PostsServiceTest {
 
     @Test
     @DisplayName("포스트 id로 엔티티 조회 - 포스트를 찾지 못함")
-    public void testGetPostEntityPostNotFound() {
+    void testGetPostEntityPostNotFound() {
         //given
         when(postsRepository.findById(anyLong()))
                 .thenReturn(Optional.empty());
@@ -114,7 +114,7 @@ class PostsServiceTest {
 
     @Test
     @DisplayName("유저 id로 모든 포스트 가져오기")
-    public void testGetPostsByUser() {
+    void testGetPostsByUser() {
         // Given
         when(posts.get(0).getId()).thenReturn(2L);
         when(posts.get(1).getId()).thenReturn(1L);
@@ -138,7 +138,7 @@ class PostsServiceTest {
 
     @Test
     @DisplayName("포스트 id로 PostContent, PostLike, Comment 가져오기")
-    public void testGetCombinedPost() {
+    void testGetCombinedPost() {
         //given
         //postContent
         when(post.getId()).thenReturn(1L);
@@ -174,7 +174,7 @@ class PostsServiceTest {
 
     @Test
     @DisplayName("PostContent 가져오기")
-    public void testGetPostContent() {
+    void testGetPostContent() {
         //given
         when(post.getId()).thenReturn(1L);
         when(post.getUser()).thenReturn(user);
@@ -201,7 +201,7 @@ class PostsServiceTest {
 
     @Test
     @DisplayName("포스트 좋아요 가져오기")
-    public void testGetPostsLike() {
+    void testGetPostsLike() {
         //given
         when(postsLikeRepository.countByPostId(anyLong()))
                 .thenReturn(5);
@@ -215,7 +215,7 @@ class PostsServiceTest {
 
     @Test
     @DisplayName("포스트 생성")
-    public void testCreatePost() {
+    void testCreatePost() {
         //given
         CreatePostDto createPostDto = new CreatePostDto(user, "content");
         List<Long> recipientIds = List.of(1L, 2L, 3L);
@@ -237,7 +237,7 @@ class PostsServiceTest {
 
     @Test
     @DisplayName("포스트 수정")
-    public void testEditPost() {
+    void testEditPost() {
         //given
         Posts editPost = new Posts(user, "old-content");
         when(postsRepository.findById(anyLong()))
@@ -252,7 +252,7 @@ class PostsServiceTest {
 
     @Test
     @DisplayName("포스트 삭제")
-    public void testDeletePost() {
+    void testDeletePost() {
         //given
         doNothing().when(commentService)
                 .deleteAllCommentsAndReplyByPostId(anyLong());
@@ -267,7 +267,7 @@ class PostsServiceTest {
 
     @Test
     @DisplayName("포스트에 좋아요 - 기존에 존재시 삭제")
-    public void testLikePostExist() {
+    void testLikePostExist() {
         //given
         LikePostDto likePostDto = new LikePostDto(user, 1L, 1L);
 
@@ -285,7 +285,7 @@ class PostsServiceTest {
 
     @Test
     @DisplayName("포스트에 좋아요 - 새로 생성")
-    public void testLikePostEmpty() {
+    void testLikePostEmpty() {
         //given
         LikePostDto likePostDto = new LikePostDto(user, 1L, 1L);
 

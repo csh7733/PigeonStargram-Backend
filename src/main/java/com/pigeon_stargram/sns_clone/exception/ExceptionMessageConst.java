@@ -32,4 +32,7 @@ public class ExceptionMessageConst {
 
     public static final String COMMENT_NOT_FOUND_ID
             = "ID와 일치하는 댓글이 없습니다.";
+
+    public static final String REPLY_NOT_FOUND_ID
+            = "ID와 일치하는 대댓이 없습니다.";
 }

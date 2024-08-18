@@ -53,24 +53,24 @@ class CommentServiceTest {
     CommentService commentService;
 
     @Mock
-    private ReplyService replyService;
+    ReplyService replyService;
     @Mock
-    private NotificationService notificationService;
+    NotificationService notificationService;
 
     @Mock
-    private CommentRepository commentRepository;
+    CommentRepository commentRepository;
     @Mock
-    private CommentLikeRepository commentLikeRepository;
+    CommentLikeRepository commentLikeRepository;
 
     User user;
     Posts post;
     Comment comment;
     CommentLike commentLike;
 
-    private List<Comment> comments = new ArrayList<>();
-    private List<ResponseCommentDto> commentDtos = new ArrayList<>();
+    List<Comment> comments = new ArrayList<>();
+    List<ResponseCommentDto> commentDtos = new ArrayList<>();
 
-    private List<Reply> replies = new ArrayList<>();
+    List<Reply> replies = new ArrayList<>();
 
     @BeforeEach
     void setUp() {
@@ -89,7 +89,7 @@ class CommentServiceTest {
 
     @Test
     @DisplayName("댓글 id로 엔티티 조회 - 성공")
-    public void testGetCommentEntitySuccess() {
+    void testGetCommentEntitySuccess() {
         //given
         when(commentRepository.findById(anyLong()))
                 .thenReturn(Optional.of(comment));
@@ -103,7 +103,7 @@ class CommentServiceTest {
 
     @Test
     @DisplayName("댓글 id로 엔티티 조회 - 댓글를 찾지 못함")
-    public void testGetCommentEntityPostNotFound() {
+    void testGetCommentEntityPostNotFound() {
         //given
         when(commentRepository.findById(anyLong()))
                 .thenReturn(Optional.empty());
@@ -118,7 +118,7 @@ class CommentServiceTest {
 
     @Test
     @DisplayName("포스트 id로 모든 댓글 가져오기")
-    public void testGetCommentByUser() {
+    void testGetCommentByUser() {
         // Given
         when(comments.get(0).getId()).thenReturn(2L);
         when(comments.get(1).getId()).thenReturn(1L);
@@ -142,7 +142,7 @@ class CommentServiceTest {
     
     @Test
     @DisplayName("댓글 id로 CommentContent, CommentLike, Reply 가져오기")
-    public void testGetCombinedComment() {
+    void testGetCombinedComment() {
         //given
         //commentContent
         when(comment.getId()).thenReturn(1L);
@@ -174,7 +174,7 @@ class CommentServiceTest {
 
     @Test
     @DisplayName("CommentContent 가져오기")
-    public void testGetCommentContent() {
+    void testGetCommentContent() {
         //given
         when(comment.getId()).thenReturn(1L);
         when(comment.getUser()).thenReturn(user);
@@ -195,7 +195,7 @@ class CommentServiceTest {
 
     @Test
     @DisplayName("댓글 좋아요 가져오기")
-    public void testGetCommentLike() {
+    void testGetCommentLike() {
         //given
         when(commentLikeRepository.countByCommentId(anyLong()))
                 .thenReturn(5);
@@ -209,7 +209,7 @@ class CommentServiceTest {
 
     @Test
     @DisplayName("댓글 생성")
-    public void testCreateComment() {
+    void testCreateComment() {
         //given
         CreateCommentDto createCommentDto = new CreateCommentDto(user, post, "content");
 
@@ -231,7 +231,7 @@ class CommentServiceTest {
 
     @Test
     @DisplayName("댓글 수정")
-    public void testEditComment() {
+    void testEditComment() {
         //given
         Comment editComment = new Comment(user, post, "old-content");
         when(commentRepository.findById(anyLong()))
@@ -246,7 +246,7 @@ class CommentServiceTest {
 
     @Test
     @DisplayName("댓글 삭제")
-    public void testDeleteComment() {
+    void testDeleteComment() {
         //given
         doNothing().when(replyService)
                 .deleteAllRepliesByCommentId(anyLong());
@@ -255,17 +255,20 @@ class CommentServiceTest {
         commentService.deleteComment(1L);
 
         //then
-        verify(replyService, times(1)).deleteAllRepliesByCommentId(1L);
-        verify(commentRepository, times(1)).deleteById(1L);
+        verify(replyService, times(1))
+                .deleteAllRepliesByCommentId(1L);
+        verify(commentRepository, times(1))
+                .deleteById(1L);
     }
 
     @Test
     @DisplayName("댓글에 좋아요 - 기존에 존재시 삭제")
-    public void testLikeCommentExist() {
+    void testLikeCommentExist() {
         //given
         LikeCommentDto likeCommentDto = new LikeCommentDto(user, 1L, 1L, 2L, 1L);
         when(comment.getUser()).thenReturn(mock(User.class));
         when(comment.getUser().getId()).thenReturn(2L);
+
         when(commentRepository.findById(anyLong()))
                 .thenReturn(Optional.of(comment));
         when(commentLikeRepository.findByUserIdAndCommentId(anyLong(), anyLong()))
@@ -275,12 +278,13 @@ class CommentServiceTest {
         commentService.likeComment(likeCommentDto);
 
         //then
-        verify(commentLikeRepository, times(1)).delete(commentLike);
+        verify(commentLikeRepository, times(1))
+                .delete(commentLike);
     }
 
     @Test
     @DisplayName("댓글에 좋아요 - 새로 생성")
-    public void testLikeCommentEmpty() {
+    void testLikeCommentEmpty() {
         //given
         LikeCommentDto likeCommentDto = new LikeCommentDto(user, 1L, 1L, 2L, 1L);
         when(comment.getUser()).thenReturn(mock(User.class));
