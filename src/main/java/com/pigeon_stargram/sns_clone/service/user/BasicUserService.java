@@ -37,6 +37,11 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_NAME));
     }
 
+    @Override
+    public List<User> findBySearchQuery(String searchQuery) {
+        return userRepository.findByNameContainingIgnoreCase(searchQuery);
+    }
+
     public User findByWorkEmail(String email) {
         List<User> findUsers = userRepository.findByWorkEmail(email);
         if (findUsers.isEmpty()) {

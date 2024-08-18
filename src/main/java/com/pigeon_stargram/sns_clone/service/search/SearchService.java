@@ -5,6 +5,7 @@ import com.pigeon_stargram.sns_clone.domain.search.SearchTerm;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.search.response.ResponseSearchHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.search.response.ResponseTopSearchDto;
+import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
 import com.pigeon_stargram.sns_clone.repository.search.SearchHistoryRepository;
 import com.pigeon_stargram.sns_clone.repository.search.SearchTermRepository;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -29,6 +30,7 @@ public class SearchService {
 
     public List<ResponseTopSearchDto> getTopSearchTermsByPrefix(String prefix) {
         return searchTermRepository.findTop5ByPrefixOrderByScoreDesc(prefix).stream()
+                .filter(searchTerm -> !searchTerm.getTerm().equalsIgnoreCase(prefix))
                 .map(ResponseTopSearchDto::new)
                 .toList();
     }
@@ -85,6 +87,13 @@ public class SearchService {
             prefixes.add(term.substring(0, i));
         }
         return prefixes;
+    }
+
+    public List<ResponseUserInfoDto> getUserSearchResults(String searchQuery){
+
+        return userService.findBySearchQuery(searchQuery).stream()
+                .map(ResponseUserInfoDto::new)
+                .toList();
     }
 
 }

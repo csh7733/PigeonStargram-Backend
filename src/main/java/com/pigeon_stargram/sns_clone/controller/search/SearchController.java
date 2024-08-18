@@ -4,6 +4,7 @@ import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.dto.search.response.ResponseSearchHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.search.response.ResponseTopSearchDto;
+import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
 import com.pigeon_stargram.sns_clone.service.search.SearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,14 +49,15 @@ public class SearchController {
         searchService.deleteAllSearchHistory(userId);
     }
 
-    @PostMapping
-    public void saveSearchAndScore(@LoginUser SessionUser loginUser,
+    @GetMapping
+    public List<ResponseUserInfoDto> saveSearchInfosAndGetResults(@LoginUser SessionUser loginUser,
                                    @RequestParam String query) {
         Long userId = loginUser.getId();
 
         searchService.saveSearchHistory(userId, query);
-
         searchService.updateSearchTermScores(query);
+
+        return searchService.getUserSearchResults(query);
     }
 
 
