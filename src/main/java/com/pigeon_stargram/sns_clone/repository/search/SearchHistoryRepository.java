@@ -11,8 +11,7 @@ import java.util.Optional;
 
 public interface SearchHistoryRepository extends JpaRepository<SearchHistory, Long> {
 
-    @Query("SELECT sh FROM SearchHistory sh WHERE sh.user = :user ORDER BY sh.modifiedDate DESC")
-    List<SearchHistory> findTop5ByUserOrderByModifiedDateDesc(@Param("user") User user);
+    List<SearchHistory> findTop5ByUserOrderByModifiedDateDesc(User user);
 
     Optional<SearchHistory> findByUserAndSearchQuery(User user, String SearchQuery);
 
