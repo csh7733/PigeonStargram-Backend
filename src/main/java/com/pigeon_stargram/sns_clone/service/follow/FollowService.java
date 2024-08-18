@@ -85,10 +85,12 @@ public class FollowService {
         return isFollowing(user1, user2) && isFollowing(user2, user1);
     }
 
-    public List<Follow> findFollows(Long userId) {
+    public List<Long> findFollows(Long userId) {
         User user = userService.findById(userId);
 
         return followRepository.findByRecipient(user).stream()
+                .filter(Follow::getIsNotificationEnabled)
+                .map(follow -> follow.getSender().getId())
                 .toList();
     }
 
@@ -148,7 +150,6 @@ public class FollowService {
                 .collect(Collectors.toList());
     }
 
-
     public Long countFollowings(User user) {
         return followRepository.countBySender(user);
     }
@@ -156,4 +157,15 @@ public class FollowService {
     public Long countFollowers(User user) {
         return followRepository.countByRecipient(user);
     }
+
+    public void toggleNotificationEnabled(User sender, User recipient) {
+        followRepository.findBysenderAndRecipient(sender, recipient)
+                .ifPresent(Follow::toggleNotificationEnabled);
+    }
+    public Boolean getNotificationEnabled(User sender, User recipient) {
+        return followRepository.findBysenderAndRecipient(sender, recipient)
+                .map(Follow::getIsNotificationEnabled)
+                .orElse(false);
+    }
+
 }

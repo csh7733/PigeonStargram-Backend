@@ -20,11 +20,8 @@ public class LikeReplyDto implements NotificationConvertable {
     private User user;
     private Long replyId;
     private Long writerId;
-
-    public LikeReplyDto(User user, Long replyId) {
-        this.user = user;
-        this.replyId = replyId;
-    }
+    private Long postUserId;
+    private Long postId;
 
     @Override
     public Notification toNotification(User sender, User recipient) {
@@ -34,7 +31,8 @@ public class LikeReplyDto implements NotificationConvertable {
                 .type(NotificationType.MY_REPLY_LIKE)
                 .isRead(false)
                 .message(generateMessage(sender, recipient))
-                .redirectUrl(generateRedirectUrl(sender, recipient))
+                .sourceId(postUserId)
+                .sourceId2(postId)
                 .build();
     }
 
@@ -50,7 +48,7 @@ public class LikeReplyDto implements NotificationConvertable {
 
     @Override
     public String generateMessage(User sender, User recipient) {
-        return sender.getName() + "님이 내 대댓글을 좋아합니다.";
+        return sender.getName() + "님이 내 답글을 좋아합니다.";
     }
 
     @Override

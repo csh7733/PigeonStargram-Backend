@@ -11,6 +11,7 @@ import java.util.List;
 public interface UserService {
 
     User findById(Long id);
+    User findByName(String name);
 
     User findByWorkEmail(String email);
 

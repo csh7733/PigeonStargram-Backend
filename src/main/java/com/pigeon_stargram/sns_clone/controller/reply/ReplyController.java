@@ -4,6 +4,8 @@ import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyCommentTaggedUsersDto;
+import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyReplyTaggedUsersDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.CreateReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.LikeReplyDto;
@@ -12,6 +14,7 @@ import com.pigeon_stargram.sns_clone.dto.reply.request.RequestDeleteReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.request.RequestEditReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.request.RequestLikeReplyDto;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
+import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -31,10 +34,13 @@ public class ReplyController {
     private final CommentService commentService;
     private final ReplyService replyService;
     private final UserService userService;
+    private final NotificationService notificationService;
 
     @PostMapping
     public List<ResponsePostsDto> addReply(@LoginUser SessionUser loginUser,
                                            @RequestBody RequestAddReplyDto request) {
+        Long postId = request.getPostId();
+
         Long commentId = request.getCommentId();
         Comment comment = commentService.getCommentEntity(commentId);
         String content = request.getReply().getContent();
@@ -45,7 +51,25 @@ public class ReplyController {
         Long postUserId = request.getPostUserId();
         User postUser = userService.findById(postUserId);
 
-        replyService.createReply(new CreateReplyDto(user,comment,content));
+        CreateReplyDto createReplyDto = CreateReplyDto.builder()
+                .user(user)
+                .comment(comment)
+                .content(content)
+                .postUserId(postUserId)
+                .postId(postId)
+                .build();
+
+        replyService.createReply(createReplyDto);
+
+        NotifyReplyTaggedUsersDto notifyTaggedUsers = NotifyReplyTaggedUsersDto.builder()
+                .user(user)
+                .content(content)
+                .notificationRecipientIds(request.getReply().getTaggedUserIds())
+                .postUserId(postUserId)
+                .postId(postId)
+                .build();
+
+        notificationService.notifyTaggedUsers(notifyTaggedUsers);
 
         return postsService.getPostsByUser(postUser);
     }
@@ -77,6 +101,8 @@ public class ReplyController {
     @PostMapping("/like")
     public List<ResponsePostsDto> likeReply(@LoginUser SessionUser loginUser,
                                             @RequestBody RequestLikeReplyDto request) {
+        Long postId = request.getPostId();
+
         Long userId = loginUser.getId();
         User user = userService.findById(userId);
 
@@ -85,7 +111,14 @@ public class ReplyController {
 
         Long replyId = request.getReplyId();
 
-        replyService.likeReply(new LikeReplyDto(user,replyId));
+        LikeReplyDto likeReplyDto = LikeReplyDto.builder()
+                .user(user)
+                .replyId(replyId)
+                .postUserId(postUserId)
+                .postId(postId)
+                .build();
+
+        replyService.likeReply(likeReplyDto);
 
         return postsService.getPostsByUser(postUser);
     }

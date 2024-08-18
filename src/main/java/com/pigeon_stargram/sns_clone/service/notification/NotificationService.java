@@ -4,7 +4,9 @@ package com.pigeon_stargram.sns_clone.service.notification;
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyPostTaggedUsersDto;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
+import com.pigeon_stargram.sns_clone.dto.post.request.RequestCreatePostDto;
 import com.pigeon_stargram.sns_clone.repository.notification.NotificationRepository;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import com.pigeon_stargram.sns_clone.worker.NotificationWorker;
@@ -25,47 +27,50 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationWorker notificationWorker;
 
+    /**
+     * TODO : ID생성방식 변화시키기 (지연쓰기를 위해서)
+     */
     public List<Notification> save(NotificationConvertable dto) {
-        User sender = userService.findById(dto.getSenderId());
+        Long senderId = dto.getSenderId();
+        User sender = userService.findById(senderId);
+
         List<Notification> notifications = dto.getRecipientIds().stream()
+                .filter(recipientId -> !recipientId.equals(senderId))
                 .map(userService::findById)
                 .map(recipient -> dto.toNotification(sender, recipient))
                 .toList();
-        notifications.forEach(notificationWorker::enqueue);
-        return notificationRepository.saveAll(notifications);
+
+        List<Notification> save = notificationRepository.saveAll(notifications);
+
+        notifications.stream()
+                .map(ResponseNotificationDto::new)
+                .forEach(notificationWorker::enqueue);
+
+        return save;
     }
 
-    public List<ResponseNotificationDto> findByUserId(Long userId) {
+    public List<ResponseNotificationDto> findUnReadNotifications(Long userId) {
         User recipient = userService.findById(userId);
         return notificationRepository.findAllByRecipient(recipient).stream()
-                .map(this::toResponseDto)
+                .filter(notification -> !notification.getIsRead())
+                .map(ResponseNotificationDto::new)
                 .toList();
     }
 
-    public ResponseNotificationDto readNotification(Long notificationId) {
+    public void readNotification(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId).get();
         notification.setRead(true);
-        return toResponseDto(notification);
     }
 
-    public List<ResponseNotificationDto> readNotifications(Long userId) {
+    public void readNotifications(Long userId) {
         User user = userService.findById(userId);
         List<Notification> notifications = notificationRepository.findAllByRecipient(user);
         notifications.forEach(notification -> {
             notification.setRead(true);
         });
-        return notifications.stream()
-                .map(this::toResponseDto)
-                .toList();
     }
 
-    public ResponseNotificationDto toResponseDto(Notification notification) {
-        return ResponseNotificationDto.builder()
-                .name(notification.getSender().getName())
-                .content(notification.getMessage())
-                .createdTime(notification.getCreatedDate())
-                .isRead(notification.getIsRead())
-                .build();
+    public void notifyTaggedUsers(NotificationConvertable dto) {
+        if(!dto.getRecipientIds().isEmpty()) save(dto);
     }
-
 }

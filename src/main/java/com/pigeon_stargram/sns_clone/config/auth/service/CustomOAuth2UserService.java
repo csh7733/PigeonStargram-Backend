@@ -3,6 +3,7 @@ package com.pigeon_stargram.sns_clone.config.auth.service;
 import com.pigeon_stargram.sns_clone.config.auth.dto.OAuthAttributes;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.exception.user.UserNotFoundException;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -40,8 +41,16 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         OAuthAttributes attributes = OAuthAttributes
                 .of(registrationId, userNameAttributeName, oAuth2User.getAttributes());
 
-        User user = userService.findByWorkEmail(attributes.getEmail());
-        boolean isNewUser = (user == null);
+        User user;
+        boolean isNewUser;
+
+        try {
+            user = userService.findByWorkEmail(attributes.getEmail());
+            isNewUser = (user == null);
+        } catch (UserNotFoundException e) {
+            user = null;
+            isNewUser = true;
+        }
 
         if (isNewUser) {
             httpSession.setAttribute("isNewUser", true);

@@ -41,11 +41,11 @@ public class User extends BaseTimeEntity {
     private String password;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "sender")
+    @OneToMany(mappedBy = "recipient")
     private List<Follow> followers;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "recipient")
+    @OneToMany(mappedBy = "sender")
     private List<Follow> followings;
 
     @JsonIgnore

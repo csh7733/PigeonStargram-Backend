@@ -2,7 +2,6 @@ package com.pigeon_stargram.sns_clone.controller.notification;
 
 import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
-import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -22,20 +21,22 @@ public class NotificationController {
     // 로그인유저에 대한 알림 조회
     @GetMapping("")
     public List<ResponseNotificationDto> getNotifications(@LoginUser SessionUser loginUser) {
-        return notificationService.findByUserId(loginUser.getId());
+        return notificationService.findUnReadNotifications(loginUser.getId());
     }
 
     // 단일 알림 읽음 처리요청
     @PatchMapping("/{notificationId}/read")
-    public ResponseNotificationDto readNotification(@LoginUser SessionUser loginUser,
+    public void readNotification(@LoginUser SessionUser loginUser,
                                                     @PathVariable Long notificationId) {
-        return notificationService.readNotification(notificationId);
+
+        notificationService.readNotification(notificationId);
     }
 
     // 전체 알림 읽음 처리요청
     @PatchMapping("read")
-    public List<ResponseNotificationDto> readNotifications(@LoginUser SessionUser loginUser) {
-        return notificationService.readNotifications(loginUser.getId());
+    public void readNotifications(@LoginUser SessionUser loginUser) {
+
+        notificationService.readNotifications(loginUser.getId());
     }
 
 }

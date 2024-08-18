@@ -8,6 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RequestLikeCommentDto {
+    private Long postId;
     private Long commentId;
     private Long postUserId;
 }

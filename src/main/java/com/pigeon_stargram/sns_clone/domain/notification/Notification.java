@@ -10,6 +10,8 @@ import lombok.*;
 @Getter
 @NoArgsConstructor
 @Entity
+@Builder
+@AllArgsConstructor
 public class Notification extends BaseTimeEntity {
 
     @Id
@@ -26,22 +28,11 @@ public class Notification extends BaseTimeEntity {
 
     private NotificationType type;
     private String message;
-    private String redirectUrl;
     private Boolean isRead;
+    private Long sourceId;
+    private Long sourceId2;
 
     public void setRead(Boolean read) {
         isRead = read;
-    }
-
-    @Builder
-    public Notification(User sender, User recipient,
-                        NotificationType type, String message,
-                        String redirectUrl, Boolean isRead) {
-        this.sender = sender;
-        this.recipient = recipient;
-        this.type = type;
-        this.message = message;
-        this.redirectUrl = redirectUrl;
-        this.isRead = isRead;
     }
 }

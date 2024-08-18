@@ -18,22 +18,20 @@ public class LikeCommentDto implements NotificationConvertable {
 
     private User user;
     private Long commentId;
+    private Long postUserId;
     private Long writerId;
-
-    public LikeCommentDto(User user, Long commentId) {
-        this.user = user;
-        this.commentId = commentId;
-    }
+    private Long postId;
 
     @Override
     public Notification toNotification(User sender, User recipient) {
         return Notification.builder()
                 .type(NotificationType.MY_COMMENT_LIKE)
-                .redirectUrl(generateRedirectUrl(sender, recipient))
                 .message(generateMessage(sender, recipient))
                 .isRead(false)
                 .sender(sender)
                 .recipient(recipient)
+                .sourceId(postUserId)
+                .sourceId2(postId)
                 .build();
     }
 
@@ -49,7 +47,7 @@ public class LikeCommentDto implements NotificationConvertable {
 
     @Override
     public String generateMessage(User sender, User recipient) {
-        return "";
+        return sender.getName() + "님이 내 댓글을 좋아합니다.";
     }
 
     @Override

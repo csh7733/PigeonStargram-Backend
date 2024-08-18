@@ -10,8 +10,10 @@ import com.pigeon_stargram.sns_clone.dto.comment.request.RequestAddCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.request.RequestDeleteCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.request.RequestEditCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.request.RequestLikeCommentDto;
+import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyCommentTaggedUsersDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
+import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ public class CommentController {
     private final PostsService postsService;
     private final CommentService commentService;
     private final UserService userService;
+    private final NotificationService notificationService;
 
     @PostMapping
     public List<ResponsePostsDto> addComment(@LoginUser SessionUser loginUser,
@@ -44,6 +47,16 @@ public class CommentController {
         User postUser = userService.findById(postUserId);
 
         commentService.createComment(new CreateCommentDto(user, post, content));
+
+        NotifyCommentTaggedUsersDto notifyTaggedUsers = NotifyCommentTaggedUsersDto.builder()
+                .user(user)
+                .content(content)
+                .notificationRecipientIds(request.getComment().getTaggedUserIds())
+                .postUserId(postUserId)
+                .postId(postId)
+                .build();
+
+        notificationService.notifyTaggedUsers(notifyTaggedUsers);
 
         return postsService.getPostsByUser(postUser);
     }
@@ -77,6 +90,8 @@ public class CommentController {
     @PostMapping("/like")
     public List<ResponsePostsDto> likeComment(@LoginUser SessionUser loginUser,
                                               @RequestBody RequestLikeCommentDto request) {
+        Long postId = request.getPostId();
+
         Long userId = loginUser.getId();
         User user = userService.findById(userId);
 
@@ -85,7 +100,14 @@ public class CommentController {
 
         Long commentId = request.getCommentId();
 
-        commentService.likeComment(new LikeCommentDto(user, commentId));
+        LikeCommentDto likeCommentDto = LikeCommentDto.builder()
+                .user(user)
+                .commentId(commentId)
+                .postUserId(postUserId)
+                .postId(postId)
+                .build();
+
+        commentService.likeComment(likeCommentDto);
 
         return postsService.getPostsByUser(postUser);
     }
