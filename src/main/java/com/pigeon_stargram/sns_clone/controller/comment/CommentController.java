@@ -58,7 +58,7 @@ public class CommentController {
 
         notificationService.notifyTaggedUsers(notifyTaggedUsers);
 
-        return postsService.getPostsByUser(postUser);
+        return postsService.getPostsByUser(postUser.getId());
     }
 
     @PatchMapping("/{commentId}")
@@ -72,7 +72,7 @@ public class CommentController {
 
         commentService.editComment(commentId,content);
 
-        return postsService.getPostsByUser(postUser);
+        return postsService.getPostsByUser(postUser.getId());
     }
 
     @DeleteMapping("/{commentId}")
@@ -84,7 +84,7 @@ public class CommentController {
 
         commentService.deleteComment(commentId);
 
-        return postsService.getPostsByUser(postUser);
+        return postsService.getPostsByUser(postUser.getId());
     }
 
     @PostMapping("/like")
@@ -109,6 +109,6 @@ public class CommentController {
 
         commentService.likeComment(likeCommentDto);
 
-        return postsService.getPostsByUser(postUser);
+        return postsService.getPostsByUser(postUser.getId());
     }
 }

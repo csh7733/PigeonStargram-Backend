@@ -71,7 +71,7 @@ public class ReplyController {
 
         notificationService.notifyTaggedUsers(notifyTaggedUsers);
 
-        return postsService.getPostsByUser(postUser);
+        return postsService.getPostsByUser(postUserId);
     }
 
     @PatchMapping("/{replyId}")
@@ -79,23 +79,21 @@ public class ReplyController {
                                             @PathVariable Long replyId,
                                             @RequestBody RequestEditReplyDto request) {
         Long postUserId = request.getPostUserId();
-        User postUser = userService.findById(postUserId);
 
         String content = request.getContent();
         replyService.editReply(replyId,content);
 
-        return postsService.getPostsByUser(postUser);
+        return postsService.getPostsByUser(postUserId);
     }
     @DeleteMapping("/{replyId}")
     public List<ResponsePostsDto> deleteReply(@LoginUser SessionUser loginUser,
                                               @PathVariable Long replyId,
                                               @RequestBody RequestDeleteReplyDto request) {
         Long postUserId = request.getPostUserId();
-        User postUser = userService.findById(postUserId);
 
         replyService.deleteReply(replyId);
 
-        return postsService.getPostsByUser(postUser);
+        return postsService.getPostsByUser(postUserId);
     }
 
     @PostMapping("/like")
@@ -107,7 +105,6 @@ public class ReplyController {
         User user = userService.findById(userId);
 
         Long postUserId = request.getPostUserId();
-        User postUser = userService.findById(postUserId);
 
         Long replyId = request.getReplyId();
 
@@ -120,6 +117,6 @@ public class ReplyController {
 
         replyService.likeReply(likeReplyDto);
 
-        return postsService.getPostsByUser(postUser);
+        return postsService.getPostsByUser(postUserId);
     }
 }

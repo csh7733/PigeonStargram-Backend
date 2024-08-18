@@ -158,9 +158,9 @@ public class TestData {
         replyService.createReply(new CreateReplyDto(user2, post4_comment1, "Welcome back!",user1.getId(),post4.getId()));
 
         // Logging Posts
-        List<ResponsePostsDto> postsByUser1 = postsService.getPostsByUser(user1);
-        List<ResponsePostsDto> postsByUser2 = postsService.getPostsByUser(user2);
-        List<ResponsePostsDto> postsByUser3 = postsService.getPostsByUser(user3);
+        List<ResponsePostsDto> postsByUser1 = postsService.getPostsByUser(user1.getId());
+        List<ResponsePostsDto> postsByUser2 = postsService.getPostsByUser(user2.getId());
+        List<ResponsePostsDto> postsByUser3 = postsService.getPostsByUser(user3.getId());
 
         logPosts(postsByUser1);
         logPosts(postsByUser2);

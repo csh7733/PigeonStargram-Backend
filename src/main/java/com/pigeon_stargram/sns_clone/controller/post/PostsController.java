@@ -32,9 +32,7 @@ public class PostsController {
 
     @GetMapping
     public List<ResponsePostsDto> getPosts(@RequestParam Long userId) {
-        User user = userService.findById(userId);
-
-        return postsService.getPostsByUser(user);
+        return postsService.getPostsByUser(userId);
     }
 
     @PostMapping
@@ -55,7 +53,7 @@ public class PostsController {
 
         notificationService.notifyTaggedUsers(notifyTaggedUsers);
 
-        return postsService.getPostsByUser(user);
+        return postsService.getPostsByUser(userId);
     }
 
     @PatchMapping("/{postId}")
@@ -63,23 +61,21 @@ public class PostsController {
                                            @PathVariable Long postId,
                                            @RequestBody RequestEditPostDto request) {
         Long loginUserId = loginUser.getId();
-        User user = userService.findById(loginUserId);
 
         String content = request.getContent();
         postsService.editPost(postId,content);
 
-        return postsService.getPostsByUser(user);
+        return postsService.getPostsByUser(loginUserId);
     }
 
     @DeleteMapping("/{postId}")
     public List<ResponsePostsDto> deletePost(@LoginUser SessionUser loginUser,
                                              @PathVariable Long postId) {
         Long loginUserId = loginUser.getId();
-        User user = userService.findById(loginUserId);
 
         postsService.deletePost(postId);
 
-        return postsService.getPostsByUser(user);
+        return postsService.getPostsByUser(loginUserId);
     }
 
     @PostMapping("/like")
@@ -91,7 +87,6 @@ public class PostsController {
         User user = userService.findById(userId);
 
         Long postUserId = request.getPostUserId();
-        User postUser = userService.findById(postUserId);
 
         LikePostDto likePostDto = LikePostDto.builder()
                 .user(user)
@@ -101,7 +96,7 @@ public class PostsController {
 
         postsService.likePost(likePostDto);
 
-        return postsService.getPostsByUser(postUser);
+        return postsService.getPostsByUser(postUserId);
     }
 
 }

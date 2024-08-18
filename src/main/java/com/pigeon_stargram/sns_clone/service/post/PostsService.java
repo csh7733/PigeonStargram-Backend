@@ -1,6 +1,5 @@
 package com.pigeon_stargram.sns_clone.service.post;
 
-import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.post.Image;
 import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.domain.post.PostsLike;
@@ -13,6 +12,7 @@ import com.pigeon_stargram.sns_clone.dto.post.internal.LikePostDto;
 import com.pigeon_stargram.sns_clone.dto.post.internal.PostsContentDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.PostsLikeDto;
+import com.pigeon_stargram.sns_clone.exception.post.PostsNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.post.PostsLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.post.PostsRepository;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
@@ -28,6 +28,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
+
 @Slf4j
 @RequiredArgsConstructor
 @Transactional
@@ -41,8 +43,13 @@ public class PostsService {
     private final PostsRepository postsRepository;
     private final PostsLikeRepository postsLikeRepository;
 
-    public List<ResponsePostsDto> getPostsByUser(User user) {
-        return postsRepository.findByUserId(user.getId()).stream()
+    public Posts getPostEntity(Long postId) {
+        return postsRepository.findById(postId)
+                .orElseThrow(() -> new PostsNotFoundException(POSTS_NOT_FOUND_ID));
+    }
+
+    public List<ResponsePostsDto> getPostsByUser(Long userId) {
+        return postsRepository.findByUserId(userId).stream()
                 .map(Posts::getId)
                 .sorted(Comparator.reverseOrder())
                 .map(this::getCombinedPost)
@@ -110,14 +117,15 @@ public class PostsService {
 
     public void likePost(LikePostDto dto) {
         Posts post = getPostEntity(dto.getPostId());
+        User user = dto.getUser();
 
-        postsLikeRepository.findByUserAndPost(dto.getUser(), post)
+        postsLikeRepository.findByUserIdAndPostId(user.getId(), post.getId())
                 .ifPresentOrElse(
                         existingLike -> {
                             postsLikeRepository.delete(existingLike);
                         },
                         () -> {
-                            PostsLike postsLike = new PostsLike(dto.getUser(), post);
+                            PostsLike postsLike = new PostsLike(user, post);
                             postsLikeRepository.save(postsLike);
                             notificationService.save(dto);
                         }
@@ -132,7 +140,6 @@ public class PostsService {
         return postIds;
     }
 
-
     public List<ResponsePostsDto> getAllPosts() {
         List<Posts> posts = postsRepository.findAll();
         return posts.stream()
@@ -143,13 +150,6 @@ public class PostsService {
                     return new ResponsePostsDto(post, comments, likeCount);
                 })
                 .collect(Collectors.toList());
-    }
-
-
-
-    public Posts getPostEntity(Long postId) {
-        return postsRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid comment ID"));
     }
 
 
