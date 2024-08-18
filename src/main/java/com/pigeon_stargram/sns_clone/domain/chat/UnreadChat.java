@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @Entity
-public class UnReadChat {
+public class UnreadChat {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,11 +20,19 @@ public class UnReadChat {
 
     private Integer count;
 
-    @Builder
-    public UnReadChat(Long userId, Long toUserId) {
+
+
+    public UnreadChat(Long userId, Long toUserId) {
         this.userId = userId;
         this.toUserId = toUserId;
         this.count = 0;
+    }
+
+    @Builder
+    public UnreadChat(Long userId, Long toUserId, Integer count) {
+        this.userId = userId;
+        this.toUserId = toUserId;
+        this.count = count;
     }
 
     public Integer incrementCount() {

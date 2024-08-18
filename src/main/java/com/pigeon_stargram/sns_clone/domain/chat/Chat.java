@@ -26,4 +26,6 @@ public abstract class Chat extends BaseTimeEntity {
         this.senderId = senderId;
         this.recipientId = recipientId;
     }
+
+
 }

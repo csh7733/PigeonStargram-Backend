@@ -3,14 +3,14 @@ package com.pigeon_stargram.sns_clone.service.chat;
 import com.pigeon_stargram.sns_clone.domain.chat.ImageChat;
 import com.pigeon_stargram.sns_clone.domain.chat.LastMessage;
 import com.pigeon_stargram.sns_clone.domain.chat.TextChat;
-import com.pigeon_stargram.sns_clone.domain.chat.UnReadChat;
+import com.pigeon_stargram.sns_clone.domain.chat.UnreadChat;
 import com.pigeon_stargram.sns_clone.dto.chat.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseChatHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
 import com.pigeon_stargram.sns_clone.event.UserConnectEvent;
 import com.pigeon_stargram.sns_clone.repository.chat.ChatRepository;
 import com.pigeon_stargram.sns_clone.repository.chat.LastMessageRepository;
-import com.pigeon_stargram.sns_clone.repository.chat.UnReadChatRepository;
+import com.pigeon_stargram.sns_clone.repository.chat.UnreadChatRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFor
 public class ChatService {
 
     private final ChatRepository chatRepository;
-    private final UnReadChatRepository unReadChatRepository;
+    private final UnreadChatRepository unreadChatRepository;
     private final LastMessageRepository lastMessageRepository;
 
     public void save(NewChatDto request){
@@ -38,6 +38,7 @@ public class ChatService {
         else chatRepository.save(request.toTextEntity());
     }
 
+    // 테스트 데이터 주입에서만 사용
     public void saveChat(Long fromUserId, Long toUserId, String text) {
         TextChat textChat = TextChat.builder()
                 .fromUserId(fromUserId)
@@ -63,32 +64,29 @@ public class ChatService {
         List<TextChat> chatHistories = chatRepository.findTextChatsBetweenUsers(user1Id, user2Id);
         return chatHistories.stream()
                 .map(ResponseChatHistoryDto::new)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public Integer increaseUnReadChatCount(Long userId,Long toUserId){
-        UnReadChat unReadChat = unReadChatRepository.findByUserIdAndToUserId(userId, toUserId)
-                .orElse(UnReadChat.builder()
-                        .userId(userId)
-                        .toUserId(toUserId)
-                        .build());
+        UnreadChat unReadChat = unreadChatRepository.findByUserIdAndToUserId(userId, toUserId)
+                .orElse(new UnreadChat(userId, toUserId));
 
         Integer count = unReadChat.incrementCount();
-        unReadChatRepository.save(unReadChat);
+        unreadChatRepository.save(unReadChat);
         return count;
     }
 
     public Integer getUnreadChatCount(Long userId, Long toUserId) {
-        return unReadChatRepository.findByUserIdAndToUserId(userId, toUserId)
-                .map(UnReadChat::getCount)
+        return unreadChatRepository.findByUserIdAndToUserId(userId, toUserId)
+                .map(UnreadChat::getCount)
                 .orElse(0);
     }
 
     public void setUnreadChatCount0(Long userId, Long toUserId) {
-        unReadChatRepository.findByUserIdAndToUserId(userId, toUserId)
-                .ifPresent(unReadChat -> {
-                    unReadChat.resetCount();
-                    unReadChatRepository.save(unReadChat);
+        unreadChatRepository.findByUserIdAndToUserId(userId, toUserId)
+                .ifPresent(unreadChat -> {
+                    unreadChat.resetCount();
+                    unreadChatRepository.save(unreadChat);
                 });
     }
 
