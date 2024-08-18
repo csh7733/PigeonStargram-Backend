@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone.controller.search;
 
 import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
+import com.pigeon_stargram.sns_clone.dto.search.response.ResponseSearchHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.search.response.ResponseTopSearchDto;
 import com.pigeon_stargram.sns_clone.service.search.SearchService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,13 @@ public class SearchController {
                                                @RequestParam String prefix) {
         log.info("prefix = {}",prefix);
         return searchService.getTopSearchTermsByPrefix(prefix);
+    }
+
+    @GetMapping("/history")
+    public List<ResponseSearchHistoryDto> getSearchHistoryResults(@LoginUser SessionUser loginUser) {
+        Long userId = loginUser.getId();
+
+        return searchService.getTopSearchHistory(userId);
     }
 
 }
