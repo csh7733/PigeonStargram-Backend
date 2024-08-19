@@ -48,13 +48,13 @@ public class FollowController {
 //        return followService.findFollowings(userId);
 //    }
     
-    // 특정유저를 팔로우중인 조회
+    // 로그인 유저가 특정유저를 팔로우중인지 조회
     @GetMapping("/followers")
     public List<ResponseFollowerDto> getFollowers(@LoginUser SessionUser loginUser,
                                                   @RequestParam Long userId) {
         Long currentUserId = loginUser.getId();
 
-        return followService.findFollowers(currentUserId,userId);
+        return followService.findFollowers(currentUserId, userId);
     }
 
     // 팔로우 추가

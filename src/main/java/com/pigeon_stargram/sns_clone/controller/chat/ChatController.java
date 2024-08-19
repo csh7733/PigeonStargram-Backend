@@ -2,7 +2,6 @@ package com.pigeon_stargram.sns_clone.controller.chat;
 
 import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
-import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.Follow.ResponseFollowerDto;
 import com.pigeon_stargram.sns_clone.dto.chat.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.request.RequestOnlineStatusDto;
@@ -17,6 +16,8 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.pigeon_stargram.sns_clone.config.WebSocketEventListener.isUserChattingWith;
@@ -74,23 +75,23 @@ public class ChatController {
         chatMessage.setTime(getCurrentFormattedTime());
         chatService.save(chatMessage);
 
-        if(!isUserChattingWith(to,from)){
+        if (!isUserChattingWith(to, from)) {
             Integer count = chatService.increaseUnReadChatCount(to, from);
-            sentUnReadChatCountToUser(to,from,count);
+            sentUnReadChatCountToUser(to, from, count);
         }
 
         LastMessageDto lastMessage = chatService.setLastMessage(chatMessage);
-        sentLastMessage(from,to,lastMessage);
+        sentLastMessage(from, to, lastMessage);
 
         return chatMessage;
     }
 
     public void sentUnReadChatCountToUser(Long toUserId, Long fromUserId, Integer count) {
         String destination = "/topic/users/status/" + toUserId;
-        messagingTemplate.convertAndSend(destination, new UnReadChatCountDto(fromUserId,count));
+        messagingTemplate.convertAndSend(destination, new UnReadChatCountDto(fromUserId, count));
     }
 
-    public void sentLastMessage(Long user1Id, Long user2Id,LastMessageDto lastMessage) {
+    public void sentLastMessage(Long user1Id, Long user2Id, LastMessageDto lastMessage) {
         String destination1 = "/topic/users/status/" + user1Id;
         String destination2 = "/topic/users/status/" + user2Id;
         messagingTemplate.convertAndSend(destination1, lastMessage);
@@ -99,11 +100,15 @@ public class ChatController {
 
     public void sentOnlineStatus(Long userId, String onlineStatus) {
         List<ResponseFollowerDto> followers = followService.findFollowers(userId);
+        List<ResponseFollowerDto> followings = followService.findFollowings(userId);
+        List<ResponseFollowerDto> chatUsers = new ArrayList<>(followers);
+        chatUsers.addAll(followings);
 
-        followers.stream()
+        chatUsers.stream()
+                .distinct()
                 .map(ResponseFollowerDto::getId)
-                .forEach(followerId -> {
-                    String destination = "/topic/users/status/" + followerId;
+                .forEach(chatUserId -> {
+                    String destination = "/topic/users/status/" + chatUserId;
                     messagingTemplate.convertAndSend(destination, new ResponseOnlineStatusDto(userId, onlineStatus));
                 });
     }

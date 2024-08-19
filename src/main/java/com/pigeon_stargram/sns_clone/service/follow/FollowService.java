@@ -94,6 +94,15 @@ public class FollowService {
                 .toList();
     }
 
+    public List<ResponseFollowerDto> findFollowings(Long userId) {
+        User user = userService.findById(userId);
+
+        return followRepository.findBySender(user).stream()
+                .map(Follow::getRecipient)
+                .map(recipient -> new ResponseFollowerDto(recipient, 1))
+                .toList();
+    }
+
     public List<ResponseFollowerDto> findFollowings(Long currentUserId, Long userId) {
         User user = userService.findById(userId);
         User currentUser = userService.findById(currentUserId);

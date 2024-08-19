@@ -4,6 +4,7 @@ import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import lombok.*;
 
+@EqualsAndHashCode
 @ToString
 @Getter
 @Builder
