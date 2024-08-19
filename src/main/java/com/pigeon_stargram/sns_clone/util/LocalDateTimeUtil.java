@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone.util;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 
 public class LocalDateTimeUtil {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -17,5 +18,12 @@ public class LocalDateTimeUtil {
 
     public static LocalDateTime getCurrentTime() {
         return LocalDateTime.now();
+    }
+
+    public static Comparator<String> getReverseOrderComparator() {
+        return Comparator.comparing(
+                timeString -> LocalDateTime.parse(timeString, formatter),
+                Comparator.reverseOrder()
+        );
     }
 }
