@@ -15,6 +15,7 @@ import com.pigeon_stargram.sns_clone.dto.post.request.RequestLikePostDto;
 import com.pigeon_stargram.sns_clone.service.file.FileService;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
+import com.pigeon_stargram.sns_clone.service.timeline.TimelineService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ import java.util.List;
 public class PostsController {
 
     private final PostsService postsService;
+    private final TimelineService timelineService;
     private final UserService userService;
     private final NotificationService notificationService;
     private final FileService fileService;
@@ -101,6 +103,7 @@ public class PostsController {
         Long postId = request.getPostId();
 
         Long userId = loginUser.getId();
+        String context = request.getContext();
         User user = userService.findById(userId);
 
         Long postUserId = request.getPostUserId();
@@ -113,7 +116,15 @@ public class PostsController {
 
         postsService.likePost(likePostDto);
 
-        return postsService.getPostsByUser(postUserId);
+        return getPostsBasedOnContext(context, userId, postUserId);
+    }
+
+    private List<ResponsePostsDto> getPostsBasedOnContext(String context, Long userId, Long postUserId) {
+        if ("timeline".equals(context)) {
+            return timelineService.getFollowingUsersRecentPosts(userId);
+        } else {
+            return postsService.getPostsByUser(postUserId);
+        }
     }
 
 }

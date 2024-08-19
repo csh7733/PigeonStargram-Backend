@@ -15,6 +15,7 @@ import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
+import com.pigeon_stargram.sns_clone.service.timeline.TimelineService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ import java.util.List;
 public class CommentController {
 
     private final PostsService postsService;
+    private final TimelineService timelineService;
     private final CommentService commentService;
     private final UserService userService;
     private final NotificationService notificationService;
@@ -42,9 +44,9 @@ public class CommentController {
 
         Long userId = loginUser.getId();
         User user = userService.findById(userId);
+        String context = request.getContext();
 
         Long postUserId = request.getPostUserId();
-        User postUser = userService.findById(postUserId);
 
         commentService.createComment(new CreateCommentDto(user, post, content));
 
@@ -58,45 +60,49 @@ public class CommentController {
 
         notificationService.notifyTaggedUsers(notifyTaggedUsers);
 
-        return postsService.getPostsByUser(postUser.getId());
+        return getPostsBasedOnContext(context, userId, postUserId);
     }
 
     @PatchMapping("/{commentId}")
     public List<ResponsePostsDto> editComment(@LoginUser SessionUser loginUser,
                                               @PathVariable Long commentId,
                                               @RequestBody RequestEditCommentDto request) {
+        Long userId = loginUser.getId();
+        String context = request.getContext();
+
         String content = request.getContent();
 
         Long postUserId = request.getPostUserId();
-        User postUser = userService.findById(postUserId);
 
         commentService.editComment(commentId,content);
 
-        return postsService.getPostsByUser(postUser.getId());
+        return getPostsBasedOnContext(context, userId, postUserId);
     }
 
     @DeleteMapping("/{commentId}")
     public List<ResponsePostsDto> deleteComment(@LoginUser SessionUser loginUser,
                                                 @PathVariable Long commentId,
                                                 @RequestBody RequestDeleteCommentDto request) {
+        Long userId = loginUser.getId();
+        String context = request.getContext();
+
         Long postUserId = request.getPostUserId();
-        User postUser = userService.findById(postUserId);
 
         commentService.deleteComment(commentId);
 
-        return postsService.getPostsByUser(postUser.getId());
+        return getPostsBasedOnContext(context, userId, postUserId);
     }
 
     @PostMapping("/like")
     public List<ResponsePostsDto> likeComment(@LoginUser SessionUser loginUser,
                                               @RequestBody RequestLikeCommentDto request) {
         Long postId = request.getPostId();
+        String context = request.getContext();
 
         Long userId = loginUser.getId();
         User user = userService.findById(userId);
 
         Long postUserId = request.getPostUserId();
-        User postUser = userService.findById(postUserId);
 
         Long commentId = request.getCommentId();
 
@@ -109,6 +115,14 @@ public class CommentController {
 
         commentService.likeComment(likeCommentDto);
 
-        return postsService.getPostsByUser(postUser.getId());
+        return getPostsBasedOnContext(context, userId, postUserId);
+    }
+
+    private List<ResponsePostsDto> getPostsBasedOnContext(String context, Long userId, Long postUserId) {
+        if ("timeline".equals(context)) {
+            return timelineService.getFollowingUsersRecentPosts(userId);
+        } else {
+            return postsService.getPostsByUser(postUserId);
+        }
     }
 }

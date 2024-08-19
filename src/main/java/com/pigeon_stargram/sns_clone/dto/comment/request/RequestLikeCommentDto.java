@@ -11,4 +11,5 @@ public class RequestLikeCommentDto {
     private Long postId;
     private Long commentId;
     private Long postUserId;
+    private String context;
 }

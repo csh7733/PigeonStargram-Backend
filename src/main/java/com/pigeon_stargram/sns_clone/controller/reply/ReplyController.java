@@ -17,6 +17,7 @@ import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
+import com.pigeon_stargram.sns_clone.service.timeline.TimelineService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,7 @@ import java.util.List;
 public class ReplyController {
 
     private final PostsService postsService;
+    private final TimelineService timelineService;
     private final CommentService commentService;
     private final ReplyService replyService;
     private final UserService userService;
@@ -46,6 +48,7 @@ public class ReplyController {
         String content = request.getReply().getContent();
 
         Long userId = loginUser.getId();
+        String context = request.getContext();
         User user = userService.findById(userId);
 
         Long postUserId = request.getPostUserId();
@@ -71,29 +74,35 @@ public class ReplyController {
 
         notificationService.notifyTaggedUsers(notifyTaggedUsers);
 
-        return postsService.getPostsByUser(postUserId);
+        return getPostsBasedOnContext(context, userId, postUser.getId());
     }
 
     @PatchMapping("/{replyId}")
     public List<ResponsePostsDto> editReply(@LoginUser SessionUser loginUser,
                                             @PathVariable Long replyId,
                                             @RequestBody RequestEditReplyDto request) {
+        Long userId = loginUser.getId();
+        String context = request.getContext();
+
         Long postUserId = request.getPostUserId();
 
         String content = request.getContent();
         replyService.editReply(replyId,content);
 
-        return postsService.getPostsByUser(postUserId);
+        return getPostsBasedOnContext(context, userId, postUserId);
     }
     @DeleteMapping("/{replyId}")
     public List<ResponsePostsDto> deleteReply(@LoginUser SessionUser loginUser,
                                               @PathVariable Long replyId,
                                               @RequestBody RequestDeleteReplyDto request) {
+        Long userId = loginUser.getId();
+        String context = request.getContext();
+
         Long postUserId = request.getPostUserId();
 
         replyService.deleteReply(replyId);
 
-        return postsService.getPostsByUser(postUserId);
+        return getPostsBasedOnContext(context, userId, postUserId);
     }
 
     @PostMapping("/like")
@@ -102,6 +111,7 @@ public class ReplyController {
         Long postId = request.getPostId();
 
         Long userId = loginUser.getId();
+        String context = request.getContext();
         User user = userService.findById(userId);
 
         Long postUserId = request.getPostUserId();
@@ -117,6 +127,14 @@ public class ReplyController {
 
         replyService.likeReply(likeReplyDto);
 
-        return postsService.getPostsByUser(postUserId);
+        return getPostsBasedOnContext(context, userId, postUserId);
+    }
+
+    private List<ResponsePostsDto> getPostsBasedOnContext(String context, Long userId, Long postUserId) {
+        if ("timeline".equals(context)) {
+            return timelineService.getFollowingUsersRecentPosts(userId);
+        } else {
+            return postsService.getPostsByUser(postUserId);
+        }
     }
 }

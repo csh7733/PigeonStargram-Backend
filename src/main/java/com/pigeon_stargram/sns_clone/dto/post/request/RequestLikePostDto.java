@@ -10,4 +10,5 @@ import lombok.*;
 public class RequestLikePostDto {
     private Long postId;
     private Long postUserId;
+    private String context;
 }

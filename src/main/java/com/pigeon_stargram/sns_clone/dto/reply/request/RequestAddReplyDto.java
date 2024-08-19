@@ -11,5 +11,6 @@ public class RequestAddReplyDto {
     private Long postId;
     private Long commentId;
     private Long postUserId;
+    private String context;
     private newReplyDto reply;
 }

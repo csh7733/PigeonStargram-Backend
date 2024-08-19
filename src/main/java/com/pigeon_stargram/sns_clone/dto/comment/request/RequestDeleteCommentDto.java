@@ -9,4 +9,5 @@ import lombok.*;
 @AllArgsConstructor
 public class RequestDeleteCommentDto {
     private Long postUserId;
+    private String context;
 }

@@ -9,5 +9,6 @@ import lombok.*;
 @AllArgsConstructor
 public class RequestEditCommentDto {
     private String content;
+    private String context;
     private Long postUserId;
 }

@@ -11,5 +11,6 @@ import lombok.*;
 public class RequestAddCommentDto {
     private Long postId;
     private Long postUserId;
+    private String context;
     private newCommentDto comment;
 }
