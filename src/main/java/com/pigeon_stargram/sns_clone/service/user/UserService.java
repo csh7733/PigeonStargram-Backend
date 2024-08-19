@@ -12,6 +12,7 @@ public interface UserService {
 
     User findById(Long id);
     User findByName(String name);
+    List<User> findBySearchQuery(String searchQuery);
 
     User findByWorkEmail(String email);
 

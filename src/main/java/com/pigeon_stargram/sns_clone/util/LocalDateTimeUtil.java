@@ -14,4 +14,8 @@ public class LocalDateTimeUtil {
         LocalDateTime now = LocalDateTime.now();
         return formatTime(now);
     }
+
+    public static LocalDateTime getCurrentTime() {
+        return LocalDateTime.now();
+    }
 }
