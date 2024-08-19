@@ -21,7 +21,7 @@ public class NotificationController {
     // 로그인유저에 대한 알림 조회
     @GetMapping("")
     public List<ResponseNotificationDto> getNotifications(@LoginUser SessionUser loginUser) {
-        return notificationService.findUnReadNotifications(loginUser.getId());
+        return notificationService.findUnreadNotifications(loginUser.getId());
     }
 
     // 단일 알림 읽음 처리요청

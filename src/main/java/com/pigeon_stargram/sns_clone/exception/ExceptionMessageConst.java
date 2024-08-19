@@ -34,5 +34,8 @@ public class ExceptionMessageConst {
             = "ID와 일치하는 댓글이 없습니다.";
 
     public static final String REPLY_NOT_FOUND_ID
-            = "ID와 일치하는 대댓이 없습니다.";
+            = "ID와 일치하는 답글이 없습니다.";
+    
+    public static final String NOTIFICATION_NOT_FOUND_ID
+            = "ID와 일치하는 알림이 없습니다.";
 }

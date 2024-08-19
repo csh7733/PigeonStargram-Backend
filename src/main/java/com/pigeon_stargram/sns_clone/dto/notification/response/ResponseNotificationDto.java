@@ -4,6 +4,8 @@ import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.formatTime;
 
 @Getter
@@ -42,7 +44,9 @@ public class ResponseNotificationDto {
         this.avatar = notification.getSender().getAvatar();
         this.content = notification.getMessage();
         this.isRead = notification.getIsRead();
-        this.time = formatTime(notification.getCreatedDate());
+        // 테스트를 위해 임시로 사용
+        this.time = formatTime(LocalDateTime.now());
+//        this.time = formatTime(notification.getCreatedDate());
         this.targetUserId = notification.getRecipient().getId();
         this.sourceId =  notification.getSourceId();
         this.sourceId2 = notification.getSourceId2();

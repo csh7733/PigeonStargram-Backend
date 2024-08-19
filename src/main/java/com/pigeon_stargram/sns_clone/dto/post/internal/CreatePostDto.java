@@ -48,8 +48,8 @@ public class CreatePostDto implements NotificationConvertable {
 
     @Override
     public String generateMessage(User sender, User recipient) {
-        return user.getName() + "님이 새 글을 등록했습니다. 지금 " +
-                user.getName() +"님의 프로필로 가서 확인하세요!";
+        return sender.getName() + "님이 새 글을 등록했습니다. 지금 " +
+                sender.getName() +"님의 프로필로 가서 확인하세요!";
     }
 
     @Override

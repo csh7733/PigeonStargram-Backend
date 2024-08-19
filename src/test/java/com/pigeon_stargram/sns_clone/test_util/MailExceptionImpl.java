@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.test_exception;
+package com.pigeon_stargram.sns_clone.test_util;
 
 import org.springframework.mail.MailException;
 

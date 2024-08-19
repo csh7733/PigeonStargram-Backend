@@ -19,8 +19,8 @@ public class LikeReplyDto implements NotificationConvertable {
 
     private User user;
     private Long replyId;
-    private Long writerId;
     private Long postUserId;
+    private Long writerId;
     private Long postId;
 
     @Override

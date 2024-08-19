@@ -11,7 +11,7 @@ import com.pigeon_stargram.sns_clone.exception.user.MultipleUsersFoundException;
 import com.pigeon_stargram.sns_clone.exception.login.RegisterFailException;
 import com.pigeon_stargram.sns_clone.exception.user.UserNotFoundException;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
-import com.pigeon_stargram.sns_clone.test_exception.MailExceptionImpl;
+import com.pigeon_stargram.sns_clone.test_util.MailExceptionImpl;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;

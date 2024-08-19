@@ -4,9 +4,8 @@ package com.pigeon_stargram.sns_clone.service.notification;
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyPostTaggedUsersDto;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
-import com.pigeon_stargram.sns_clone.dto.post.request.RequestCreatePostDto;
+import com.pigeon_stargram.sns_clone.exception.notification.NotificationNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.notification.NotificationRepository;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import com.pigeon_stargram.sns_clone.worker.NotificationWorker;
@@ -16,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -40,31 +41,30 @@ public class NotificationService {
                 .map(recipient -> dto.toNotification(sender, recipient))
                 .toList();
 
-        List<Notification> save = notificationRepository.saveAll(notifications);
+        List<Notification> saveNotifications = notificationRepository.saveAll(notifications);
 
         notifications.stream()
                 .map(ResponseNotificationDto::new)
                 .forEach(notificationWorker::enqueue);
 
-        return save;
+        return saveNotifications;
     }
 
-    public List<ResponseNotificationDto> findUnReadNotifications(Long userId) {
-        User recipient = userService.findById(userId);
-        return notificationRepository.findAllByRecipient(recipient).stream()
+    public List<ResponseNotificationDto> findUnreadNotifications(Long userId) {
+        return notificationRepository.findAllByRecipientId(userId).stream()
                 .filter(notification -> !notification.getIsRead())
                 .map(ResponseNotificationDto::new)
                 .toList();
     }
 
     public void readNotification(Long notificationId) {
-        Notification notification = notificationRepository.findById(notificationId).get();
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new NotificationNotFoundException(NOTIFICATION_NOT_FOUND_ID));
         notification.setRead(true);
     }
 
     public void readNotifications(Long userId) {
-        User user = userService.findById(userId);
-        List<Notification> notifications = notificationRepository.findAllByRecipient(user);
+        List<Notification> notifications = notificationRepository.findAllByRecipientId(userId);
         notifications.forEach(notification -> {
             notification.setRead(true);
         });
