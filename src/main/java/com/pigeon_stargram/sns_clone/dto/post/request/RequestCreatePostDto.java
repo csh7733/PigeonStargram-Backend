@@ -13,4 +13,5 @@ public class RequestCreatePostDto {
 
     private String content;
     private List<Long> taggedUserIds;
+    private Boolean hasImage;
 }

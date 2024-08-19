@@ -25,7 +25,7 @@ public class Posts extends BaseTimeEntity {
 
     private String content;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "posts", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Image> images = new ArrayList<>();
 
     //CascadeType.Remove를 위해 필요한 필드(실제로는 사용X)
@@ -37,13 +37,6 @@ public class Posts extends BaseTimeEntity {
     public Posts(User user, String content) {
         this.user = user;
         this.content = content;
-    }
-
-    @Builder
-    public Posts(User user, String content, List<Image> images) {
-        this.user = user;
-        this.content = content;
-        this.images = images;
     }
 
     public void modify(String content) {

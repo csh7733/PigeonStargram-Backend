@@ -33,25 +33,28 @@ public class LocalFileController {
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists()) {
+                log.info("success");
                 return ResponseEntity.ok()
                         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
                         .body(resource);
             } else {
+                log.info("error1");
                 throw new RuntimeException("File not found " + filename);
             }
         } catch (Exception e) {
+            log.info("error2");
             throw new RuntimeException("File not found " + filename, e);
         }
     }
 
-    @PostMapping("/test")
-    public ResponseEntity<?> createPost(
-            @RequestPart("content") String content,
-            @RequestPart("images") List<MultipartFile> files) {
-
-        List<Image> images = fileService.saveFiles(files);
-
-        return ResponseEntity.ok(images);
-    }
+//    @PostMapping("/test")
+//    public ResponseEntity<?> createPost(
+//            @RequestPart("content") String content,
+//            @RequestPart("images") List<MultipartFile> files) {
+//
+//        List<Image> images = fileService.saveFiles(files);
+//
+//        return ResponseEntity.ok(images);
+//    }
 
 }

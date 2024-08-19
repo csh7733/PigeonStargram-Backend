@@ -23,9 +23,11 @@ public class LocalFileService implements FileService {
     private final String uploadDir = "uploads/";
 
     @Override
-    public List<Image> saveFiles(List<MultipartFile> files) {
-        List<Image> images = new ArrayList<>();
+    public List<String> saveFiles(List<MultipartFile> files) {
+        List<String> images = new ArrayList<>();
         Path uploadPath = Paths.get(uploadDir);
+
+        if(files == null) return null;
 
         for (MultipartFile file : files) {
             try {
@@ -38,7 +40,7 @@ public class LocalFileService implements FileService {
 
                 Files.copy(file.getInputStream(), filePath);
 
-                images.add(new Image(filename, false));
+                images.add(filename);
             } catch (IOException e) {
                 throw new FileStorageException("Failed to save file: " + file.getOriginalFilename(), e);
             }

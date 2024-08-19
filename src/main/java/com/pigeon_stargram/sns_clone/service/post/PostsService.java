@@ -13,6 +13,7 @@ import com.pigeon_stargram.sns_clone.dto.post.internal.PostsContentDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.PostsLikeDto;
 import com.pigeon_stargram.sns_clone.exception.post.PostsNotFoundException;
+import com.pigeon_stargram.sns_clone.repository.post.ImageRepository;
 import com.pigeon_stargram.sns_clone.repository.post.PostsLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.post.PostsRepository;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
@@ -40,7 +41,7 @@ public class PostsService {
     private final CommentService commentService;
     private final FollowService followService;
     private final NotificationService notificationService;
-
+    private final ImageRepository imageRepository;
     private final PostsRepository postsRepository;
     private final PostsLikeRepository postsLikeRepository;
 
@@ -92,18 +93,24 @@ public class PostsService {
     }
 
     public Posts createPost(CreatePostDto dto) {
-        Posts post = new Posts(dto.getUser(), dto.getContent());
+        Posts post = postsRepository.save(new Posts(dto.getUser(), dto.getContent()));
+
+        if (dto.getHasImage()) {
+            dto.getImageUrls().stream()
+                    .map(imageUrl -> Image.builder()
+                            .img(imageUrl)
+                            .featured(true)
+                            .posts(post)
+                            .build())
+                    .forEach(imageRepository::save);
+        }
 
         List<Long> notificationRecipientIds = followService.findFollows(dto.getUser().getId());
         dto.setNotificationRecipientIds(notificationRecipientIds);
 
         notificationService.save(dto);
-        return postsRepository.save(post);
-    }
 
-    public Posts createPost(User user, String content, List<Image> images) {
-        Posts post = new Posts(user,content,images);
-        return postsRepository.save(post);
+        return post;
     }
 
     public void editPost(Long postId, String content) {

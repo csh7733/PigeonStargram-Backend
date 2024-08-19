@@ -84,7 +84,7 @@ class NotificationServiceTest {
 
         notificationConvertables = new ArrayList<>();
         notificationConvertables.add(new AddFollowDto(1L, 2L));
-        notificationConvertables.add(new CreatePostDto(user, "post-content", recipientIds));
+        notificationConvertables.add(new CreatePostDto(user, "post-content",recipientIds));
         notificationConvertables.add(new CreateCommentDto(user, post, "comment-content"));
         notificationConvertables.add(new CreateReplyDto(user, comment, "reply-content", 1L, 1L));
         notificationConvertables.add(new LikePostDto(user, 1L, 2L));

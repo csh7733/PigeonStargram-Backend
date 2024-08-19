@@ -1,16 +1,17 @@
 package com.pigeon_stargram.sns_clone.domain.post;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.pigeon_stargram.sns_clone.domain.user.User;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
+@Builder
 public class Image {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,7 +19,11 @@ public class Image {
     
     private String img;
     private Boolean featured;
-    @Builder
+
+    @ManyToOne
+    @JoinColumn(name = "post_id")
+    private Posts posts;
+
     public Image(String img, Boolean featured) {
         this.img = img;
         this.featured = featured;

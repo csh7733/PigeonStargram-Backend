@@ -139,15 +139,13 @@ public class TestData {
         Posts post2_1 = postsService.createPost(new CreatePostDto(user2, "Jane Smith"));
 
         // Post 2 by User 2 (Jane Smith)
-        List<Image> images2 = List.of(new Image("img-profile1.png", true));
-        Posts post2 = postsService.createPost(user2, "Jane's beautiful day at the park.", images2);
+        Posts post2 = postsService.createPost(new CreatePostDto(user2, "Jane's beautiful day at the park."));
         Comment post2_comment1 = commentService.createComment(new CreateCommentDto(user1, post2, "Looks great, Jane!"));
         replyService.createReply(new CreateReplyDto(user3, post2_comment1, "Amazing picture!",user2.getId(),post2.getId()));
         Comment post2_comment2 = commentService.createComment(new CreateCommentDto(user3, post2, "Love the scenery."));
 
         // Post 3 by User 3 (Alice Brown)
-        List<Image> images3 = List.of(new Image("img-profile2.jpg", true), new Image("img-profile3.jpg", true));
-        Posts post3 = postsService.createPost(user3, "Alice's adventure in the mountains.", images3);
+        Posts post3 = postsService.createPost(new CreatePostDto(user3, "Alice's adventure in the mountains."));
         Comment post3_comment1 = commentService.createComment(new CreateCommentDto(user1, post3, "Wow, awesome view!"));
         replyService.createReply(new CreateReplyDto(user2, post3_comment1, "I agree, it's stunning!",user3.getId(),post3.getId()));
         Comment post3_comment2 = commentService.createComment(new CreateCommentDto(user2, post3, "Wish I was there!"));

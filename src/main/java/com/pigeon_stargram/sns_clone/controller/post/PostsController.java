@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone.controller.post;
 
 import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
+import com.pigeon_stargram.sns_clone.domain.post.Image;
 import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyPostTaggedUsersDto;
@@ -11,12 +12,15 @@ import com.pigeon_stargram.sns_clone.dto.post.request.RequestCreatePostDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
 import com.pigeon_stargram.sns_clone.dto.post.request.RequestEditPostDto;
 import com.pigeon_stargram.sns_clone.dto.post.request.RequestLikePostDto;
+import com.pigeon_stargram.sns_clone.service.file.FileService;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 
 @Slf4j
@@ -28,6 +32,7 @@ public class PostsController {
     private final PostsService postsService;
     private final UserService userService;
     private final NotificationService notificationService;
+    private final FileService fileService;
 
 
     @GetMapping
@@ -37,13 +42,25 @@ public class PostsController {
 
     @PostMapping
     public List<ResponsePostsDto> createPosts(@LoginUser SessionUser loginUser,
-                                        @RequestBody RequestCreatePostDto request) {
+                                              @ModelAttribute RequestCreatePostDto request,
+                                              @RequestPart(value = "images", required = false) List<MultipartFile> imagesFile) {
         Long userId = loginUser.getId();
         User user = userService.findById(userId);
 
         String content = request.getContent();
 
-        Posts post = postsService.createPost(new CreatePostDto(user, content));
+        Boolean hasImage = request.getHasImage();
+
+        List<String> imageUrls = fileService.saveFiles(imagesFile);
+
+        CreatePostDto createPostDto = CreatePostDto.builder()
+                .user(user)
+                .content(content)
+                .imageUrls(imageUrls)
+                .hasImage(hasImage)
+                .build();
+
+        Posts post = postsService.createPost(createPostDto);
 
         NotifyPostTaggedUsersDto notifyTaggedUsers = NotifyPostTaggedUsersDto.builder()
                 .user(user)
