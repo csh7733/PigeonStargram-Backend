@@ -2,11 +2,13 @@ package com.pigeon_stargram.sns_clone.service.story;
 
 import com.pigeon_stargram.sns_clone.domain.story.Story;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.Follow.ResponseFollowerDto;
 import com.pigeon_stargram.sns_clone.dto.story.response.ResponseStoriesDto;
 import com.pigeon_stargram.sns_clone.dto.story.response.ResponseStoryDto;
 import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
 import com.pigeon_stargram.sns_clone.exception.story.StoryNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.story.StoryRepository;
+import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,13 +54,17 @@ public class StoryService {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime expirationTime = now.minusHours(24);
 
-        // 유저의 최근 스토리 목록을 가져옵니다.
         List<Story> recentStories = storyRepository.findAllByUserAndCreatedDateAfter(user, expirationTime);
         List<ResponseStoryDto> storyDtos = recentStories.stream()
                 .map(ResponseStoryDto::new)
                 .toList();
 
-        // currentMember가 마지막으로 본 스토리 ID를 찾습니다.
+        Integer lastReadIndex = getLastReadIndex(currentMemberId, recentStories);
+
+        return new ResponseStoriesDto(storyDtos, lastReadIndex);
+    }
+
+    private Integer getLastReadIndex(Long currentMemberId, List<Story> recentStories) {
         int lastReadIndex = 0;
         for (int i = 0; i < recentStories.size(); i++) {
             if (!hasUserViewedStory(recentStories.get(i).getId(), currentMemberId)) {
@@ -67,12 +73,10 @@ public class StoryService {
             }
         }
 
-        // 만약 모든 스토리를 본 경우에는 0을 리턴하여 처음부터 보게 합니다.
         if (lastReadIndex == recentStories.size()) {
             lastReadIndex = 0;
         }
-
-        return new ResponseStoriesDto(storyDtos, lastReadIndex);
+        return lastReadIndex;
     }
 
 
@@ -87,10 +91,18 @@ public class StoryService {
         return userService.getUserInfosByUserIds(new ArrayList<>(userIdsWhoViewed));
     }
 
-
     public boolean hasUserViewedStory(Long storyId, Long userId) {
 
         return storyViews.getOrDefault(storyId, Collections.emptySet()).contains(userId);
+    }
+
+    public Boolean hasRecentStory(Long userId) {
+        User user = userService.findById(userId);
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expirationTime = now.minusHours(24);
+
+        return storyRepository.existsByUserAndCreatedDateAfter(user, expirationTime);
     }
 
 }

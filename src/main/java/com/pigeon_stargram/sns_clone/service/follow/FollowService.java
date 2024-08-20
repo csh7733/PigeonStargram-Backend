@@ -10,6 +10,7 @@ import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseUserChatDto;
 import com.pigeon_stargram.sns_clone.repository.follow.FollowRepository;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
+import com.pigeon_stargram.sns_clone.service.story.StoryService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,7 @@ public class FollowService {
     private final ChatService chatService;
     private final FollowRepository followRepository;
     private final NotificationService notificationService;
+    private final StoryService storyService;
 
     public Follow createFollow(AddFollowDto dto) {
         User sender = userService.findById(dto.getSenderId());
@@ -175,6 +177,13 @@ public class FollowService {
         return followRepository.findBysenderAndRecipient(sender, recipient)
                 .map(Follow::getIsNotificationEnabled)
                 .orElse(false);
+    }
+
+    public List<ResponseFollowerDto> findFollowingsWithRecentStories(Long userId) {
+
+        return findFollowings(userId).stream()
+                .filter(following -> storyService.hasRecentStory(following.getId()))
+                .toList();
     }
 
 }

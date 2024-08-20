@@ -9,4 +9,5 @@ import java.util.List;
 
 public interface StoryRepository extends JpaRepository<Story, Long> {
     List<Story> findAllByUserAndCreatedDateAfter(User user, LocalDateTime time);
+    Boolean existsByUserAndCreatedDateAfter(User user, LocalDateTime createdDate);
 }
