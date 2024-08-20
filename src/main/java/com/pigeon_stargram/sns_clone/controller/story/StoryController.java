@@ -6,6 +6,7 @@ import com.pigeon_stargram.sns_clone.domain.story.Story;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.story.request.RequestAddStoryDto;
 import com.pigeon_stargram.sns_clone.dto.story.response.ResponseStoryDto;
+import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
 import com.pigeon_stargram.sns_clone.service.file.FileService;
 import com.pigeon_stargram.sns_clone.service.story.StoryService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -59,9 +60,9 @@ public class StoryController {
     }
 
     @GetMapping("/{storyId}/viewers")
-    public List<Long> getUserIdsWhoViewedStory(@PathVariable Long storyId) {
+    public List<ResponseUserInfoDto> getUserInfosWhoViewedStory(@PathVariable Long storyId) {
 
-        return storyService.getUserIdsWhoViewedStory(storyId);
+        return storyService.getUserInfosWhoViewedStory(storyId);
     }
 
 }

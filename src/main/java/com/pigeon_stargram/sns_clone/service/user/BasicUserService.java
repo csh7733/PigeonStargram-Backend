@@ -5,6 +5,7 @@ import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseUserChatDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
+import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
 import com.pigeon_stargram.sns_clone.exception.user.MultipleUsersFoundException;
 import com.pigeon_stargram.sns_clone.exception.login.RegisterFailException;
 import com.pigeon_stargram.sns_clone.exception.user.UserNotFoundException;
@@ -113,5 +114,13 @@ public class BasicUserService implements UserService {
     public ResponseOnlineStatusDto getOnlineStatus(Long id) {
         User user = findById(id);
         return new ResponseOnlineStatusDto(user);
+    }
+
+    public List<ResponseUserInfoDto> getUserInfosByUserIds(List<Long> userIds) {
+
+        return userIds.stream()
+                .map(this::findById)
+                .map(ResponseUserInfoDto::new)
+                .toList();
     }
 }

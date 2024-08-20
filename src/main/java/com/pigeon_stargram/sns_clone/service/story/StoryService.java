@@ -3,6 +3,7 @@ package com.pigeon_stargram.sns_clone.service.story;
 import com.pigeon_stargram.sns_clone.domain.story.Story;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.story.response.ResponseStoryDto;
+import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
 import com.pigeon_stargram.sns_clone.exception.story.StoryNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.story.StoryRepository;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -60,10 +61,12 @@ public class StoryService {
         storyViews.computeIfAbsent(storyId, k -> ConcurrentHashMap.newKeySet()).add(userId);
     }
 
-    public List<Long> getUserIdsWhoViewedStory(Long storyId) {
+    public List<ResponseUserInfoDto> getUserInfosWhoViewedStory(Long storyId) {
+        Set<Long> userIdsWhoViewed = storyViews.getOrDefault(storyId, Collections.emptySet());
 
-        return new ArrayList<>(storyViews.getOrDefault(storyId, Collections.emptySet()));
+        return userService.getUserInfosByUserIds(new ArrayList<>(userIdsWhoViewed));
     }
+
 
     public boolean hasUserViewedStory(Long storyId, Long userId) {
 
