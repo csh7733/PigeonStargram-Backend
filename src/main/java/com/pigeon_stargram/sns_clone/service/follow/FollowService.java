@@ -4,7 +4,7 @@ import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.Follow.AddFollowDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.DeleteFollowDto;
-import com.pigeon_stargram.sns_clone.dto.Follow.ResponseFollowerDto;
+import com.pigeon_stargram.sns_clone.dto.Follow.response.ResponseFollowerDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseUserChatDto;
 import com.pigeon_stargram.sns_clone.repository.follow.FollowRepository;
@@ -180,10 +180,14 @@ public class FollowService {
     }
 
     public List<ResponseFollowerDto> findFollowingsWithRecentStories(Long userId) {
-
         return findFollowings(userId).stream()
                 .filter(following -> storyService.hasRecentStory(following.getId()))
+                .peek(following -> {
+                    boolean hasUnreadStories = storyService.hasUnreadStories(following.getId(), userId);
+                    following.setHasUnreadStories(hasUnreadStories);
+                })
                 .toList();
     }
+
 
 }

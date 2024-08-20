@@ -2,13 +2,11 @@ package com.pigeon_stargram.sns_clone.service.story;
 
 import com.pigeon_stargram.sns_clone.domain.story.Story;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.Follow.ResponseFollowerDto;
 import com.pigeon_stargram.sns_clone.dto.story.response.ResponseStoriesDto;
 import com.pigeon_stargram.sns_clone.dto.story.response.ResponseStoryDto;
 import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
 import com.pigeon_stargram.sns_clone.exception.story.StoryNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.story.StoryRepository;
-import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -104,5 +102,14 @@ public class StoryService {
 
         return storyRepository.existsByUserAndCreatedDateAfter(user, expirationTime);
     }
+
+    public boolean hasUnreadStories(Long userId, Long currentMemberId) {
+        List<Story> stories = storyRepository.findAllByUserAndCreatedDateAfter(
+                userService.findById(userId), LocalDateTime.now().minusHours(24)
+        );
+
+        return stories.stream().anyMatch(story -> !hasUserViewedStory(story.getId(), currentMemberId));
+    }
+
 
 }

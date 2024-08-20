@@ -5,6 +5,7 @@ import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.Follow.*;
 import com.pigeon_stargram.sns_clone.dto.Follow.request.RequestAddFollowerDto;
+import com.pigeon_stargram.sns_clone.dto.Follow.response.ResponseFollowerDto;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -107,7 +108,7 @@ public class FollowController {
     }
 
     @GetMapping("/followings/recent-stories")
-    public List<ResponseFollowerDto> getFollowingsWithRecentStories(@LoginUser SessionUser loginUser) {
+    public List<ResponseFollowerDto> getFollowingsWhoUploadStory(@LoginUser SessionUser loginUser) {
         Long userId = loginUser.getId();
 
         return followService.findFollowingsWithRecentStories(userId);

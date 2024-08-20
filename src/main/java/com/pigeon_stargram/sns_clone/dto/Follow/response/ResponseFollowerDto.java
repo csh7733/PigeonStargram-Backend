@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.dto.Follow;
+package com.pigeon_stargram.sns_clone.dto.Follow.response;
 
 import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.user.User;
@@ -7,6 +7,7 @@ import lombok.*;
 @EqualsAndHashCode
 @ToString
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,6 +18,7 @@ public class ResponseFollowerDto {
     private String name;
     private String location;
     private Integer follow;
+    private Boolean hasUnreadStories;
 
     public ResponseFollowerDto(User user, Integer follow) {
         this.id = user.getId();

@@ -1,11 +1,9 @@
 package com.pigeon_stargram.sns_clone.service.timeline;
 
-import com.pigeon_stargram.sns_clone.domain.follow.Follow;
-import com.pigeon_stargram.sns_clone.dto.Follow.ResponseFollowerDto;
+import com.pigeon_stargram.sns_clone.dto.Follow.response.ResponseFollowerDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.post.PostsService;
-import com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
