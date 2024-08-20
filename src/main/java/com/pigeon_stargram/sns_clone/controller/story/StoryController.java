@@ -5,6 +5,7 @@ import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.story.Story;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.story.request.RequestAddStoryDto;
+import com.pigeon_stargram.sns_clone.dto.story.response.ResponseStoriesDto;
 import com.pigeon_stargram.sns_clone.dto.story.response.ResponseStoryDto;
 import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
 import com.pigeon_stargram.sns_clone.service.file.FileService;
@@ -29,7 +30,7 @@ public class StoryController {
     @PostMapping
     public void uploadStory(@LoginUser SessionUser loginUser,
                             @ModelAttribute RequestAddStoryDto request,
-                            @RequestPart(value = "images") MultipartFile imageFile) {
+                            @RequestPart(value = "image") MultipartFile imageFile) {
         Long userId = loginUser.getId();
         String content = request.getContent();
 
@@ -46,9 +47,11 @@ public class StoryController {
     }
 
     @GetMapping("/recent/{userId}")
-    public List<ResponseStoryDto> getRecentStories(@PathVariable Long userId) {
+    public ResponseStoriesDto getRecentStories(@LoginUser SessionUser loginUser,
+                                               @PathVariable Long userId) {
+        Long currentMemberId = loginUser.getId();
 
-        return storyService.getRecentStories(userId);
+        return storyService.getRecentStories(userId,currentMemberId);
     }
 
     @PostMapping("/{storyId}/view")
