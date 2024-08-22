@@ -7,6 +7,7 @@ import com.pigeon_stargram.sns_clone.dto.chat.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.request.RequestOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.*;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
+import com.pigeon_stargram.sns_clone.service.file.FileService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +34,7 @@ public class ChatController {
     private final ChatService chatService;
     private final FollowService followService;
     private final UserService userService;
+    private final FileService fileService;
     private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("/users")
@@ -64,6 +67,12 @@ public class ChatController {
         userService.updateOnlineStatus(id, onlineStatus);
 
         sentOnlineStatus(id, onlineStatus);
+    }
+
+    @PostMapping("/image")
+    public String uploadImage(@RequestPart(value = "image") MultipartFile imageFile){
+
+        return fileService.saveFile(imageFile);
     }
 
     @MessageMapping("/chat/{user1Id}/{user2Id}")
