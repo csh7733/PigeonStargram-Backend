@@ -17,7 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,11 +63,24 @@ public class ChatService {
     }
 
     public List<ResponseChatHistoryDto> getUserChats(Long user1Id, Long user2Id) {
-        List<TextChat> chatHistories = chatRepository.findTextChatsBetweenUsers(user1Id, user2Id);
-        return chatHistories.stream()
+        List<TextChat> textChats = chatRepository.findTextChatsBetweenUsers(user1Id, user2Id);
+        List<ImageChat> imageChats = chatRepository.findImageChatsBetweenUsers(user1Id, user2Id);
+
+        List<ResponseChatHistoryDto> chatHistoryDtos = new ArrayList<>();
+
+        chatHistoryDtos.addAll(textChats.stream()
                 .map(ResponseChatHistoryDto::new)
-                .toList();
+                .collect(Collectors.toList()));
+
+        chatHistoryDtos.addAll(imageChats.stream()
+                .map(ResponseChatHistoryDto::new)
+                .collect(Collectors.toList()));
+
+        chatHistoryDtos.sort(Comparator.comparing(ResponseChatHistoryDto::getTime));
+
+        return chatHistoryDtos;
     }
+
 
     public Integer increaseUnReadChatCount(Long userId,Long toUserId){
         UnreadChat unReadChat = unreadChatRepository.findByUserIdAndToUserId(userId, toUserId)

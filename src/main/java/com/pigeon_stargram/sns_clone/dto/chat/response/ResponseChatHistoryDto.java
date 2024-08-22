@@ -19,12 +19,14 @@ public class ResponseChatHistoryDto {
     private Long to;
     private String text;
     private String time;
+    private Boolean isImage;
 
     public ResponseChatHistoryDto(TextChat textChat) {
         this.from = textChat.getSenderId();
         this.to = textChat.getRecipientId();
         this.text = textChat.getText();
         this.time = formatTime(textChat.getCreatedDate());
+        this.isImage = false;
     }
 
     public ResponseChatHistoryDto(ImageChat imageChat) {
@@ -32,5 +34,6 @@ public class ResponseChatHistoryDto {
         this.to = imageChat.getRecipientId();
         this.text = imageChat.getImagePath();
         this.time = formatTime(imageChat.getCreatedDate());
+        this.isImage = true;
     }
 }
