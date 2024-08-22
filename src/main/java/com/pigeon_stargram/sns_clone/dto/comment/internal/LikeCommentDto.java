@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class LikeCommentDto implements NotificationConvertable {
 
-    private User user;
+    private Long loginUserId;
     private Long commentId;
     private Long postUserId;
     private Long writerId;
@@ -37,7 +37,7 @@ public class LikeCommentDto implements NotificationConvertable {
 
     @Override
     public Long getSenderId() {
-        return user.getId();
+        return loginUserId;
     }
 
     @Override

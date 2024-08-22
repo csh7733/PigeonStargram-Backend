@@ -42,7 +42,7 @@ public class FollowService {
                 });
 
         Follow follow = followRepository.save(dto.toEntity(sender, recipient));
-        notificationService.save(dto);
+        notificationService.send(dto);
         return follow;
     }
 

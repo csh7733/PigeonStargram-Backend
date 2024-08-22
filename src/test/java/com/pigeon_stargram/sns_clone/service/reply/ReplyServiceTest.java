@@ -1,24 +1,15 @@
 package com.pigeon_stargram.sns_clone.service.reply;
 
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
-import com.pigeon_stargram.sns_clone.domain.comment.CommentLike;
-import com.pigeon_stargram.sns_clone.domain.post.Posts;
-import com.pigeon_stargram.sns_clone.domain.post.PostsLike;
+import com.pigeon_stargram.sns_clone.domain.post.Post;
 import com.pigeon_stargram.sns_clone.domain.reply.Reply;
 import com.pigeon_stargram.sns_clone.domain.reply.ReplyLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.comment.internal.CommentContentDto;
-import com.pigeon_stargram.sns_clone.dto.comment.internal.CreateCommentDto;
-import com.pigeon_stargram.sns_clone.dto.comment.internal.LikeCommentDto;
-import com.pigeon_stargram.sns_clone.dto.comment.response.CommentLikeDto;
-import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseCommentDto;
-import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.CreateReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.LikeReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.ReplyContentDto;
 import com.pigeon_stargram.sns_clone.dto.reply.response.ReplyLikeDto;
 import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
-import com.pigeon_stargram.sns_clone.exception.comment.CommentNotFoundException;
 import com.pigeon_stargram.sns_clone.exception.reply.ReplyNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyRepository;
@@ -39,7 +30,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
@@ -60,7 +50,7 @@ class ReplyServiceTest {
     ReplyLikeRepository replyLikeRepository;
 
     User user;
-    Posts post;
+    Post post;
     Comment comment;
     Reply reply;
     ReplyLike replyLike;
@@ -71,7 +61,7 @@ class ReplyServiceTest {
     @BeforeEach
     public void setUp() {
         user = mock(User.class);
-        post = mock(Posts.class);
+        post = mock(Post.class);
         comment = mock(Comment.class);
         reply = mock(Reply.class);
         replyLike = mock(ReplyLike.class);
@@ -125,7 +115,7 @@ class ReplyServiceTest {
         doReturn(new ResponseReplyDto()).when(replyService).getCombinedReply(3L);
 
         // When
-        List<ResponseReplyDto> result = replyService.getRepliesByCommentId(1L);
+        List<ResponseReplyDto> result = replyService.getReplyDtosByCommentId(1L);
 
         // Then
         assertThat(result.size()).isEqualTo(3);
@@ -207,7 +197,7 @@ class ReplyServiceTest {
         when(comment.getUser()).thenReturn(mock(User.class));
         when(comment.getUser().getId()).thenReturn(1L);
 
-        when(notificationService.save(createReplyDto))
+        when(notificationService.send(createReplyDto))
                 .thenReturn(List.of());
         when(replyRepository.save(any(Reply.class))).thenReturn(reply);
 
@@ -302,7 +292,7 @@ class ReplyServiceTest {
 
         //then
         verify(replyLikeRepository, times(1)).save(any(ReplyLike.class));
-        verify(notificationService, times(1)).save(likeReplyDto);
+        verify(notificationService, times(1)).send(likeReplyDto);
     }
 
 }

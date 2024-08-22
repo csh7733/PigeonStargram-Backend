@@ -4,13 +4,13 @@ import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
-import com.pigeon_stargram.sns_clone.domain.post.Posts;
+import com.pigeon_stargram.sns_clone.domain.post.Post;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.Follow.AddFollowDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.CreateCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.LikeCommentDto;
-import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyCommentTaggedUsersDto;
-import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyPostTaggedUsersDto;
+import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyCommentTaggedDto;
+import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyPostTaggedDto;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyReplyTaggedUsersDto;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
 import com.pigeon_stargram.sns_clone.dto.post.internal.CreatePostDto;
@@ -56,7 +56,7 @@ class NotificationServiceTest {
     NotificationWorker notificationWorker;
 
     User user;
-    Posts post;
+    Post post;
     Comment comment;
 
     List<Long> recipientIds;
@@ -68,7 +68,7 @@ class NotificationServiceTest {
     @BeforeEach
     void setUp() {
         user = mock(User.class);
-        post = mock(Posts.class);
+        post = mock(Post.class);
         comment = mock(Comment.class);
 
         // 유저 필드 설정
@@ -90,8 +90,8 @@ class NotificationServiceTest {
         notificationConvertables.add(new LikePostDto(user, 1L, 2L));
         notificationConvertables.add(new LikeCommentDto(user, 1L, 1L, 2L, 1L));
         notificationConvertables.add(new LikeReplyDto(user, 1L, 1L, 2L, 1L));
-        notificationConvertables.add(new NotifyPostTaggedUsersDto(user, "tag-post-content", recipientIds));
-        notificationConvertables.add(new NotifyCommentTaggedUsersDto(user, "tag-comment-content", 1L, 1L, recipientIds));
+        notificationConvertables.add(new NotifyPostTaggedDto(user, "tag-post-content", recipientIds));
+        notificationConvertables.add(new NotifyCommentTaggedDto(user, "tag-comment-content", 1L, 1L, recipientIds));
         notificationConvertables.add(new NotifyReplyTaggedUsersDto(user, "tag-reply-content", 1L, 1L, recipientIds));
 
         timesSum = 0;
@@ -122,7 +122,7 @@ class NotificationServiceTest {
 
         notificationConvertables.forEach(notificationConvertable -> {
             //when
-            List<Notification> notifications = notificationService.save(notificationConvertable);
+            List<Notification> notifications = notificationService.send(notificationConvertable);
 
             //then
             notifications.forEach(notification -> {
@@ -146,7 +146,7 @@ class NotificationServiceTest {
 
             //then
             assertThatThrownBy(() -> {
-                notificationService.save(notificationConvertable);
+                notificationService.send(notificationConvertable);
             }).isInstanceOf(UserNotFoundException.class);
         });
     }
@@ -237,28 +237,28 @@ class NotificationServiceTest {
     @DisplayName("태그되어있는 유저에게 알림")
     void testNotifyTaggedUsersTagged() {
         //given
-        NotificationConvertable dto = new NotifyPostTaggedUsersDto(user, "content", List.of(1L, 2L));
-        doReturn(null).when(notificationService).save(any(NotificationConvertable.class));
+        NotificationConvertable dto = new NotifyPostTaggedDto(user, "content", List.of(1L, 2L));
+        doReturn(null).when(notificationService).send(any(NotificationConvertable.class));
 
         //when
         notificationService.notifyTaggedUsers(dto);
 
         //then
         verify(notificationService, times(1))
-                .save(dto);
+                .send(dto);
     }
 
     @Test
     @DisplayName("태그되어있지 않을 시 알리지 않음")
     void testNotifyTaggedUsersNotTagged() {
         //given
-        NotificationConvertable dto = new NotifyPostTaggedUsersDto(user, "content", List.of());
+        NotificationConvertable dto = new NotifyPostTaggedDto(user, "content", List.of());
 
         //when
         notificationService.notifyTaggedUsers(dto);
 
         //then
-        verify(notificationService, never()).save(dto);
+        verify(notificationService, never()).send(dto);
     }
 
 }

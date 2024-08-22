@@ -1,6 +1,5 @@
 package com.pigeon_stargram.sns_clone.domain.post;
 
-import com.pigeon_stargram.sns_clone.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +21,7 @@ public class Image {
 
     @ManyToOne
     @JoinColumn(name = "post_id")
-    private Posts posts;
+    private Post post;
 
     public Image(String img, Boolean featured) {
         this.img = img;

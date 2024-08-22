@@ -1,6 +1,5 @@
 package com.pigeon_stargram.sns_clone.dto.post.response;
 
-import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import lombok.*;
 
 @Getter
@@ -8,7 +7,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostsLikeDto {
+public class PostLikeDto {
     private Boolean like;
     private Integer value;
 

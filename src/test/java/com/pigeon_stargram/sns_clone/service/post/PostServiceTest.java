@@ -2,18 +2,18 @@ package com.pigeon_stargram.sns_clone.service.post;
 
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.post.Image;
-import com.pigeon_stargram.sns_clone.domain.post.Posts;
-import com.pigeon_stargram.sns_clone.domain.post.PostsLike;
+import com.pigeon_stargram.sns_clone.domain.post.Post;
+import com.pigeon_stargram.sns_clone.domain.post.PostLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.post.internal.CreatePostDto;
 import com.pigeon_stargram.sns_clone.dto.post.internal.LikePostDto;
-import com.pigeon_stargram.sns_clone.dto.post.internal.PostsContentDto;
-import com.pigeon_stargram.sns_clone.dto.post.response.PostsLikeDto;
-import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
-import com.pigeon_stargram.sns_clone.exception.post.PostsNotFoundException;
+import com.pigeon_stargram.sns_clone.dto.post.internal.PostContentDto;
+import com.pigeon_stargram.sns_clone.dto.post.response.PostLikeDto;
+import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
+import com.pigeon_stargram.sns_clone.exception.post.PostNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentRepository;
-import com.pigeon_stargram.sns_clone.repository.post.PostsLikeRepository;
-import com.pigeon_stargram.sns_clone.repository.post.PostsRepository;
+import com.pigeon_stargram.sns_clone.repository.post.PostLikeRepository;
+import com.pigeon_stargram.sns_clone.repository.post.PostRepository;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
@@ -37,11 +37,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class PostsServiceTest {
+class PostServiceTest {
 
     @Spy
     @InjectMocks
-    PostsService postsService;
+    PostService postService;
 
     @Mock
     UserService userService;
@@ -56,28 +56,28 @@ class PostsServiceTest {
     CommentRepository commentRepository;
 
     @Mock
-    PostsRepository postsRepository;
+    PostRepository postRepository;
     @Mock
-    PostsLikeRepository postsLikeRepository;
+    PostLikeRepository postLikeRepository;
 
     User user;
-    Posts post;
-    PostsLike postsLike;
+    Post post;
+    PostLike postLike;
 
-    List<Posts> posts = new ArrayList<>();
-    List<ResponsePostsDto> postsDtos = new ArrayList<>();
+    List<Post> posts = new ArrayList<>();
+    List<ResponsePostDto> postDtos = new ArrayList<>();
 
     List<Comment> comments = new ArrayList<>();
 
     @BeforeEach
     void setUp() {
         user = mock(User.class);
-        post = mock(Posts.class);
-        postsLike = mock(PostsLike.class);
+        post = mock(Post.class);
+        postLike = mock(PostLike.class);
 
         for (int i = 0; i < 3; i++) {
-            posts.add(mock(Posts.class));
-            postsDtos.add(mock(ResponsePostsDto.class));
+            posts.add(mock(Post.class));
+            postDtos.add(mock(ResponsePostDto.class));
 
             comments.add(mock(Comment.class));
         }
@@ -87,11 +87,11 @@ class PostsServiceTest {
     @DisplayName("포스트 id로 엔티티 조회 - 성공")
     void testGetPostEntitySuccess() {
         //given
-        when(postsRepository.findById(anyLong()))
+        when(postRepository.findById(anyLong()))
                 .thenReturn(Optional.of(post));
 
         //when
-        Posts postEntity = postsService.getPostEntity(1L);
+        Post postEntity = postService.findById(1L);
 
         //then
         assertThat(postEntity).isEqualTo(post);
@@ -101,15 +101,15 @@ class PostsServiceTest {
     @DisplayName("포스트 id로 엔티티 조회 - 포스트를 찾지 못함")
     void testGetPostEntityPostNotFound() {
         //given
-        when(postsRepository.findById(anyLong()))
+        when(postRepository.findById(anyLong()))
                 .thenReturn(Optional.empty());
 
         //when
 
         //then
         assertThatThrownBy(() -> {
-            postsService.getPostEntity(1L);
-        }).isInstanceOf(PostsNotFoundException.class);
+            postService.findById(1L);
+        }).isInstanceOf(PostNotFoundException.class);
     }
 
     @Test
@@ -119,20 +119,20 @@ class PostsServiceTest {
         when(posts.get(0).getId()).thenReturn(2L);
         when(posts.get(1).getId()).thenReturn(1L);
         when(posts.get(2).getId()).thenReturn(3L);
-        when(postsRepository.findByUserId(anyLong())).thenReturn(posts);
+        when(postRepository.findByUserId(anyLong())).thenReturn(posts);
 
-        doReturn(new ResponsePostsDto()).when(postsService).getCombinedPost(1L);
-        doReturn(new ResponsePostsDto()).when(postsService).getCombinedPost(2L);
-        doReturn(new ResponsePostsDto()).when(postsService).getCombinedPost(3L);
+        doReturn(new ResponsePostDto()).when(postService).getCombinedPost(1L);
+        doReturn(new ResponsePostDto()).when(postService).getCombinedPost(2L);
+        doReturn(new ResponsePostDto()).when(postService).getCombinedPost(3L);
 
         // When
-        List<ResponsePostsDto> result = postsService.getPostsByUser(1L);
+        List<ResponsePostDto> result = postService.getPostsByUserId(1L);
 
         // Then
         assertThat(result.size()).isEqualTo(3);
-        verify(postsService, times(1)).getCombinedPost(1L);
-        verify(postsService, times(1)).getCombinedPost(2L);
-        verify(postsService, times(1)).getCombinedPost(3L);
+        verify(postService, times(1)).getCombinedPost(1L);
+        verify(postService, times(1)).getCombinedPost(2L);
+        verify(postService, times(1)).getCombinedPost(3L);
 
     }
 
@@ -150,19 +150,19 @@ class PostsServiceTest {
                 .thenReturn(List.of(new Image("img-1", true),
                         new Image("img-2", false)));
 
-        when(postsRepository.findById(anyLong()))
+        when(postRepository.findById(anyLong()))
                 .thenReturn(Optional.of(post));
 
         //postLike
-        when(postsLikeRepository.countByPostId(anyLong()))
+        when(postLikeRepository.countByPostId(anyLong()))
                 .thenReturn(5);
 
         //comment
-        when(commentService.getCommentsByPostId(anyLong()))
+        when(commentService.getCommentDtosByPostId(anyLong()))
                 .thenReturn(List.of());
 
         //when
-        ResponsePostsDto combinedPostDto = postsService.getCombinedPost(1L);
+        ResponsePostDto combinedPostDto = postService.getCombinedPost(1L);
 
         //then
         assertThat(combinedPostDto.getId()).isEqualTo(post.getId());
@@ -185,11 +185,11 @@ class PostsServiceTest {
                 .thenReturn(List.of(new Image("img-1", true),
                         new Image("img-2", false)));
 
-        when(postsRepository.findById(anyLong()))
+        when(postRepository.findById(anyLong()))
                 .thenReturn(Optional.of(post));
 
         //when
-        PostsContentDto postContent = postsService.getPostContent(1L);
+        PostContentDto postContent = postService.getPostContent(1L);
 
         //then
         assertThat(postContent.getContent()).isEqualTo(post.getContent());
@@ -203,11 +203,11 @@ class PostsServiceTest {
     @DisplayName("포스트 좋아요 가져오기")
     void testGetPostsLike() {
         //given
-        when(postsLikeRepository.countByPostId(anyLong()))
+        when(postLikeRepository.countByPostId(anyLong()))
                 .thenReturn(5);
 
         //when
-        PostsLikeDto postsLikeDto = postsService.getPostsLike(1L);
+        PostLikeDto postsLikeDto = postService.getPostsLike(1L);
 
         //then
         assertThat(postsLikeDto.getValue()).isEqualTo(5);
@@ -221,12 +221,12 @@ class PostsServiceTest {
         List<Long> recipientIds = List.of(1L, 2L, 3L);
         when(followService.findFollows(anyLong()))
                 .thenReturn(recipientIds);
-        when(notificationService.save(createPostDto))
+        when(notificationService.send(createPostDto))
                 .thenReturn(List.of());
-        when(postsRepository.save(any(Posts.class))).thenReturn(post);
+        when(postRepository.save(any(Post.class))).thenReturn(post);
 
         //when
-        Posts createPost = postsService.createPost(createPostDto);
+        Post createPost = postService.createPost(createPostDto);
 
         //then
         assertThat(createPostDto.getNotificationRecipientIds())
@@ -239,12 +239,12 @@ class PostsServiceTest {
     @DisplayName("포스트 수정")
     void testEditPost() {
         //given
-        Posts editPost = new Posts(user, "old-content");
-        when(postsRepository.findById(anyLong()))
+        Post editPost = new Post(user, "old-content");
+        when(postRepository.findById(anyLong()))
                 .thenReturn(Optional.of(editPost));
 
         //when
-        postsService.editPost(1L, "new-content");
+        postService.editPost(1L, "new-content");
 
         //then
         assertThat(editPost.getContent()).isEqualTo("new-content");
@@ -258,11 +258,11 @@ class PostsServiceTest {
                 .deleteAllCommentsAndReplyByPostId(anyLong());
 
         //when
-        postsService.deletePost(1L);
+        postService.deletePost(1L);
 
         //then
         verify(commentService, times(1)).deleteAllCommentsAndReplyByPostId(1L);
-        verify(postsRepository, times(1)).deleteById(1L);
+        verify(postRepository, times(1)).deleteById(1L);
     }
 
     @Test
@@ -271,16 +271,16 @@ class PostsServiceTest {
         //given
         LikePostDto likePostDto = new LikePostDto(user, 1L, 1L);
 
-        when(postsRepository.findById(anyLong()))
+        when(postRepository.findById(anyLong()))
                 .thenReturn(Optional.of(post));
-        when(postsLikeRepository.findByUserIdAndPostId(anyLong(), anyLong()))
-                .thenReturn(Optional.of(postsLike));
+        when(postLikeRepository.findByUserIdAndPostId(anyLong(), anyLong()))
+                .thenReturn(Optional.of(postLike));
 
         //when
-        postsService.likePost(likePostDto);
+        postService.likePost(likePostDto);
 
         //then
-        verify(postsLikeRepository, times(1)).delete(postsLike);
+        verify(postLikeRepository, times(1)).delete(postLike);
     }
 
     @Test
@@ -289,16 +289,16 @@ class PostsServiceTest {
         //given
         LikePostDto likePostDto = new LikePostDto(user, 1L, 1L);
 
-        when(postsRepository.findById(anyLong()))
+        when(postRepository.findById(anyLong()))
                 .thenReturn(Optional.of(post));
-        when(postsLikeRepository.findByUserIdAndPostId(anyLong(), anyLong()))
+        when(postLikeRepository.findByUserIdAndPostId(anyLong(), anyLong()))
                 .thenReturn(Optional.empty());
 
         //when
-        postsService.likePost(likePostDto);
+        postService.likePost(likePostDto);
 
         //then
-        verify(postsLikeRepository, times(1)).save(any(PostsLike.class));
-        verify(notificationService, times(1)).save(likePostDto);
+        verify(postLikeRepository, times(1)).save(any(PostLike.class));
+        verify(notificationService, times(1)).send(likePostDto);
     }
 }

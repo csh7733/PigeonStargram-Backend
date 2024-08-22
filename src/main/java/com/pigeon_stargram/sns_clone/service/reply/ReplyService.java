@@ -7,7 +7,6 @@ import com.pigeon_stargram.sns_clone.dto.reply.internal.LikeReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.ReplyContentDto;
 import com.pigeon_stargram.sns_clone.dto.reply.response.ReplyLikeDto;
 import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
-import com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst;
 import com.pigeon_stargram.sns_clone.exception.reply.ReplyNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyRepository;
@@ -31,7 +30,7 @@ public class ReplyService {
     private final ReplyRepository replyRepository;
     private final ReplyLikeRepository replyLikeRepository;
 
-    public List<ResponseReplyDto> getRepliesByCommentId(Long commentId) {
+    public List<ResponseReplyDto> getReplyDtosByCommentId(Long commentId) {
         return replyRepository.findByCommentId(commentId).stream()
                 .map(Reply::getId)
                 .sorted(Comparator.reverseOrder())
@@ -61,7 +60,7 @@ public class ReplyService {
                 .comment(dto.getComment())
                 .content(dto.getContent())
                 .build();
-        notificationService.save(dto);
+        notificationService.send(dto);
         return replyRepository.save(reply);
     }
 
@@ -100,7 +99,7 @@ public class ReplyService {
                                     .reply(reply)
                                     .build();
                             replyLikeRepository.save(replyLike);
-                            notificationService.save(dto);
+                            notificationService.send(dto);
                         }
                 );
     }

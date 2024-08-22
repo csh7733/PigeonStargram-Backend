@@ -1,8 +1,7 @@
 package com.pigeon_stargram.sns_clone.domain.comment;
 
 import com.pigeon_stargram.sns_clone.domain.BaseTimeEntity;
-import com.pigeon_stargram.sns_clone.domain.post.Posts;
-import com.pigeon_stargram.sns_clone.domain.reply.ReplyLike;
+import com.pigeon_stargram.sns_clone.domain.post.Post;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -27,7 +26,7 @@ public class Comment extends BaseTimeEntity {
 
     @ManyToOne
     @JoinColumn(name = "post_id")
-    private Posts post;
+    private Post post;
 
     private String content;
 
@@ -37,7 +36,7 @@ public class Comment extends BaseTimeEntity {
     private List<CommentLike> commentLikes = new ArrayList<>();
 
     @Builder
-    public Comment(User user, Posts post, String content) {
+    public Comment(User user, Post post, String content) {
         this.user = user;
         this.post = post;
         this.content = content;

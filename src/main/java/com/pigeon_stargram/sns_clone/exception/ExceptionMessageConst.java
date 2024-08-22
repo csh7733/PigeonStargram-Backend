@@ -2,6 +2,9 @@ package com.pigeon_stargram.sns_clone.exception;
 
 public class ExceptionMessageConst {
 
+    public static final String UNSUPPORTED_OPERATION
+            = "지원하지 않는 생성자입니다.";
+
     public static final String USER_NOT_FOUND_ID
             = "ID가 일치하는 유저가 없습니다.";
     public static final String USER_NOT_FOUND_NAME
@@ -27,7 +30,7 @@ public class ExceptionMessageConst {
     public static final String TOKEN_EXPIRED
             = "만료된 토큰입니다.";
 
-    public static final String POSTS_NOT_FOUND_ID
+    public static final String POST_NOT_FOUND_ID
             = "ID와 일치하는 게시물이 없습니다.";
 
     public static final String COMMENT_NOT_FOUND_ID

@@ -3,11 +3,11 @@ package com.pigeon_stargram.sns_clone.dto.comment.internal;
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
-import com.pigeon_stargram.sns_clone.domain.post.Posts;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import lombok.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Getter
@@ -17,9 +17,20 @@ import java.util.List;
 @AllArgsConstructor
 public class CreateCommentDto implements NotificationConvertable {
 
-    private User user;
-    private Posts post;
+    private Long loginUserId;
+    private Long postId;
+    private Long postUserId;
+    private String context;
     private String content;
+    private List<Long> taggedUserIds;
+
+    public CreateCommentDto(Long loginUserId, Long postId, Long postUserId, String content, List<Long> taggedUserIds) {
+        this.loginUserId = loginUserId;
+        this.postId = postId;
+        this.postUserId = postUserId;
+        this.content = content;
+        this.taggedUserIds = taggedUserIds;
+    }
 
     @Override
     public Notification toNotification(User sender, User recipient) {
@@ -29,19 +40,19 @@ public class CreateCommentDto implements NotificationConvertable {
                 .isRead(false)
                 .recipient(recipient)
                 .sender(sender)
-                .sourceId(post.getUser().getId())
-                .sourceId2(post.getId())
+                .sourceId(postUserId)
+                .sourceId2(postId)
                 .build();
     }
 
     @Override
     public Long getSenderId() {
-        return user.getId();
+        return loginUserId;
     }
 
     @Override
     public List<Long> getRecipientIds() {
-        return Arrays.asList(post.getUser().getId());
+        return List.of(postUserId);
     }
 
     @Override

@@ -4,18 +4,17 @@ import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyCommentTaggedUsersDto;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyReplyTaggedUsersDto;
-import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
+import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.CreateReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.LikeReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.request.RequestAddReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.request.RequestDeleteReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.request.RequestEditReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.request.RequestLikeReplyDto;
-import com.pigeon_stargram.sns_clone.service.comment.CommentService;
+import com.pigeon_stargram.sns_clone.service.comment.CommentCrudService;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
-import com.pigeon_stargram.sns_clone.service.post.PostsService;
+import com.pigeon_stargram.sns_clone.service.post.PostService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import com.pigeon_stargram.sns_clone.service.timeline.TimelineService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -31,20 +30,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReplyController {
 
-    private final PostsService postsService;
+    private final PostService postService;
     private final TimelineService timelineService;
-    private final CommentService commentService;
     private final ReplyService replyService;
     private final UserService userService;
     private final NotificationService notificationService;
+    private final CommentCrudService commentCrudService;
 
     @PostMapping
-    public List<ResponsePostsDto> addReply(@LoginUser SessionUser loginUser,
-                                           @RequestBody RequestAddReplyDto request) {
+    public List<ResponsePostDto> addReply(@LoginUser SessionUser loginUser,
+                                          @RequestBody RequestAddReplyDto request) {
         Long postId = request.getPostId();
 
         Long commentId = request.getCommentId();
-        Comment comment = commentService.getCommentEntity(commentId);
+        Comment comment = commentCrudService.findById(commentId);
         String content = request.getReply().getContent();
 
         Long userId = loginUser.getId();
@@ -78,9 +77,9 @@ public class ReplyController {
     }
 
     @PatchMapping("/{replyId}")
-    public List<ResponsePostsDto> editReply(@LoginUser SessionUser loginUser,
-                                            @PathVariable Long replyId,
-                                            @RequestBody RequestEditReplyDto request) {
+    public List<ResponsePostDto> editReply(@LoginUser SessionUser loginUser,
+                                           @PathVariable Long replyId,
+                                           @RequestBody RequestEditReplyDto request) {
         Long userId = loginUser.getId();
         String context = request.getContext();
 
@@ -92,9 +91,9 @@ public class ReplyController {
         return getPostsBasedOnContext(context, userId, postUserId);
     }
     @DeleteMapping("/{replyId}")
-    public List<ResponsePostsDto> deleteReply(@LoginUser SessionUser loginUser,
-                                              @PathVariable Long replyId,
-                                              @RequestBody RequestDeleteReplyDto request) {
+    public List<ResponsePostDto> deleteReply(@LoginUser SessionUser loginUser,
+                                             @PathVariable Long replyId,
+                                             @RequestBody RequestDeleteReplyDto request) {
         Long userId = loginUser.getId();
         String context = request.getContext();
 
@@ -106,8 +105,8 @@ public class ReplyController {
     }
 
     @PostMapping("/like")
-    public List<ResponsePostsDto> likeReply(@LoginUser SessionUser loginUser,
-                                            @RequestBody RequestLikeReplyDto request) {
+    public List<ResponsePostDto> likeReply(@LoginUser SessionUser loginUser,
+                                           @RequestBody RequestLikeReplyDto request) {
         Long postId = request.getPostId();
 
         Long userId = loginUser.getId();
@@ -130,11 +129,11 @@ public class ReplyController {
         return getPostsBasedOnContext(context, userId, postUserId);
     }
 
-    private List<ResponsePostsDto> getPostsBasedOnContext(String context, Long userId, Long postUserId) {
+    private List<ResponsePostDto> getPostsBasedOnContext(String context, Long userId, Long postUserId) {
         if ("timeline".equals(context)) {
             return timelineService.getFollowingUsersRecentPosts(userId);
         } else {
-            return postsService.getPostsByUser(postUserId);
+            return postService.getPostsByUserId(postUserId);
         }
     }
 }

@@ -1,8 +1,7 @@
 package com.pigeon_stargram.sns_clone.controller.file;
 
-import com.pigeon_stargram.sns_clone.domain.post.Image;
 import com.pigeon_stargram.sns_clone.service.file.FileService;
-import com.pigeon_stargram.sns_clone.service.post.PostsService;
+import com.pigeon_stargram.sns_clone.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -10,11 +9,9 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -22,7 +19,7 @@ import java.util.List;
 @RequestMapping("/api/files")
 public class LocalFileController {
 
-    private final PostsService postsService;
+    private final PostService postService;
     private final FileService fileService;
     private final Path fileStorageLocation = Paths.get("uploads").toAbsolutePath().normalize();
 

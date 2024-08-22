@@ -1,16 +1,15 @@
 package com.pigeon_stargram.sns_clone;
 
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
-import com.pigeon_stargram.sns_clone.domain.post.Image;
-import com.pigeon_stargram.sns_clone.domain.post.Posts;
+import com.pigeon_stargram.sns_clone.domain.post.Post;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.CreateCommentDto;
 import com.pigeon_stargram.sns_clone.dto.post.internal.CreatePostDto;
-import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
+import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.CreateReplyDto;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
-import com.pigeon_stargram.sns_clone.service.post.PostsService;
+import com.pigeon_stargram.sns_clone.service.post.PostService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import com.pigeon_stargram.sns_clone.util.JsonUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,7 +31,7 @@ import java.util.List;
 @Component
 public class TestData {
 
-    private final PostsService postsService;
+    private final PostService postService;
     private final CommentService commentService;
     private final ReplyService replyService;
     private final JsonUtil jsonUtil;
@@ -131,34 +130,34 @@ public class TestData {
         User user3 = userService.findById(3L);
 
         // Post 1 by User 1 (John Doe)
-        Posts post1 = postsService.createPost(new CreatePostDto(user1, "Hello from John Doe!"));
-        Comment post1_comment1 = commentService.createComment(new CreateCommentDto(user2, post1, "Hi John!"));
+        Post post1 = postService.createPost(new CreatePostDto(user1.getId(), "Hello from John Doe!", List.of(), List.of()));
+        Comment post1_comment1 = commentService.createComment(new CreateCommentDto(user2.getId(), post1.getId(), post1.getUser().getId(), "Hi John!", List.of()));
         replyService.createReply(new CreateReplyDto(user3, post1_comment1, "Hello Jane!",post1.getId(),user1.getId()));
 
         // Post 2_1 by User 2 (Jane Smith)
-        Posts post2_1 = postsService.createPost(new CreatePostDto(user2, "Jane Smith"));
+        Post post2_1 = postService.createPost(new CreatePostDto(user2.getId(), "Jane Smith", List.of(), List.of()));
 
         // Post 2 by User 2 (Jane Smith)
-        Posts post2 = postsService.createPost(new CreatePostDto(user2, "Jane's beautiful day at the park."));
-        Comment post2_comment1 = commentService.createComment(new CreateCommentDto(user1, post2, "Looks great, Jane!"));
+        Post post2 = postService.createPost(new CreatePostDto(user2.getId(), "Jane's beautiful day at the park.", List.of(), List.of()));
+        Comment post2_comment1 = commentService.createComment(new CreateCommentDto(user1.getId(), post2.getId(), post2.getUser().getId(), "Looks great, Jane!", List.of()));
         replyService.createReply(new CreateReplyDto(user3, post2_comment1, "Amazing picture!",user2.getId(),post2.getId()));
-        Comment post2_comment2 = commentService.createComment(new CreateCommentDto(user3, post2, "Love the scenery."));
+        Comment post2_comment2 = commentService.createComment(new CreateCommentDto(user3.getId(), post2.getId(), post2.getUser().getId(), "Love the scenery.", List.of()));
 
         // Post 3 by User 3 (Alice Brown)
-        Posts post3 = postsService.createPost(new CreatePostDto(user3, "Alice's adventure in the mountains."));
-        Comment post3_comment1 = commentService.createComment(new CreateCommentDto(user1, post3, "Wow, awesome view!"));
+        Post post3 = postService.createPost(new CreatePostDto(user3.getId(), "Alice's adventure in the mountains.", List.of(), List.of()));
+        Comment post3_comment1 = commentService.createComment(new CreateCommentDto(user1.getId(), post3.getId(), post3.getUser().getId(), "Wow, awesome view!", List.of()));
         replyService.createReply(new CreateReplyDto(user2, post3_comment1, "I agree, it's stunning!",user3.getId(),post3.getId()));
-        Comment post3_comment2 = commentService.createComment(new CreateCommentDto(user2, post3, "Wish I was there!"));
+        Comment post3_comment2 = commentService.createComment(new CreateCommentDto(user2.getId(), post3.getId(), post3.getUser().getId(), "Wish I was there!", List.of()));
 
         // Post 4 by User 1 (John Doe)
-        Posts post4 = postsService.createPost(new CreatePostDto(user1, "Back to work after a great vacation."));
-        Comment post4_comment1 = commentService.createComment(new CreateCommentDto(user3, post4, "Hope you had a good time!"));
+        Post post4 = postService.createPost(new CreatePostDto(user1.getId(), "Back to work after a great vacation.", List.of(), List.of()));
+        Comment post4_comment1 = commentService.createComment(new CreateCommentDto(user3.getId(), post4.getId(), post4.getUser().getId(), "Hope you had a good time!", List.of()));
         replyService.createReply(new CreateReplyDto(user2, post4_comment1, "Welcome back!",user1.getId(),post4.getId()));
 
         // Logging Posts
-        List<ResponsePostsDto> postsByUser1 = postsService.getPostsByUser(user1.getId());
-        List<ResponsePostsDto> postsByUser2 = postsService.getPostsByUser(user2.getId());
-        List<ResponsePostsDto> postsByUser3 = postsService.getPostsByUser(user3.getId());
+        List<ResponsePostDto> postsByUser1 = postService.getPostsByUserId(user1.getId());
+        List<ResponsePostDto> postsByUser2 = postService.getPostsByUserId(user2.getId());
+        List<ResponsePostDto> postsByUser3 = postService.getPostsByUserId(user3.getId());
 
         logPosts(postsByUser1);
         logPosts(postsByUser2);
@@ -226,7 +225,7 @@ public class TestData {
     }
 
 
-    private void logPosts(List<ResponsePostsDto> posts) {
+    private void logPosts(List<ResponsePostDto> posts) {
         posts.forEach(post -> {
             String jsonString = jsonUtil.toJson(post);
             log.info(jsonString);

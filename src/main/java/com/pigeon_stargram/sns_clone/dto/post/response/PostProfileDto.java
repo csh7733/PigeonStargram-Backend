@@ -12,13 +12,13 @@ import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.formatTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostsProfileDto {
+public class PostProfileDto {
     private Long id;
     private String avatar;
     private String name;
     private String time;
 
-    public PostsProfileDto(User user, LocalDateTime modifiedDate) {
+    public PostProfileDto(User user, LocalDateTime modifiedDate) {
         this.id = user.getId();
         this.avatar = user.getAvatar();
         this.name = user.getName();

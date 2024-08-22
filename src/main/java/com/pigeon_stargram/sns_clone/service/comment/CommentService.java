@@ -2,47 +2,45 @@ package com.pigeon_stargram.sns_clone.service.comment;
 
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.comment.CommentLike;
+import com.pigeon_stargram.sns_clone.domain.post.Post;
+import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.CommentContentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.CreateCommentDto;
+import com.pigeon_stargram.sns_clone.dto.comment.internal.EditCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.LikeCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.CommentLikeDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseCommentDto;
-import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
+import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyCommentTaggedDto;
 import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
-import com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst;
-import com.pigeon_stargram.sns_clone.exception.comment.CommentNotFoundException;
-import com.pigeon_stargram.sns_clone.repository.comment.CommentLikeRepository;
-import com.pigeon_stargram.sns_clone.repository.comment.CommentRepository;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
+import com.pigeon_stargram.sns_clone.service.post.PostCrudService;
+import com.pigeon_stargram.sns_clone.service.post.PostService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
+import com.pigeon_stargram.sns_clone.service.user.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
+import static com.pigeon_stargram.sns_clone.service.comment.CommentBuilder.*;
 
-@Service
 @RequiredArgsConstructor
 @Transactional
+@Service
 public class CommentService {
 
+    private final CommentCrudService commentCrudService;
+    private final UserService userService;
+    private final PostCrudService postCrudService;
     private final ReplyService replyService;
     private final NotificationService notificationService;
+    private final CommentLikeCrudService commentLikeCrudService;
 
-    private final CommentRepository commentRepository;
-    private final CommentLikeRepository commentLikeRepository;
-
-    public Comment getCommentEntity(Long commentId) {
-        return commentRepository.findById(commentId)
-                .orElseThrow(() -> new CommentNotFoundException(COMMENT_NOT_FOUND_ID));
-    }
-
-    public List<ResponseCommentDto> getCommentsByPostId(Long postId) {
-        return commentRepository.findByPostId(postId).stream()
+    public List<ResponseCommentDto> getCommentDtosByPostId(Long postId) {
+        List<Comment> comments = commentCrudService.findByPostId(postId);
+        return comments.stream()
                 .map(Comment::getId)
                 .sorted(Comparator.reverseOrder())
                 .map(this::getCombinedComment)
@@ -50,86 +48,73 @@ public class CommentService {
     }
 
     public ResponseCommentDto getCombinedComment(Long commentId) {
-        CommentContentDto commentContentDto = getCommentContent(commentId);
-        CommentLikeDto commentLikeDto = getCommentLike(commentId);
-        List<ResponseReplyDto> replyDtos = replyService.getRepliesByCommentId(commentId);
-        return new ResponseCommentDto(commentContentDto, commentLikeDto, replyDtos);
+        CommentContentDto contentDto = getCommentContent(commentId);
 
+        CommentLikeDto likeDto = getCommentLike(commentId);
+
+        List<ResponseReplyDto> replyDtos = replyService.getReplyDtosByCommentId(commentId);
+
+        return buildResponseCommentDto(contentDto, likeDto, replyDtos);
     }
 
     public CommentContentDto getCommentContent(Long commentId) {
-        return new CommentContentDto(getCommentEntity(commentId));
+        Comment comment = commentCrudService.findById(commentId);
+        return buildCommentContentDto(comment);
     }
-
-    public CommentLikeDto getCommentLike(Long commentId) {
-        Integer count = commentLikeRepository.countByCommentId(commentId);
-        return new CommentLikeDto(false, count);
-    }
-
 
     public Comment createComment(CreateCommentDto dto) {
-        Comment comment = Comment.builder()
-                .user(dto.getUser())
-                .post(dto.getPost())
-                .content(dto.getContent())
-                .build();
-        notificationService.save(dto);
-        return commentRepository.save(comment);
+        User loginUser = userService.findById(dto.getLoginUserId());
+        Post post = postCrudService.findById(dto.getPostId());
+
+        Comment comment = buildComment(dto, loginUser, post);
+        Comment save = commentCrudService.save(comment);
+
+        notificationService.send(dto);
+
+        notifyTaggedUsers(dto, loginUser);
+
+        return save;
     }
 
-//    public CommentDto getComment(Long commentId) {
-//        Comment comment = commentRepository.findById(commentId)
-//                .orElseThrow(() -> new IllegalArgumentException("Invalid comment ID"));
-//        return new CommentDto(comment);
-//    }
+    private void notifyTaggedUsers(CreateCommentDto dto, User loginUser) {
+        NotifyCommentTaggedDto notifyCommentTaggedDto =
+                buildNotifyCommentTaggedDto(dto, loginUser);
+        notificationService.notifyTaggedUsers(notifyCommentTaggedDto);
+    }
 
-    public List<ResponseCommentDto> getCommentListByPost(Long postId) {
-        List<Comment> comments = commentRepository.findByPostId(postId);
-        return comments.stream()
-                .map(comment -> {
-                    List<ResponseReplyDto> replies = replyService.getReplyListByComment(comment.getId());
-                    Integer likeCount = commentLikeRepository.countByCommentId(comment.getId());
-                    return new ResponseCommentDto(comment, replies, likeCount);
-                })
-                .collect(Collectors.toList());
+    public void editComment(EditCommentDto dto) {
+        Comment comment = commentCrudService.findById(dto.getCommentId());
+        comment.modify(dto.getContent());
     }
 
     public void deleteAllCommentsAndReplyByPostId(Long postId) {
-        List<Comment> comments = commentRepository.findByPostId(postId);
-
+        List<Comment> comments = commentCrudService.findByPostId(postId);
         comments.forEach(comment -> {
             replyService.deleteAllRepliesByCommentId(comment.getId());
-            commentRepository.delete(comment);
+            commentCrudService.deleteById(comment.getId());
         });
     }
 
-    public void editComment(Long commentId, String newContent) {
-        Comment comment = getCommentEntity(commentId);
-        comment.modify(newContent);
+    public CommentLikeDto getCommentLike(Long commentId) {
+        Integer count = commentLikeCrudService.countByCommentId(commentId);
+        return buildCommentLikeDto(false, count);
     }
 
     public void likeComment(LikeCommentDto dto) {
-        Comment comment = getCommentEntity(dto.getCommentId());
+        User loginUser = userService.findById(dto.getLoginUserId());
+        Comment comment = commentCrudService.findById(dto.getCommentId());
         dto.setWriterId(comment.getUser().getId());
 
-        commentLikeRepository.findByUserIdAndCommentId(dto.getUser().getId(), comment.getId())
+        commentLikeCrudService.findByUserIdAndCommentId(dto.getLoginUserId(), comment.getId())
                 .ifPresentOrElse(
                         existingLike -> {
-                            commentLikeRepository.delete(existingLike);
+                            commentLikeCrudService.delete(existingLike);
                         },
                         () -> {
-                            CommentLike commentLike = CommentLike.builder()
-                                    .user(dto.getUser())
-                                    .comment(comment)
-                                    .build();
-                            commentLikeRepository.save(commentLike);
-                            notificationService.save(dto);
+                            CommentLike commentLike = buildCommentLike(loginUser, comment);
+                            commentLikeCrudService.save(commentLike);
+                            notificationService.send(dto);
                         }
                 );
-    }
-
-    public void deleteComment(Long commentId) {
-        replyService.deleteAllRepliesByCommentId(commentId);
-        commentRepository.deleteById(commentId);
     }
 }

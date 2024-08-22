@@ -13,12 +13,10 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotifyCommentTaggedUsersDto implements NotificationConvertable {
+public class NotifyPostTaggedDto implements NotificationConvertable {
 
     private User user;
     private String content;
-    private Long postUserId;
-    private Long postId;
     private List<Long> notificationRecipientIds;
 
     @Override
@@ -26,11 +24,10 @@ public class NotifyCommentTaggedUsersDto implements NotificationConvertable {
         return Notification.builder()
                 .recipient(recipient)
                 .sender(sender)
-                .type(NotificationType.COMMENT_TAG)
+                .type(NotificationType.POST_TAG)
                 .isRead(false)
                 .message(generateMessage(sender, recipient))
-                .sourceId(postUserId)
-                .sourceId2(postId)
+                .sourceId(user.getId())
                 .build();
     }
 
@@ -46,7 +43,8 @@ public class NotifyCommentTaggedUsersDto implements NotificationConvertable {
 
     @Override
     public String generateMessage(User sender, User recipient) {
-        return user.getName() + "님이 댓글에서 당신을 언급했습니다.";
+        return user.getName() + "님이 새 글에서 당신을 언급했습니다. 지금 " +
+                user.getName() +"님의 프로필로 가서 확인하세요!";
     }
 
     @Override

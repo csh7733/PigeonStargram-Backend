@@ -16,22 +16,21 @@ import java.util.List;
 @AllArgsConstructor
 public class CreatePostDto implements NotificationConvertable {
 
-    private User user;
+    private Long loginUserId;
     private String content;
     private List<Long> notificationRecipientIds;
     private List<String> imageUrls;
     private Boolean hasImage;
+    private List<Long> taggedUserIds;
 
-    public CreatePostDto(User user, String content) {
-        this.user = user;
-        this.content = content;
-        this.hasImage = false;
-    }
-
-    public CreatePostDto(User user, String content,List<Long> notificationRecipientIds) {
-        this.user = user;
+    public CreatePostDto(Long loginUserId,
+                         String content,
+                         List<Long> notificationRecipientIds,
+                         List<Long> taggedUserIds) {
+        this.loginUserId = loginUserId;
         this.content = content;
         this.notificationRecipientIds = notificationRecipientIds;
+        this.taggedUserIds = taggedUserIds;
         this.hasImage = false;
     }
 
@@ -43,13 +42,13 @@ public class CreatePostDto implements NotificationConvertable {
                 .type(NotificationType.FOLLOWING_POST)
                 .isRead(false)
                 .message(generateMessage(sender, recipient))
-                .sourceId(user.getId())
+                .sourceId(loginUserId)
                 .build();
     }
 
     @Override
     public Long getSenderId() {
-        return user.getId();
+        return loginUserId;
     }
 
     @Override

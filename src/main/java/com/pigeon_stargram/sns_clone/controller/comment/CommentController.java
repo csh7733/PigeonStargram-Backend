@@ -2,19 +2,17 @@ package com.pigeon_stargram.sns_clone.controller.comment;
 
 import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
-import com.pigeon_stargram.sns_clone.domain.post.Posts;
-import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.CreateCommentDto;
+import com.pigeon_stargram.sns_clone.dto.comment.internal.EditCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.LikeCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.request.RequestAddCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.request.RequestDeleteCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.request.RequestEditCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.request.RequestLikeCommentDto;
-import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyCommentTaggedUsersDto;
-import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
+import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
+import com.pigeon_stargram.sns_clone.service.comment.CommentCrudService;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
-import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
-import com.pigeon_stargram.sns_clone.service.post.PostsService;
+import com.pigeon_stargram.sns_clone.service.post.PostService;
 import com.pigeon_stargram.sns_clone.service.timeline.TimelineService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -23,106 +21,80 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.pigeon_stargram.sns_clone.service.comment.CommentBuilder.*;
+
 @Slf4j
 @RequestMapping("/api/comments")
 @RestController
 @RequiredArgsConstructor
 public class CommentController {
 
-    private final PostsService postsService;
+    private final PostService postService;
     private final TimelineService timelineService;
     private final CommentService commentService;
     private final UserService userService;
-    private final NotificationService notificationService;
+    private final CommentCrudService commentCrudService;
 
     @PostMapping
-    public List<ResponsePostsDto> addComment(@LoginUser SessionUser loginUser,
-                                             @RequestBody RequestAddCommentDto request) {
-        Long postId = request.getPostId();
-        Posts post = postsService.getPostEntity(postId);
-        String content = request.getComment().getContent();
+    public List<ResponsePostDto> addComment(@LoginUser SessionUser loginUser,
+                                            @RequestBody RequestAddCommentDto request) {
 
-        Long userId = loginUser.getId();
-        User user = userService.findById(userId);
         String context = request.getContext();
-
+        Long loginUserId = loginUser.getId();
         Long postUserId = request.getPostUserId();
 
-        commentService.createComment(new CreateCommentDto(user, post, content));
+        CreateCommentDto createCommentDto = buildCreateCommentDto(request, loginUser);
+        commentService.createComment(createCommentDto);
 
-        NotifyCommentTaggedUsersDto notifyTaggedUsers = NotifyCommentTaggedUsersDto.builder()
-                .user(user)
-                .content(content)
-                .notificationRecipientIds(request.getComment().getTaggedUserIds())
-                .postUserId(postUserId)
-                .postId(postId)
-                .build();
-
-        notificationService.notifyTaggedUsers(notifyTaggedUsers);
-
-        return getPostsBasedOnContext(context, userId, postUserId);
+        return getPostsBasedOnContext(context, loginUserId, postUserId);
     }
 
     @PatchMapping("/{commentId}")
-    public List<ResponsePostsDto> editComment(@LoginUser SessionUser loginUser,
-                                              @PathVariable Long commentId,
-                                              @RequestBody RequestEditCommentDto request) {
-        Long userId = loginUser.getId();
+    public List<ResponsePostDto> editComment(@LoginUser SessionUser loginUser,
+                                             @PathVariable Long commentId,
+                                             @RequestBody RequestEditCommentDto request) {
+
+        Long loginUserId = loginUser.getId();
+        Long postUserId = request.getPostUserId();
         String context = request.getContext();
 
-        String content = request.getContent();
+        EditCommentDto editCommentDto = buildEditCommentDto(commentId, request.getContent());
+        commentService.editComment(editCommentDto);
 
-        Long postUserId = request.getPostUserId();
-
-        commentService.editComment(commentId,content);
-
-        return getPostsBasedOnContext(context, userId, postUserId);
+        return getPostsBasedOnContext(context, loginUserId, postUserId);
     }
 
     @DeleteMapping("/{commentId}")
-    public List<ResponsePostsDto> deleteComment(@LoginUser SessionUser loginUser,
-                                                @PathVariable Long commentId,
-                                                @RequestBody RequestDeleteCommentDto request) {
-        Long userId = loginUser.getId();
+    public List<ResponsePostDto> deleteComment(@LoginUser SessionUser loginUser,
+                                               @PathVariable Long commentId,
+                                               @RequestBody RequestDeleteCommentDto request) {
+        Long loginUserId = loginUser.getId();
+        Long postUserId = request.getPostUserId();
         String context = request.getContext();
 
-        Long postUserId = request.getPostUserId();
+        commentCrudService.deleteById(commentId);
 
-        commentService.deleteComment(commentId);
-
-        return getPostsBasedOnContext(context, userId, postUserId);
+        return getPostsBasedOnContext(context, loginUserId, postUserId);
     }
 
     @PostMapping("/like")
-    public List<ResponsePostsDto> likeComment(@LoginUser SessionUser loginUser,
-                                              @RequestBody RequestLikeCommentDto request) {
-        Long postId = request.getPostId();
+    public List<ResponsePostDto> likeComment(@LoginUser SessionUser loginUser,
+                                             @RequestBody RequestLikeCommentDto request) {
+        Long loginUserId = loginUser.getId();
+        Long postUserId = request.getPostUserId();
         String context = request.getContext();
 
-        Long userId = loginUser.getId();
-        User user = userService.findById(userId);
-
-        Long postUserId = request.getPostUserId();
-
-        Long commentId = request.getCommentId();
-
-        LikeCommentDto likeCommentDto = LikeCommentDto.builder()
-                .user(user)
-                .commentId(commentId)
-                .postUserId(postUserId)
-                .postId(postId)
-                .build();
-
+        LikeCommentDto likeCommentDto = buildLikeCommentDto(request, loginUser);
         commentService.likeComment(likeCommentDto);
 
-        return getPostsBasedOnContext(context, userId, postUserId);
+        return getPostsBasedOnContext(context, loginUserId, postUserId);
     }
 
-    private List<ResponsePostsDto> getPostsBasedOnContext(String context, Long userId, Long postUserId) {
-        if ("timeline".equals(context)) {
+    private List<ResponsePostDto> getPostsBasedOnContext(String context, Long userId, Long postUserId) {
+        if (context.equals("timeline")) {
             return timelineService.getFollowingUsersRecentPosts(userId);
         } else {
-            return postsService.getPostsByUser(postUserId);
+            return postService.getPostsByUserId(postUserId);
         }
     }
 }

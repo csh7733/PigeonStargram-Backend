@@ -31,7 +31,7 @@ public class NotificationService {
     /**
      * TODO : ID생성방식 변화시키기 (지연쓰기를 위해서)
      */
-    public List<Notification> save(NotificationConvertable dto) {
+    public List<Notification> send(NotificationConvertable dto) {
         Long senderId = dto.getSenderId();
         User sender = userService.findById(senderId);
 
@@ -71,6 +71,6 @@ public class NotificationService {
     }
 
     public void notifyTaggedUsers(NotificationConvertable dto) {
-        if(!dto.getRecipientIds().isEmpty()) save(dto);
+        if(!dto.getRecipientIds().isEmpty()) send(dto);
     }
 }

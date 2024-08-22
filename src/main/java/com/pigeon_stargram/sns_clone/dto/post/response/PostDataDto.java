@@ -1,8 +1,8 @@
 package com.pigeon_stargram.sns_clone.dto.post.response;
 
-import com.pigeon_stargram.sns_clone.domain.post.Posts;
+import com.pigeon_stargram.sns_clone.domain.post.Post;
 import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseCommentDto;
-import com.pigeon_stargram.sns_clone.dto.post.internal.PostsContentDto;
+import com.pigeon_stargram.sns_clone.dto.post.internal.PostContentDto;
 import lombok.*;
 
 import java.util.List;
@@ -12,26 +12,26 @@ import java.util.stream.Collectors;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostsDataDto {
+public class PostDataDto {
     private String content;
     private List<ImageDto> images;
-    private PostsLikeDto likes;
+    private PostLikeDto likes;
     private List<ResponseCommentDto> comments;
 
-    public PostsDataDto(Posts post,
-                        List<ResponseCommentDto> comments,
-                        Integer likeCount) {
+    public PostDataDto(Post post,
+                       List<ResponseCommentDto> comments,
+                       Integer likeCount) {
         this.content = post.getContent();
         this.images = post.getImages().stream()
                 .map(ImageDto::new)
                 .collect(Collectors.toList());
-        this.likes = new PostsLikeDto(false, likeCount);
+        this.likes = new PostLikeDto(false, likeCount);
         this.comments = comments;
     }
 
-    public PostsDataDto(PostsContentDto contentDto,
-                        PostsLikeDto likeDto,
-                        List<ResponseCommentDto> commentDtos) {
+    public PostDataDto(PostContentDto contentDto,
+                       PostLikeDto likeDto,
+                       List<ResponseCommentDto> commentDtos) {
         this.content = contentDto.getContent();
         this.images = contentDto.getImages();
         this.likes = likeDto;

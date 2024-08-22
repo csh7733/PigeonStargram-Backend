@@ -1,11 +1,9 @@
 package com.pigeon_stargram.sns_clone.service.timeline;
 
-import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.dto.Follow.ResponseFollowerDto;
-import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostsDto;
+import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
-import com.pigeon_stargram.sns_clone.service.post.PostsService;
-import com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil;
+import com.pigeon_stargram.sns_clone.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,14 +21,14 @@ import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getReverseOrd
 @Service
 public class TimelineService {
 
-    private final PostsService postsService;
+    private final PostService postService;
     private final FollowService followService;
 
-    public List<ResponsePostsDto> getFollowingUsersRecentPosts(Long userId) {
+    public List<ResponsePostDto> getFollowingUsersRecentPosts(Long userId) {
 
         return followService.findFollowings(userId).stream()
                 .map(ResponseFollowerDto::getId)
-                .flatMap(followingId -> postsService.getRecentPostsByUser(followingId).stream())
+                .flatMap(followingId -> postService.getRecentPostsByUser(followingId).stream())
                 .sorted(Comparator.comparing(
                         post-> post.getProfile().getTime(),
                         getReverseOrderComparator()))
