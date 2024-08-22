@@ -108,10 +108,10 @@ public class FollowController {
     }
 
     @GetMapping("/followings/recent-stories")
-    public List<ResponseFollowerDto> getFollowingsWhoUploadStory(@LoginUser SessionUser loginUser) {
+    public List<ResponseFollowerDto> getMeAndFollowingsWhoUploadStory(@LoginUser SessionUser loginUser) {
         Long userId = loginUser.getId();
 
-        return followService.findFollowingsWithRecentStories(userId);
+        return followService.findMeAndFollowingsWithRecentStories(userId);
     }
 
 }

@@ -179,14 +179,25 @@ public class FollowService {
                 .orElse(false);
     }
 
-    public List<ResponseFollowerDto> findFollowingsWithRecentStories(Long userId) {
-        return findFollowings(userId).stream()
+    public List<ResponseFollowerDto> findMeAndFollowingsWithRecentStories(Long userId) {
+        List<ResponseFollowerDto> followingsWithRecentStories = findFollowings(userId).stream()
                 .filter(following -> storyService.hasRecentStory(following.getId()))
                 .peek(following -> {
                     boolean hasUnreadStories = storyService.hasUnreadStories(following.getId(), userId);
                     following.setHasUnreadStories(hasUnreadStories);
                 })
-                .toList();
+                .collect(Collectors.toList());
+
+        // 현재 사용자가 최근 스토리가 있는지 확인
+        boolean currentUserHasRecentStory = storyService.hasRecentStory(userId);
+        if (currentUserHasRecentStory) {
+            boolean currentUserHasUnreadStories = storyService.hasUnreadStories(userId, userId);
+            ResponseFollowerDto currentUserDto = new ResponseFollowerDto(userService.findById(userId), 1);
+            currentUserDto.setHasUnreadStories(currentUserHasUnreadStories);
+            followingsWithRecentStories.add(currentUserDto);
+        }
+
+        return followingsWithRecentStories;
     }
 
 
