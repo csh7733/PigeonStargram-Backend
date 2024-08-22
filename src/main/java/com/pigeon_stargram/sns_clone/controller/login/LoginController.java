@@ -33,7 +33,7 @@ public class LoginController {
     
     @PostMapping("/register")
     public void register(@RequestBody RequestRegisterDto request){
-        log.info("request = {}",request.getAvatar());
+
         loginService.register(request);
     }
 
