@@ -110,7 +110,7 @@ public class ChatService {
         Long user2Id = chatMessage.getTo();
 
         Long[] userIds = sortAndGet(user1Id, user2Id);
-        String lastMessageText = chatMessage.getText();
+        String lastMessageText = chatMessage.getIsImage() ? "사진" : chatMessage.getText();
 
         LastMessage lastMessageEntity = lastMessageRepository.findByUser1IdAndUser2Id(userIds[0], userIds[1])
                 .orElse(new LastMessage(userIds[0], userIds[1], lastMessageText));
