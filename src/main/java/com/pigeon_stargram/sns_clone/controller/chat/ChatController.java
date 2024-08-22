@@ -75,6 +75,32 @@ public class ChatController {
         return fileService.saveFile(imageFile);
     }
 
+    @PostMapping("/story-reply")
+    public NewChatDto sendStoryReply(@LoginUser SessionUser loginUser,
+                                     @RequestBody NewChatDto chatMessage) {
+        Long from = loginUser.getId();
+        Long to = chatMessage.getTo();
+
+        Long[] userIds = chatService.sortAndGet(from, to);
+
+        chatMessage.setTime(getCurrentFormattedTime());
+        chatService.save(chatMessage);
+
+        if (!isUserChattingWith(to, from)) {
+            Integer count = chatService.increaseUnReadChatCount(to, from);
+            sentUnReadChatCountToUser(to, from, count);
+        }
+
+        LastMessageDto lastMessage = chatService.setLastMessage(chatMessage);
+        sentLastMessage(from, to, lastMessage);
+
+        String destination = "/topic/chat/" + userIds[0] + "/" + userIds[1];
+        messagingTemplate.convertAndSend(destination, chatMessage);
+
+        return chatMessage;
+    }
+
+
     @MessageMapping("/chat/{user1Id}/{user2Id}")
     @SendTo("/topic/chat/{user1Id}/{user2Id}")
     public NewChatDto sendMessage(@Payload NewChatDto chatMessage) {

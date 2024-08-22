@@ -140,7 +140,7 @@ public class ChatService {
         setUnreadChatCount0(userId,partnerUserId);
     }
 
-    private static Long[] sortAndGet(Long user1Id, Long user2Id) {
+    public Long[] sortAndGet(Long user1Id, Long user2Id) {
         Long[] userIds = {user1Id, user2Id};
         Arrays.sort(userIds);
         return userIds;
