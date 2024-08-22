@@ -13,9 +13,10 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotifyReplyTaggedUsersDto implements NotificationConvertable {
+public class NotifyReplyTaggedDto implements NotificationConvertable {
 
-    private User user;
+    private Long userId;
+    private String userName;
     private String content;
     private Long postUserId;
     private Long postId;
@@ -36,7 +37,7 @@ public class NotifyReplyTaggedUsersDto implements NotificationConvertable {
 
     @Override
     public Long getSenderId() {
-        return user.getId();
+        return userId;
     }
 
     @Override
@@ -46,7 +47,7 @@ public class NotifyReplyTaggedUsersDto implements NotificationConvertable {
 
     @Override
     public String generateMessage(User sender, User recipient) {
-        return user.getName() + "님이 답글에서 당신을 언급했습니다.";
+        return userName + "님이 답글에서 당신을 언급했습니다.";
     }
 
     @Override

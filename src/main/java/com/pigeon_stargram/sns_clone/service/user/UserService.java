@@ -5,12 +5,15 @@ import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseUserChatDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
+import com.pigeon_stargram.sns_clone.dto.user.internal.UpdateOnlineStatusDto;
+import com.pigeon_stargram.sns_clone.dto.user.internal.UpdatePasswordDto;
 
 import java.util.List;
 
 public interface UserService {
 
     User findById(Long id);
+
     User findByName(String name);
     List<User> findBySearchQuery(String searchQuery);
 
@@ -18,19 +21,15 @@ public interface UserService {
 
     User findByWorkEmailAndPassword(String email, String password);
 
-    List<User> findAll();
-
     ResponseUserChatDto findUserChatById(Long userId);
 
     User save(RequestRegisterDto userDto);
 
     List<User> saveAll(List<UserDto> userDtoList);
 
-    List<User> saveAllUser(List<User> users);
+    User updateOnlineStatus(UpdateOnlineStatusDto updateOnlineStatusDto);
 
-    User updateOnlineStatus(Long userId, String onlineStatus);
-
-    User updatePassword(Long userId, String newPassword);
+    User updatePassword(UpdatePasswordDto updatePasswordDto);
 
     ResponseOnlineStatusDto getOnlineStatus(Long id);
 

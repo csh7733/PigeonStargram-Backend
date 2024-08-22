@@ -6,8 +6,10 @@ import com.pigeon_stargram.sns_clone.dto.Follow.ResponseFollowerDto;
 import com.pigeon_stargram.sns_clone.dto.chat.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.request.RequestOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.*;
+import com.pigeon_stargram.sns_clone.dto.user.internal.UpdateOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
+import com.pigeon_stargram.sns_clone.service.user.UserBuilder;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,7 +63,8 @@ public class ChatController {
     public void setOnlineStatus(@PathVariable Long id,
                                 @RequestBody RequestOnlineStatusDto request) {
         String onlineStatus = request.getOnlineStatus();
-        userService.updateOnlineStatus(id, onlineStatus);
+        UpdateOnlineStatusDto updateOnlineStatusDto = UserBuilder.buildUpdateOnlineStatusDto(id, onlineStatus);
+        userService.updateOnlineStatus(updateOnlineStatusDto);
 
         sentOnlineStatus(id, onlineStatus);
     }

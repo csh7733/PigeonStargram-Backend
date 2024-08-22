@@ -11,9 +11,4 @@ import lombok.*;
 public class ResponseOnlineStatusDto {
     private Long userId;
     private String onlineStatus;
-
-    public ResponseOnlineStatusDto(User user) {
-        this.userId = user.getId();
-        this.onlineStatus = user.getOnlineStatus();
-    }
 }

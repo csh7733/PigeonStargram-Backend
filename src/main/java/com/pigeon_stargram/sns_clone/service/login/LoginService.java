@@ -4,7 +4,11 @@ import com.pigeon_stargram.sns_clone.domain.login.PasswordResetToken;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestLoginDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
+import com.pigeon_stargram.sns_clone.dto.login.request.RequestResetPasswordDto;
+import com.pigeon_stargram.sns_clone.dto.user.internal.UpdateOnlineStatusDto;
+import com.pigeon_stargram.sns_clone.dto.user.internal.UpdatePasswordDto;
 import com.pigeon_stargram.sns_clone.exception.login.EmailNotSentException;
+import com.pigeon_stargram.sns_clone.service.user.UserBuilder;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -21,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
+import static com.pigeon_stargram.sns_clone.service.user.UserBuilder.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -102,13 +107,18 @@ public class LoginService {
         }
     }
 
-    public User resetPassword(String token, String newPassword) {
+    public User resetPassword(RequestResetPasswordDto dto) {
+        String token = dto.getToken();
+        String newPassword = dto.getNewPassword();
+
         passwordResetTokenService.validateToken(token);
 
         String email = passwordResetTokenService.extractEmail(token);
         User user = userService.findByWorkEmail(email);
+        UpdatePasswordDto updatePasswordDto =
+                buildUpdatePasswordDto(user.getId(), newPassword);
 
-        return userService.updatePassword(user.getId(), newPassword);
+        return userService.updatePassword(updatePasswordDto);
     }
 
 }

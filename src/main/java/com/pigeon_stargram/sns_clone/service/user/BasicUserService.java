@@ -5,6 +5,8 @@ import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseUserChatDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
+import com.pigeon_stargram.sns_clone.dto.user.internal.UpdateOnlineStatusDto;
+import com.pigeon_stargram.sns_clone.dto.user.internal.UpdatePasswordDto;
 import com.pigeon_stargram.sns_clone.exception.user.MultipleUsersFoundException;
 import com.pigeon_stargram.sns_clone.exception.login.RegisterFailException;
 import com.pigeon_stargram.sns_clone.exception.user.UserNotFoundException;
@@ -29,7 +31,7 @@ public class BasicUserService implements UserService {
 
     public User findById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_ID));
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_ID + "id=" + id));
     }
 
     public User findByName(String name){
@@ -66,16 +68,6 @@ public class BasicUserService implements UserService {
         return new ResponseUserChatDto(findById(userId));
     }
 
-    // 일단 안씀
-    public List<User> findAll() {
-        return userRepository.findAll();
-    }
-
-    // 일단 안씀
-    public User save(User user) {
-        return userRepository.save(user);
-    }
-
     public User save(RequestRegisterDto userDto) {
         try {
             return userRepository.save(userDto.toEntity());
@@ -83,7 +75,6 @@ public class BasicUserService implements UserService {
             throw new RegisterFailException(REGISTER_FAIL_EMAIL, e);
         }
     }
-
 
     // TestData에서만 사용
     public List<User> saveAll(List<UserDto> userDtoList) {
@@ -93,25 +84,22 @@ public class BasicUserService implements UserService {
         return userRepository.saveAll(users);
     }
 
-    // 일단 안씀
-    public List<User> saveAllUser(List<User> users) {
-        return userRepository.saveAll(users);
-    }
-
-    public User updateOnlineStatus(Long userId, String onlineStatus) {
-        User user = findById(userId);
-        user.updateOnlineStatus(onlineStatus);
+    @Override
+    public User updateOnlineStatus(UpdateOnlineStatusDto dto) {
+        User user = findById(dto.getUserId());
+        user.updateOnlineStatus(dto.getOnlineStatus());
         return user;
     }
 
-    public User updatePassword(Long userId, String newPassword) {
-        User user = findById(userId);
-        user.updatePassword(newPassword);
+    @Override
+    public User updatePassword(UpdatePasswordDto dto) {
+        User user = findById(dto.getUserId());
+        user.updatePassword(dto.getPassword());
         return user;
     }
 
     public ResponseOnlineStatusDto getOnlineStatus(Long id) {
         User user = findById(id);
-        return new ResponseOnlineStatusDto(user);
+        return UserBuilder.buildResponseOnlineStatus(user);
     }
 }

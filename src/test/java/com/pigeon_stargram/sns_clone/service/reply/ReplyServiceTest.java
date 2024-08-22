@@ -80,7 +80,7 @@ class ReplyServiceTest {
                 .thenReturn(Optional.of(reply));
 
         //when
-        Reply replyEntity = replyService.getReplyEntity(1L);
+        Reply replyEntity = replyService.findById(1L);
 
         //then
         assertThat(replyEntity).isEqualTo(reply);
@@ -97,7 +97,7 @@ class ReplyServiceTest {
 
         //then
         assertThatThrownBy(() -> {
-            replyService.getReplyEntity(1L);
+            replyService.findById(1L);
         }).isInstanceOf(ReplyNotFoundException.class);
     }
     

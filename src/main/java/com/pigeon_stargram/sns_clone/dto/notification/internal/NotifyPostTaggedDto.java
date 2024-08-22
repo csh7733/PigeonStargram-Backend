@@ -15,7 +15,8 @@ import java.util.List;
 @AllArgsConstructor
 public class NotifyPostTaggedDto implements NotificationConvertable {
 
-    private User user;
+    private Long userId;
+    private String userName;
     private String content;
     private List<Long> notificationRecipientIds;
 
@@ -27,13 +28,13 @@ public class NotifyPostTaggedDto implements NotificationConvertable {
                 .type(NotificationType.POST_TAG)
                 .isRead(false)
                 .message(generateMessage(sender, recipient))
-                .sourceId(user.getId())
+                .sourceId(userId)
                 .build();
     }
 
     @Override
     public Long getSenderId() {
-        return user.getId();
+        return userId;
     }
 
     @Override
@@ -43,8 +44,8 @@ public class NotifyPostTaggedDto implements NotificationConvertable {
 
     @Override
     public String generateMessage(User sender, User recipient) {
-        return user.getName() + "님이 새 글에서 당신을 언급했습니다. 지금 " +
-                user.getName() +"님의 프로필로 가서 확인하세요!";
+        return userName + "님이 새 글에서 당신을 언급했습니다. 지금 " +
+                userName +"님의 프로필로 가서 확인하세요!";
     }
 
     @Override

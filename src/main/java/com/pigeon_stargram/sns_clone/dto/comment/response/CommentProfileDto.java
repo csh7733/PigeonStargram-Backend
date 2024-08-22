@@ -17,11 +17,4 @@ public class CommentProfileDto {
     private String avatar;
     private String name;
     private String time;
-
-    public CommentProfileDto(User user, LocalDateTime modifiedDate) {
-        this.id = user.getId();
-        this.avatar = user.getAvatar();
-        this.name = user.getName();
-        this.time = formatTime(modifiedDate);
-    }
 }

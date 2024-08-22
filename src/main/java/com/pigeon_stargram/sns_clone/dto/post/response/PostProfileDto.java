@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.formatTime;
 
+@ToString
 @Getter
 @Builder
 @Setter

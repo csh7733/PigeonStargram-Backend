@@ -18,11 +18,13 @@ import java.util.List;
 @AllArgsConstructor
 public class CreateReplyDto implements NotificationConvertable {
 
-    private User user;
-    private Comment comment;
+    private Long loginUserId;
+    private Long commentUserId;
+    private Long commentId;
     private String content;
     private Long postUserId;
     private Long postId;
+    private List<Long> taggedUserIds;
 
     @Override
     public Notification toNotification(User sender, User recipient) {
@@ -39,12 +41,12 @@ public class CreateReplyDto implements NotificationConvertable {
 
     @Override
     public Long getSenderId() {
-        return user.getId();
+        return loginUserId;
     }
 
     @Override
     public List<Long> getRecipientIds() {
-        return Arrays.asList(comment.getUser().getId());
+        return List.of(commentUserId);
     }
 
     @Override

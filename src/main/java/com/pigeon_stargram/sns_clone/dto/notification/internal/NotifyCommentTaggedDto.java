@@ -15,7 +15,8 @@ import java.util.List;
 @AllArgsConstructor
 public class NotifyCommentTaggedDto implements NotificationConvertable {
 
-    private User user;
+    private Long userId;
+    private String userName;
     private String content;
     private Long postUserId;
     private Long postId;
@@ -36,7 +37,7 @@ public class NotifyCommentTaggedDto implements NotificationConvertable {
 
     @Override
     public Long getSenderId() {
-        return user.getId();
+        return userId;
     }
 
     @Override
@@ -46,7 +47,7 @@ public class NotifyCommentTaggedDto implements NotificationConvertable {
 
     @Override
     public String generateMessage(User sender, User recipient) {
-        return user.getName() + "님이 댓글에서 당신을 언급했습니다.";
+        return userName + "님이 댓글에서 당신을 언급했습니다.";
     }
 
     @Override

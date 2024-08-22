@@ -6,7 +6,7 @@ import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestLoginDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestForgotPasswordDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
-import com.pigeon_stargram.sns_clone.dto.login.request.ResetPasswordDto;
+import com.pigeon_stargram.sns_clone.dto.login.request.RequestResetPasswordDto;
 import com.pigeon_stargram.sns_clone.dto.login.response.UserEmailInfoDto;
 import com.pigeon_stargram.sns_clone.dto.login.response.UserInfoDto;
 import com.pigeon_stargram.sns_clone.service.login.LoginService;
@@ -65,8 +65,8 @@ public class LoginController {
     }
 
     @PutMapping("/password")
-    public void resetPassword(@RequestBody ResetPasswordDto request) {
-        loginService.resetPassword(request.getToken(), request.getNewPassword());
+    public void resetPassword(@RequestBody RequestResetPasswordDto request) {
+        loginService.resetPassword(request);
     }
 
 

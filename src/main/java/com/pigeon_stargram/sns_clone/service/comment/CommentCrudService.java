@@ -4,6 +4,7 @@ import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.exception.comment.CommentNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentRepository;
+import com.pigeon_stargram.sns_clone.service.reply.ReplyCrudService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +19,8 @@ import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.COMM
 @Service
 public class CommentCrudService {
 
-    private final ReplyService replyService;
-
     private final CommentRepository repository;
+    private final ReplyCrudService replyCrudService;
 
     public Comment findById(Long commentId) {
         return repository.findById(commentId)
@@ -36,7 +36,7 @@ public class CommentCrudService {
     }
 
     public void deleteById(Long commentId) {
-        replyService.deleteAllRepliesByCommentId(commentId);
+        replyCrudService.deleteAllByCommentId(commentId);
         repository.deleteById(commentId);
     }
 

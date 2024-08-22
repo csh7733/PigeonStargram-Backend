@@ -2,11 +2,11 @@ package com.pigeon_stargram.sns_clone.controller.reply;
 
 import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
-import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyReplyTaggedUsersDto;
+import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyReplyTaggedDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.CreateReplyDto;
+import com.pigeon_stargram.sns_clone.dto.reply.internal.EditReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.LikeReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.request.RequestAddReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.request.RequestDeleteReplyDto;
@@ -15,6 +15,7 @@ import com.pigeon_stargram.sns_clone.dto.reply.request.RequestLikeReplyDto;
 import com.pigeon_stargram.sns_clone.service.comment.CommentCrudService;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.post.PostService;
+import com.pigeon_stargram.sns_clone.service.reply.ReplyCrudService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import com.pigeon_stargram.sns_clone.service.timeline.TimelineService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -23,6 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static com.pigeon_stargram.sns_clone.service.reply.ReplyBuilder.*;
 
 @Slf4j
 @RequestMapping("/api/replies")
@@ -34,46 +37,23 @@ public class ReplyController {
     private final TimelineService timelineService;
     private final ReplyService replyService;
     private final UserService userService;
-    private final NotificationService notificationService;
     private final CommentCrudService commentCrudService;
+    private final ReplyCrudService replyCrudService;
 
     @PostMapping
     public List<ResponsePostDto> addReply(@LoginUser SessionUser loginUser,
                                           @RequestBody RequestAddReplyDto request) {
-        Long postId = request.getPostId();
+        Long userId = loginUser.getId();
+        Long postUserId = request.getPostUserId();
+        String context = request.getContext();
 
         Long commentId = request.getCommentId();
-        Comment comment = commentCrudService.findById(commentId);
-        String content = request.getReply().getContent();
+        Long commentUserId = commentCrudService.findById(commentId).getUser().getId();
 
-        Long userId = loginUser.getId();
-        String context = request.getContext();
-        User user = userService.findById(userId);
-
-        Long postUserId = request.getPostUserId();
-        User postUser = userService.findById(postUserId);
-
-        CreateReplyDto createReplyDto = CreateReplyDto.builder()
-                .user(user)
-                .comment(comment)
-                .content(content)
-                .postUserId(postUserId)
-                .postId(postId)
-                .build();
-
+        CreateReplyDto createReplyDto = buildCreateReplyDto(request, loginUser, commentUserId);
         replyService.createReply(createReplyDto);
 
-        NotifyReplyTaggedUsersDto notifyTaggedUsers = NotifyReplyTaggedUsersDto.builder()
-                .user(user)
-                .content(content)
-                .notificationRecipientIds(request.getReply().getTaggedUserIds())
-                .postUserId(postUserId)
-                .postId(postId)
-                .build();
-
-        notificationService.notifyTaggedUsers(notifyTaggedUsers);
-
-        return getPostsBasedOnContext(context, userId, postUser.getId());
+        return getPostsBasedOnContext(context, userId, postUserId);
     }
 
     @PatchMapping("/{replyId}")
@@ -81,12 +61,11 @@ public class ReplyController {
                                            @PathVariable Long replyId,
                                            @RequestBody RequestEditReplyDto request) {
         Long userId = loginUser.getId();
+        Long postUserId = request.getPostUserId();
         String context = request.getContext();
 
-        Long postUserId = request.getPostUserId();
-
-        String content = request.getContent();
-        replyService.editReply(replyId,content);
+        EditReplyDto editReplyDto = buildEditReplyDto(request, replyId);
+        replyService.editReply(editReplyDto);
 
         return getPostsBasedOnContext(context, userId, postUserId);
     }
@@ -95,11 +74,10 @@ public class ReplyController {
                                              @PathVariable Long replyId,
                                              @RequestBody RequestDeleteReplyDto request) {
         Long userId = loginUser.getId();
+        Long postUserId = request.getPostUserId();
         String context = request.getContext();
 
-        Long postUserId = request.getPostUserId();
-
-        replyService.deleteReply(replyId);
+        replyCrudService.deleteById(replyId);
 
         return getPostsBasedOnContext(context, userId, postUserId);
     }
@@ -107,23 +85,11 @@ public class ReplyController {
     @PostMapping("/like")
     public List<ResponsePostDto> likeReply(@LoginUser SessionUser loginUser,
                                            @RequestBody RequestLikeReplyDto request) {
-        Long postId = request.getPostId();
-
         Long userId = loginUser.getId();
-        String context = request.getContext();
-        User user = userService.findById(userId);
-
         Long postUserId = request.getPostUserId();
+        String context = request.getContext();
 
-        Long replyId = request.getReplyId();
-
-        LikeReplyDto likeReplyDto = LikeReplyDto.builder()
-                .user(user)
-                .replyId(replyId)
-                .postUserId(postUserId)
-                .postId(postId)
-                .build();
-
+        LikeReplyDto likeReplyDto = buildLikeReplyDto(request, loginUser);
         replyService.likeReply(likeReplyDto);
 
         return getPostsBasedOnContext(context, userId, postUserId);

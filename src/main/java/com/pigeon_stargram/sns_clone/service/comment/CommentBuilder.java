@@ -35,7 +35,8 @@ public class CommentBuilder {
     public static NotifyCommentTaggedDto buildNotifyCommentTaggedDto(CreateCommentDto dto,
                                                                      User loginUser) {
         return NotifyCommentTaggedDto.builder()
-                .user(loginUser)
+                .userId(loginUser.getId())
+                .userName(loginUser.getName())
                 .content(dto.getContent())
                 .notificationRecipientIds(dto.getTaggedUserIds())
                 .postUserId(dto.getPostUserId())
@@ -54,10 +55,12 @@ public class CommentBuilder {
     }
 
     public static CommentContentDto buildCommentContentDto(Comment comment) {
+        CommentProfileDto profileDto =
+                buildCommentProfileDto(comment.getUser(), comment.getModifiedDate());
         return CommentContentDto.builder()
                 .id(comment.getId())
                 .comment(comment.getContent())
-                .profile(buildCommentProfileDto(comment.getUser(), comment.getModifiedDate()))
+                .profile(profileDto)
                 .build();
     }
 

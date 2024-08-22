@@ -62,20 +62,20 @@ public class PostService {
     }
 
     public ResponsePostDto getCombinedPost(Long postId) {
-        PostContentDto postContentDto = getPostContent(postId);
-        PostLikeDto postsLikeDto = getPostsLike(postId);
+        PostContentDto contentDto = getPostContent(postId);
+        PostLikeDto likeDto = getPostsLike(postId);
         List<ResponseCommentDto> commentDtos = commentService.getCommentDtosByPostId(postId);
-        return new ResponsePostDto(postContentDto, postsLikeDto, commentDtos);
+        return buildResponsePostDto(contentDto, likeDto, commentDtos);
     }
 
     public PostContentDto getPostContent(Long postId) {
         Post post = postCrudService.findById(postId);
-        return new PostContentDto(post);
+        return buildPostContentDto(post);
     }
 
     public PostLikeDto getPostsLike(Long postId) {
         Integer count = postLikeCrudService.countByPostId(postId);
-        return new PostLikeDto(false, count);
+        return buildPostLikeDto(false, count);
     }
 
     public Post createPost(CreatePostDto dto) {

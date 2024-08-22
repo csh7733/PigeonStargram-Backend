@@ -11,7 +11,7 @@ import com.pigeon_stargram.sns_clone.dto.comment.internal.CreateCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.LikeCommentDto;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyCommentTaggedDto;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyPostTaggedDto;
-import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyReplyTaggedUsersDto;
+import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyReplyTaggedDto;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
 import com.pigeon_stargram.sns_clone.dto.post.internal.CreatePostDto;
 import com.pigeon_stargram.sns_clone.dto.post.internal.LikePostDto;
@@ -92,7 +92,7 @@ class NotificationServiceTest {
         notificationConvertables.add(new LikeReplyDto(user, 1L, 1L, 2L, 1L));
         notificationConvertables.add(new NotifyPostTaggedDto(user, "tag-post-content", recipientIds));
         notificationConvertables.add(new NotifyCommentTaggedDto(user, "tag-comment-content", 1L, 1L, recipientIds));
-        notificationConvertables.add(new NotifyReplyTaggedUsersDto(user, "tag-reply-content", 1L, 1L, recipientIds));
+        notificationConvertables.add(new NotifyReplyTaggedDto(user, "tag-reply-content", 1L, 1L, recipientIds));
 
         timesSum = 0;
     }

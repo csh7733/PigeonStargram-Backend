@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone.dto.post.response;
 
 import lombok.*;
 
+@ToString
 @Getter
 @Builder
 @Setter

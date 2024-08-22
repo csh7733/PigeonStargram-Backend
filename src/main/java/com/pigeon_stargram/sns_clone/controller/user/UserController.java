@@ -4,12 +4,15 @@ import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.user.request.RequestCurrentMemberDto;
-import com.pigeon_stargram.sns_clone.dto.user.response.LoginUserDto;
+import com.pigeon_stargram.sns_clone.dto.user.response.ResponseLoginUserDto;
 import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+import static com.pigeon_stargram.sns_clone.service.user.UserBuilder.buildLoginUserDto;
+import static com.pigeon_stargram.sns_clone.service.user.UserBuilder.buildResponseUserInfo;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -18,23 +21,23 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+
     @GetMapping("/me")
-    public LoginUserDto getCurrentMember(@LoginUser SessionUser loginUser){
+    public ResponseLoginUserDto getCurrentMember(@LoginUser SessionUser loginUser){
         User user = userService.findById(loginUser.getId());
-        return new LoginUserDto(user);
+        return buildLoginUserDto(user);
     }
 
     @GetMapping("/{userId}")
     public ResponseUserInfoDto getCurrentMember(@PathVariable Long userId){
         User user = userService.findById(userId);
         log.info("user = " + user.getName());
-        return new ResponseUserInfoDto(user);
+        return buildResponseUserInfo(user);
     }
     @PostMapping
     public ResponseUserInfoDto getCurrentMember(@RequestBody RequestCurrentMemberDto request){
         User user = userService.findByName(request.getName());
-
-        return new ResponseUserInfoDto(user);
+        return buildResponseUserInfo(user);
     }
 
 }
