@@ -36,7 +36,6 @@ public class ReplyController {
     private final PostService postService;
     private final TimelineService timelineService;
     private final ReplyService replyService;
-    private final UserService userService;
     private final CommentCrudService commentCrudService;
     private final ReplyCrudService replyCrudService;
 

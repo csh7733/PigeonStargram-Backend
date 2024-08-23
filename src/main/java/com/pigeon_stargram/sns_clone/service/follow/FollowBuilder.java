@@ -8,6 +8,7 @@ import com.pigeon_stargram.sns_clone.dto.Follow.internal.FindFollowersDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.internal.FindFollowingsDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.internal.GetNotificationEnabledDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.internal.ToggleNotificationEnabledDto;
+import com.pigeon_stargram.sns_clone.dto.Follow.response.ResponseFollowerDto;
 
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.UNSUPPORTED_OPERATION;
 
@@ -70,6 +71,16 @@ public class FollowBuilder {
                 .sender(sender)
                 .recipient(recipient)
                 .isNotificationEnabled(false)
+                .build();
+    }
+
+    public static ResponseFollowerDto buildResponseFollowerDto(User user) {
+        return ResponseFollowerDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .avatar(user.getAvatar())
+                .location(user.getLocation())
+                .follow(1)
                 .build();
     }
 }

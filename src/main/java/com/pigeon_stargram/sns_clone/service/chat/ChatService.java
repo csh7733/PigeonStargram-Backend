@@ -4,23 +4,34 @@ import com.pigeon_stargram.sns_clone.domain.chat.ImageChat;
 import com.pigeon_stargram.sns_clone.domain.chat.LastMessage;
 import com.pigeon_stargram.sns_clone.domain.chat.TextChat;
 import com.pigeon_stargram.sns_clone.domain.chat.UnreadChat;
+import com.pigeon_stargram.sns_clone.dto.Follow.response.ResponseFollowerDto;
 import com.pigeon_stargram.sns_clone.dto.chat.internal.GetUserChatsDto;
 import com.pigeon_stargram.sns_clone.dto.chat.internal.NewChatDto;
+import com.pigeon_stargram.sns_clone.dto.chat.internal.SendLastMessageDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseChatHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
+import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseOnlineStatusDto;
+import com.pigeon_stargram.sns_clone.dto.chat.response.UnReadChatCountDto;
+import com.pigeon_stargram.sns_clone.dto.user.internal.UpdateOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.event.UserConnectEvent;
 import com.pigeon_stargram.sns_clone.repository.chat.ChatRepository;
 import com.pigeon_stargram.sns_clone.repository.chat.LastMessageRepository;
 import com.pigeon_stargram.sns_clone.repository.chat.UnreadChatRepository;
+import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
+import static com.pigeon_stargram.sns_clone.config.WebSocketEventListener.isUserChattingWith;
+import static com.pigeon_stargram.sns_clone.service.chat.ChatBuilder.buildResponseOnlineStatusDto;
+import static com.pigeon_stargram.sns_clone.service.chat.ChatBuilder.buildSendLastMessageDto;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFormattedTime;
 
 @Service
@@ -29,13 +40,44 @@ import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFor
 @Slf4j
 public class ChatService {
 
+    private final SimpMessagingTemplate messagingTemplate;
+
     private final ChatRepository chatRepository;
     private final UnreadChatRepository unreadChatRepository;
     private final LastMessageRepository lastMessageRepository;
 
-    public void save(NewChatDto request){
-        if(request.getIsImage()) chatRepository.save(request.toImageEntity());
-        else chatRepository.save(request.toTextEntity());
+    public void save(NewChatDto dto){
+        if(dto.getIsImage()) chatRepository.save(dto.toImageEntity());
+        else chatRepository.save(dto.toTextEntity());
+
+        Long user1Id = dto.getFrom();
+        Long user2Id = dto.getTo();
+
+        if (!isUserChattingWith(user2Id, user1Id)) {
+            Integer count = increaseUnReadChatCount(user2Id, user1Id);
+            sentUnReadChatCountToUser(user2Id, user1Id, count);
+        }
+
+        LastMessageDto lastMessage = setLastMessage(dto);
+        SendLastMessageDto sendLastMessageDto =
+                buildSendLastMessageDto(user1Id, user2Id, lastMessage);
+        sentLastMessage(sendLastMessageDto);
+    }
+
+    public void sentUnReadChatCountToUser(Long toUserId, Long fromUserId, Integer count) {
+        String destination = "/topic/users/status/" + toUserId;
+        messagingTemplate.convertAndSend(destination, new UnReadChatCountDto(fromUserId, count));
+    }
+
+    public void sentLastMessage(SendLastMessageDto dto) {
+        Long user1Id = dto.getUser1Id();
+        Long user2Id = dto.getUser2Id();
+        LastMessageDto lastMessage = dto.getLastMessageDto();
+
+        String destination1 = "/topic/users/status/" + user1Id;
+        String destination2 = "/topic/users/status/" + user2Id;
+        messagingTemplate.convertAndSend(destination1, lastMessage);
+        messagingTemplate.convertAndSend(destination2, lastMessage);
     }
 
     // 테스트 데이터 주입에서만 사용
@@ -112,7 +154,6 @@ public class ChatService {
 
         return lastMessageDto;
     }
-
 
     public LastMessageDto getLastMessage(Long user1Id, Long user2Id) {
         Long[] userIds = sortAndGet(user1Id, user2Id);
