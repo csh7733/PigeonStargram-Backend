@@ -21,13 +21,15 @@ public class NotificationController {
     // 로그인유저에 대한 알림 조회
     @GetMapping("")
     public List<ResponseNotificationDto> getNotifications(@LoginUser SessionUser loginUser) {
-        return notificationService.findUnreadNotifications(loginUser.getId());
+        Long loginUserId = loginUser.getId();
+
+        return notificationService.findUnreadNotifications(loginUserId);
     }
 
     // 단일 알림 읽음 처리요청
     @PatchMapping("/{notificationId}/read")
     public void readNotification(@LoginUser SessionUser loginUser,
-                                                    @PathVariable Long notificationId) {
+                                 @PathVariable Long notificationId) {
 
         notificationService.readNotification(notificationId);
     }
@@ -35,8 +37,9 @@ public class NotificationController {
     // 전체 알림 읽음 처리요청
     @PatchMapping("read")
     public void readNotifications(@LoginUser SessionUser loginUser) {
+        Long loginUserId = loginUser.getId();
 
-        notificationService.readNotifications(loginUser.getId());
+        notificationService.readNotifications(loginUserId);
     }
 
 }

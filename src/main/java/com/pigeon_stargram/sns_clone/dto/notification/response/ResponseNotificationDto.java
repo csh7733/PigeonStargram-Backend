@@ -34,21 +34,4 @@ public class ResponseNotificationDto {
     // MY_REPLY_LIKE
 
     private Long sourceId2;
-
-
-
-    public ResponseNotificationDto (Notification notification) {
-        this.id = notification.getId();
-        this.type = notification.getType();
-        this.name = notification.getSender().getName();
-        this.avatar = notification.getSender().getAvatar();
-        this.content = notification.getMessage();
-        this.isRead = notification.getIsRead();
-        // 테스트를 위해 임시로 사용
-        this.time = formatTime(LocalDateTime.now());
-//        this.time = formatTime(notification.getCreatedDate());
-        this.targetUserId = notification.getRecipient().getId();
-        this.sourceId =  notification.getSourceId();
-        this.sourceId2 = notification.getSourceId2();
-    }
 }

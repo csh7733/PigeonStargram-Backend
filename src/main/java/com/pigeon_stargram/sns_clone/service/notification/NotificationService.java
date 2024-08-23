@@ -35,25 +35,33 @@ public class NotificationService {
         Long senderId = dto.getSenderId();
         User sender = userService.findById(senderId);
 
-        List<Notification> notifications = dto.getRecipientIds().stream()
+        List<Notification> notifications = convertDtoToNotifications(dto, senderId, sender);
+
+        List<Notification> saveNotifications = notificationRepository.saveAll(notifications);
+
+        insertIntoMessageQueue(notifications);
+
+        return saveNotifications;
+    }
+
+    private void insertIntoMessageQueue(List<Notification> notifications) {
+        notifications.stream()
+                .map(NotificationBuilder::buildResponseNotificationDto)
+                .forEach(notificationWorker::enqueue);
+    }
+
+    private List<Notification> convertDtoToNotifications(NotificationConvertable dto, Long senderId, User sender) {
+        return dto.getRecipientIds().stream()
                 .filter(recipientId -> !recipientId.equals(senderId))
                 .map(userService::findById)
                 .map(recipient -> dto.toNotification(sender, recipient))
                 .toList();
-
-        List<Notification> saveNotifications = notificationRepository.saveAll(notifications);
-
-        notifications.stream()
-                .map(ResponseNotificationDto::new)
-                .forEach(notificationWorker::enqueue);
-
-        return saveNotifications;
     }
 
     public List<ResponseNotificationDto> findUnreadNotifications(Long userId) {
         return notificationRepository.findAllByRecipientId(userId).stream()
                 .filter(notification -> !notification.getIsRead())
-                .map(ResponseNotificationDto::new)
+                .map(NotificationBuilder::buildResponseNotificationDto)
                 .toList();
     }
 
@@ -65,6 +73,7 @@ public class NotificationService {
 
     public void readNotifications(Long userId) {
         List<Notification> notifications = notificationRepository.findAllByRecipientId(userId);
+
         notifications.forEach(notification -> {
             notification.setRead(true);
         });

@@ -3,6 +3,7 @@ package com.pigeon_stargram.sns_clone.domain.search;
 import com.pigeon_stargram.sns_clone.domain.BaseTimeEntity;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,9 @@ import java.time.LocalDateTime;
 
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentTime;
 
+@Builder
 @Getter
+@AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "search_history")
@@ -27,11 +30,6 @@ public class SearchHistory extends BaseTimeEntity {
 
     private String searchQuery;
 
-    @Builder
-    public SearchHistory(User user, String searchQuery) {
-        this.user = user;
-        this.searchQuery = searchQuery;
-    }
     public void updateModifiedDate() {
         setModifiedDate(getCurrentTime());
     }
