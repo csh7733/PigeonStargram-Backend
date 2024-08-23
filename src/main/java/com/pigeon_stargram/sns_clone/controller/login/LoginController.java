@@ -9,6 +9,7 @@ import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestResetPasswordDto;
 import com.pigeon_stargram.sns_clone.dto.login.response.UserEmailInfoDto;
 import com.pigeon_stargram.sns_clone.dto.login.response.UserInfoDto;
+import com.pigeon_stargram.sns_clone.service.login.LoginBuilder;
 import com.pigeon_stargram.sns_clone.service.login.LoginService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import static com.pigeon_stargram.sns_clone.service.login.LoginBuilder.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,31 +31,25 @@ public class LoginController {
 
     @GetMapping("/user-info")
     public UserEmailInfoDto getCurrentMemberEmail(@NewUserEmail String email){
-        return new UserEmailInfoDto(email);
+
+        return buildUserEmailInfoDto(email);
     }
     
     @PostMapping("/register")
     public void register(@RequestBody RequestRegisterDto request){
+
         loginService.register(request);
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody RequestLoginDto request) {
-        User user = loginService.findLoginUser(request);
 
-        if (user != null) {
-            log.info("login success");
-            httpSession.setAttribute("user", new SessionUser(user));
-            return ResponseEntity.ok(new UserInfoDto(user));
-        } else {
-            log.info("login fail");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid username or password");
-        }
+        return loginService.login(request);
     }
 
     @PostMapping("/logout")
     public void logout() {
+
         loginService.logout();
     }
 
@@ -66,6 +63,7 @@ public class LoginController {
 
     @PutMapping("/password")
     public void resetPassword(@RequestBody RequestResetPasswordDto request) {
+
         loginService.resetPassword(request);
     }
 

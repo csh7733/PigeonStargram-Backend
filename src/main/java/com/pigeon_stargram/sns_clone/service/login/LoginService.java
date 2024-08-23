@@ -17,6 +17,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -25,6 +27,8 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
+import static com.pigeon_stargram.sns_clone.service.login.LoginBuilder.buildSessionUser;
+import static com.pigeon_stargram.sns_clone.service.login.LoginBuilder.buildUserInfoDto;
 import static com.pigeon_stargram.sns_clone.service.user.UserBuilder.*;
 
 @Slf4j
@@ -47,10 +51,12 @@ public class LoginService {
     public User findLoginUser(RequestLoginDto request) {
         String email = request.getEmail();
         String password = request.getPassword();
+
         return userService.findByWorkEmailAndPassword(email, password);
     }
 
     public void logout() {
+
         httpSession.invalidate();
     }
 
@@ -59,6 +65,7 @@ public class LoginService {
      *      같은 요청 두개가 동시에 들어오는 경우 테스트
      */
     public void register(RequestRegisterDto request) {
+
         userService.save(request);
     }
 
@@ -119,6 +126,20 @@ public class LoginService {
                 buildUpdatePasswordDto(user.getId(), newPassword);
 
         return userService.updatePassword(updatePasswordDto);
+    }
+
+    public ResponseEntity<?> login(RequestLoginDto dto) {
+        User user = findLoginUser(dto);
+
+        if (user != null) {
+            log.info("login success");
+            httpSession.setAttribute("user", buildSessionUser(user));
+            return ResponseEntity.ok(buildUserInfoDto(user));
+        } else {
+            log.info("login fail");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid username or password");
+        }
     }
 
 }
