@@ -1,6 +1,6 @@
 package com.pigeon_stargram.sns_clone.service.timeline;
 
-import com.pigeon_stargram.sns_clone.dto.Follow.ResponseFollowerDto;
+import com.pigeon_stargram.sns_clone.dto.Follow.response.ResponseFollowerDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.post.PostService;

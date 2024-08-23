@@ -4,7 +4,8 @@ import com.pigeon_stargram.sns_clone.domain.chat.ImageChat;
 import com.pigeon_stargram.sns_clone.domain.chat.LastMessage;
 import com.pigeon_stargram.sns_clone.domain.chat.TextChat;
 import com.pigeon_stargram.sns_clone.domain.chat.UnreadChat;
-import com.pigeon_stargram.sns_clone.dto.chat.NewChatDto;
+import com.pigeon_stargram.sns_clone.dto.chat.internal.GetUserChatsDto;
+import com.pigeon_stargram.sns_clone.dto.chat.internal.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseChatHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
 import com.pigeon_stargram.sns_clone.event.UserConnectEvent;
@@ -19,7 +20,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFormattedTime;
 
@@ -60,10 +60,14 @@ public class ChatService {
         chatRepository.save(imageChat);
     }
 
-    public List<ResponseChatHistoryDto> getUserChats(Long user1Id, Long user2Id) {
-        List<TextChat> chatHistories = chatRepository.findTextChatsBetweenUsers(user1Id, user2Id);
+    public List<ResponseChatHistoryDto> getUserChats(GetUserChatsDto dto) {
+        Long user1Id = dto.getUser1Id();
+        Long user2Id = dto.getUser2Id();
+        List<TextChat> chatHistories =
+                chatRepository.findTextChatsBetweenUsers(user1Id, user2Id);
+
         return chatHistories.stream()
-                .map(ResponseChatHistoryDto::new)
+                .map(ChatBuilder::buildResponseChatHistoryDto)
                 .toList();
     }
 

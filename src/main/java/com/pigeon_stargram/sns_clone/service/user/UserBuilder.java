@@ -1,7 +1,9 @@
 package com.pigeon_stargram.sns_clone.service.user;
 
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseOnlineStatusDto;
+import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseUserChatDto;
 import com.pigeon_stargram.sns_clone.dto.user.internal.UpdateOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.user.internal.UpdatePasswordDto;
 import com.pigeon_stargram.sns_clone.dto.user.response.ResponseLoginUserDto;
@@ -54,6 +56,49 @@ public class UserBuilder {
         return UpdatePasswordDto.builder()
                 .userId(userId)
                 .password(password)
+                .build();
+    }
+
+    public static ResponseUserChatDto buildResponseUserChatDto(User user) {
+        return ResponseUserChatDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .company(user.getCompany())
+                .workEmail(user.getWorkEmail())
+                .personalPhone(user.getPersonalPhone())
+                .location(user.getLocation())
+                .avatar(user.getAvatar())
+                .status("채팅 기록 없음")
+                //temp
+                .lastMessage("2h ago")
+                .birthdayText(user.getBirthdayText())
+                //temp
+                .unReadChatCount(0)
+                .onlineStatus(user.getOnlineStatus())
+                .build();
+    }
+
+    public static ResponseUserChatDto buildResponseUserChatDto(User user,
+                                                               Integer unreadChatCount,
+                                                               LastMessageDto lastMessageDto,
+                                                               Integer state) {
+        return ResponseUserChatDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .company(user.getCompany())
+                .workEmail(user.getWorkEmail())
+                .personalEmail(user.getPersonalEmail())
+                .workPhone(user.getWorkPhone())
+                .personalPhone(user.getPersonalPhone())
+                .location(user.getLocation())
+                .avatar(user.getAvatar())
+                .status(lastMessageDto.getLastMessage())
+                .lastMessage(lastMessageDto.getTime())
+                .birthdayText(user.getBirthdayText())
+                //temp
+                .unReadChatCount(unreadChatCount)
+                .onlineStatus(user.getOnlineStatus())
+                .state(state)
                 .build();
     }
 

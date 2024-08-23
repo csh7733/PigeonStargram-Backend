@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.dto.Follow;
+package com.pigeon_stargram.sns_clone.dto.Follow.internal;
 
 import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @ToString

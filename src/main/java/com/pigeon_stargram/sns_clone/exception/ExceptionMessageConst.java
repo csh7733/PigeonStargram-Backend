@@ -41,4 +41,7 @@ public class ExceptionMessageConst {
     
     public static final String NOTIFICATION_NOT_FOUND_ID
             = "ID와 일치하는 알림이 없습니다.";
+
+    public static final String FOLLOW_EXIST
+            = "이미 팔로우중입니다.";
 }

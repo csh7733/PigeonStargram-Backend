@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.dto.Follow;
+package com.pigeon_stargram.sns_clone.dto.Follow.internal;
 
 import lombok.*;
 

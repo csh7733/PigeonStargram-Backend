@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
+import static com.pigeon_stargram.sns_clone.service.user.UserBuilder.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -65,7 +66,8 @@ public class BasicUserService implements UserService {
     }
 
     public ResponseUserChatDto findUserChatById(Long userId) {
-        return new ResponseUserChatDto(findById(userId));
+        User user = findById(userId);
+        return buildResponseUserChatDto(user);
     }
 
     public User save(RequestRegisterDto userDto) {
@@ -100,6 +102,6 @@ public class BasicUserService implements UserService {
 
     public ResponseOnlineStatusDto getOnlineStatus(Long id) {
         User user = findById(id);
-        return UserBuilder.buildResponseOnlineStatus(user);
+        return buildResponseOnlineStatus(user);
     }
 }

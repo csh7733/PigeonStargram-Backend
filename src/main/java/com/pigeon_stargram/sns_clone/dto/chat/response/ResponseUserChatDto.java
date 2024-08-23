@@ -50,25 +50,6 @@ public class ResponseUserChatDto {
     // 2이면 서로 맞팔 (<- && ->)
     private Integer state;
 
-    public ResponseUserChatDto(User user) {
-        this.id = user.getId();
-        this.name = user.getName();
-        this.company = user.getCompany();
-        this.workEmail = user.getWorkEmail();
-        this.personalEmail = user.getPersonalEmail();
-        this.workPhone = user.getWorkPhone();
-        this.personalPhone = user.getPersonalPhone();
-        this.location = user.getLocation();
-        this.avatar = user.getAvatar();
-        this.status = "채팅 기록 없음";
-        //temp
-        this.lastMessage = "2h ago";
-        this.birthdayText = user.getBirthdayText();
-        //temp
-        this.unReadChatCount = 0;
-        this.onlineStatus = user.getOnlineStatus();
-    }
-
     public ResponseUserChatDto(User user, Integer unReadChatCount, LastMessageDto lastMessage, Integer state) {
         this.id = user.getId();
         this.name = user.getName();

@@ -8,9 +8,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FollowRepository extends JpaRepository<Follow, Long> {
-    List<Follow> findBySender(User sender);
-    List<Follow> findByRecipient(User recipient);
-    Optional<Follow> findBysenderAndRecipient(User sender, User recipient);
-    Long countBySender(User sender);
-    Long countByRecipient(User recipient);
+    List<Follow> findBySenderId(Long senderId);
+    List<Follow> findByRecipientId(Long recipientId);
+    Optional<Follow> findBySenderIdAndRecipientId(Long senderId, Long recipientId);
+    Long countBySenderId(Long senderId);
+    Long countByRecipientId(Long recipientId);
+
+    void deleteBySenderIdAndRecipientId(Long senderId, Long recipientId);
 }
