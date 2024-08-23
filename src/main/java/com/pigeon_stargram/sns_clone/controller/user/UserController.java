@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import static com.pigeon_stargram.sns_clone.service.user.UserBuilder.buildLoginUserDto;
-import static com.pigeon_stargram.sns_clone.service.user.UserBuilder.buildResponseUserInfo;
+import static com.pigeon_stargram.sns_clone.service.user.UserBuilder.buildResponseUserInfoDto;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -32,12 +32,12 @@ public class UserController {
     public ResponseUserInfoDto getCurrentMember(@PathVariable Long userId){
         User user = userService.findById(userId);
         log.info("user = " + user.getName());
-        return buildResponseUserInfo(user);
+        return buildResponseUserInfoDto(user);
     }
     @PostMapping
     public ResponseUserInfoDto getCurrentMember(@RequestBody RequestCurrentMemberDto request){
         User user = userService.findByName(request.getName());
-        return buildResponseUserInfo(user);
+        return buildResponseUserInfoDto(user);
     }
 
 }

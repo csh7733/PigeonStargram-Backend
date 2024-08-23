@@ -10,8 +10,4 @@ import lombok.*;
 @AllArgsConstructor
 public class ResponseTopSearchDto {
     private String term;
-
-    public ResponseTopSearchDto(SearchTerm searchTerm){
-        this.term = searchTerm.getTerm();
-    }
 }

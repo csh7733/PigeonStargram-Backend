@@ -13,9 +13,4 @@ import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.formatTime;
 public class ResponseSearchHistoryDto {
     private String searchQuery;
     private String time;
-
-    public ResponseSearchHistoryDto(SearchHistory searchHistory){
-        this.searchQuery = searchHistory.getSearchQuery();
-        this.time = formatTime(searchHistory.getCreatedDate());
-    }
 }

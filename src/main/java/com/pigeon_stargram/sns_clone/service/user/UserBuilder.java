@@ -27,7 +27,7 @@ public class UserBuilder {
                 .build();
     }
 
-    public static ResponseUserInfoDto buildResponseUserInfo(User user) {
+    public static ResponseUserInfoDto buildResponseUserInfoDto(User user) {
         return ResponseUserInfoDto.builder()
                 .userId(user.getId())
                 .name(user.getName())
@@ -36,7 +36,7 @@ public class UserBuilder {
                 .build();
     }
 
-    public static ResponseOnlineStatusDto buildResponseOnlineStatus(User user) {
+    public static ResponseOnlineStatusDto buildResponseOnlineStatusDto(User user) {
         return ResponseOnlineStatusDto.builder()
                 .userId(user.getId())
                 .onlineStatus(user.getOnlineStatus())

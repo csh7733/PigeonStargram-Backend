@@ -4,6 +4,7 @@ import com.pigeon_stargram.sns_clone.config.auth.dto.OAuthAttributes;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.exception.user.UserNotFoundException;
+import com.pigeon_stargram.sns_clone.service.login.LoginBuilder;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+
+import static com.pigeon_stargram.sns_clone.service.login.LoginBuilder.*;
 
 @RequiredArgsConstructor
 @Service
@@ -61,7 +64,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                     attributes.getAttributes(),
                     attributes.getNameAttributeKey());
         } else {
-            httpSession.setAttribute("user", new SessionUser(user));
+            httpSession.setAttribute("user", buildSessionUser(user));
             httpSession.setAttribute("isNewUser", false);
 
             return new DefaultOAuth2User(

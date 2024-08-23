@@ -102,6 +102,6 @@ public class BasicUserService implements UserService {
 
     public ResponseOnlineStatusDto getOnlineStatus(Long id) {
         User user = findById(id);
-        return buildResponseOnlineStatus(user);
+        return buildResponseOnlineStatusDto(user);
     }
 }

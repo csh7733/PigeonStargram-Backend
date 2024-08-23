@@ -3,21 +3,23 @@ package com.pigeon_stargram.sns_clone.service.search;
 import com.pigeon_stargram.sns_clone.domain.search.SearchHistory;
 import com.pigeon_stargram.sns_clone.domain.search.SearchTerm;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.search.internal.DeleteSearchHistoryDto;
+import com.pigeon_stargram.sns_clone.dto.search.internal.SaveSearchHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.search.response.ResponseSearchHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.search.response.ResponseTopSearchDto;
 import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
 import com.pigeon_stargram.sns_clone.repository.search.SearchHistoryRepository;
 import com.pigeon_stargram.sns_clone.repository.search.SearchTermRepository;
+import com.pigeon_stargram.sns_clone.service.user.UserBuilder;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentTime;
+import static com.pigeon_stargram.sns_clone.service.search.SearchBuilder.*;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +33,7 @@ public class SearchService {
     public List<ResponseTopSearchDto> getTopSearchTermsByPrefix(String prefix) {
         return searchTermRepository.findTop5ByPrefixOrderByScoreDesc(prefix).stream()
                 .filter(searchTerm -> !searchTerm.getTerm().equalsIgnoreCase(prefix))
-                .map(ResponseTopSearchDto::new)
+                .map(SearchBuilder::buildResponseTopSearchDto)
                 .toList();
     }
 
@@ -39,35 +41,41 @@ public class SearchService {
         User user = userService.findById(userId);
 
         return searchHistoryRepository.findTop5ByUserOrderByModifiedDateDesc(user).stream()
-                .map(ResponseSearchHistoryDto::new)
+                .map(SearchBuilder::buildResponseSearchHistoryDto)
                 .toList();
     }
 
-    public void deleteSearchHistory(Long userId, String searchQuery) {
-        User user = userService.findById(userId);
+    public void deleteSearchHistory(DeleteSearchHistoryDto dto) {
+        Long userId = dto.getUserId();
+        String searchQuery = dto.getQuery();
 
-        searchHistoryRepository.findByUserAndSearchQuery(user, searchQuery)
+        searchHistoryRepository.findByUserIdAndSearchQuery(userId, searchQuery)
                 .ifPresent(searchHistoryRepository::delete);
     }
 
     public void deleteAllSearchHistory(Long userId) {
-        User user = userService.findById(userId);
 
-        List<SearchHistory> histories = searchHistoryRepository.findByUser(user);
+        List<SearchHistory> histories = searchHistoryRepository.findByUserId(userId);
         searchHistoryRepository.deleteAll(histories);
     }
 
-    public void saveSearchHistory(Long userId, String searchQuery) {
+    public void saveSearchHistory(SaveSearchHistoryDto dto) {
+        Long userId = dto.getUserId();
+        String searchQuery = dto.getSearchQuery();
+
         User user = userService.findById(userId);
 
-        SearchHistory searchHistory = searchHistoryRepository.findByUserAndSearchQuery(user, searchQuery)
+        SearchHistory searchHistory =
+                searchHistoryRepository.findByUserIdAndSearchQuery(userId, searchQuery)
                 .map(history -> {
                     history.updateModifiedDate();
                     return history;
                 })
-                .orElseGet(() -> new SearchHistory(user, searchQuery));
+                .orElseGet(() -> buildSearchHistory(user, searchQuery));
 
         searchHistoryRepository.save(searchHistory);
+
+        updateSearchTermScores(searchQuery);
     }
 
     public void updateSearchTermScores(String term) {
@@ -75,7 +83,7 @@ public class SearchService {
 
         prefixes.forEach(prefix -> {
             SearchTerm searchTerm = searchTermRepository.findByTermAndPrefix(term, prefix)
-                    .orElse(new SearchTerm(term, prefix));
+                    .orElse(buildSearchTerm(term, prefix));
             searchTerm.updateScore();
             searchTermRepository.save(searchTerm);
         });
@@ -92,7 +100,7 @@ public class SearchService {
     public List<ResponseUserInfoDto> getUserSearchResults(String searchQuery){
 
         return userService.findBySearchQuery(searchQuery).stream()
-                .map(ResponseUserInfoDto::new)
+                .map(UserBuilder::buildResponseUserInfoDto)
                 .toList();
     }
 
