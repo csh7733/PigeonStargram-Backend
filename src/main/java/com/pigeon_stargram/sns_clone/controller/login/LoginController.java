@@ -27,14 +27,13 @@ import static com.pigeon_stargram.sns_clone.service.login.LoginBuilder.*;
 public class LoginController {
 
     private final LoginService loginService;
-    private final HttpSession httpSession;
 
     @GetMapping("/user-info")
     public UserEmailInfoDto getCurrentMemberEmail(@NewUserEmail String email){
 
         return buildUserEmailInfoDto(email);
     }
-    
+
     @PostMapping("/register")
     public void register(@RequestBody RequestRegisterDto request){
 

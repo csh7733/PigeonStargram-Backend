@@ -37,8 +37,6 @@ public class BasicUserService implements UserService {
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    private final ChatService chatService;
-
     private final UserRepository userRepository;
 
     public User findById(Long id) {

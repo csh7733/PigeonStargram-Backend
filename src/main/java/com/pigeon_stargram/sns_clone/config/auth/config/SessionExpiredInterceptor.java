@@ -23,7 +23,9 @@ public class SessionExpiredInterceptor implements HandlerInterceptor {
     private final JsonUtil jsonUtil;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request,
+                             HttpServletResponse response,
+                             Object handler) throws Exception {
         String requestUri = request.getRequestURI();
         log.info("requestUri = {}", requestUri);
         SessionUser user = (SessionUser) httpSession.getAttribute("user");
