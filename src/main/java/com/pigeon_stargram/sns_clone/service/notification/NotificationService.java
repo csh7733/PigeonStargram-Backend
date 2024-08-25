@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
 
@@ -55,14 +56,14 @@ public class NotificationService {
                 .filter(recipientId -> !recipientId.equals(senderId))
                 .map(userService::findById)
                 .map(recipient -> dto.toNotification(sender, recipient))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public List<ResponseNotificationDto> findUnreadNotifications(Long userId) {
         return notificationRepository.findAllByRecipientId(userId).stream()
                 .filter(notification -> !notification.getIsRead())
                 .map(NotificationBuilder::buildResponseNotificationDto)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public void readNotification(Long notificationId) {

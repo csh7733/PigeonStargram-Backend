@@ -34,6 +34,7 @@ public class UserController {
         log.info("user = " + user.getName());
         return buildResponseUserInfoDto(user);
     }
+
     @PostMapping
     public ResponseUserInfoDto getCurrentMember(@RequestBody RequestCurrentMemberDto request){
         User user = userService.findByName(request.getName());

@@ -7,6 +7,7 @@ import lombok.*;
 @EqualsAndHashCode
 @ToString
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,6 +18,7 @@ public class ResponseFollowerDto {
     private String name;
     private String location;
     private Integer follow;
+    private Boolean hasUnreadStories;
 
     public ResponseFollowerDto(User user, Integer follow) {
         this.id = user.getId();

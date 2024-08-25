@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 public class ResponseLoginUserDto {
     private Boolean isLoggedIn;
-    private Long userId;
+    private Long user;
     private String name;
     private String company;
     private String avatar;

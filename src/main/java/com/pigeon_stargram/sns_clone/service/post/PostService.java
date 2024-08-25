@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.service.post.PostBuilder.*;
 
@@ -50,7 +51,7 @@ public class PostService {
                 .map(Post::getId)
                 .sorted(Comparator.reverseOrder())
                 .map(this::getCombinedPost)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public List<ResponsePostDto> getRecentPostsByUser(Long userId) {
@@ -58,7 +59,7 @@ public class PostService {
 
         return postCrudService.findByUserIdAndCreatedDateAfter(userId, oneDayAgo).stream()
                 .map(post -> getCombinedPost(post.getId()))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public ResponsePostDto getCombinedPost(Long postId) {

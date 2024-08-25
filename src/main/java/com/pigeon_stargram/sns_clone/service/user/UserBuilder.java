@@ -19,7 +19,7 @@ public class UserBuilder {
 
     public static ResponseLoginUserDto buildLoginUserDto(User user) {
         return ResponseLoginUserDto.builder()
-                .userId(user.getId())
+                .user(user.getId())
                 .name(user.getName())
                 .company(user.getCompany())
                 .avatar(user.getAvatar())

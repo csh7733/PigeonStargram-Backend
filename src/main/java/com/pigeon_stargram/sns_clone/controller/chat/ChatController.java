@@ -11,6 +11,7 @@ import com.pigeon_stargram.sns_clone.dto.chat.response.*;
 import com.pigeon_stargram.sns_clone.dto.user.internal.UpdateOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.service.chat.ChatBuilder;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
+import com.pigeon_stargram.sns_clone.service.file.FileService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.user.UserBuilder;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -21,6 +22,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +42,8 @@ public class ChatController {
     private final ChatService chatService;
     private final FollowService followService;
     private final UserService userService;
+    private final FileService fileService;
+    private final SimpMessagingTemplate messagingTemplate;
 
 
     @GetMapping("/users")
@@ -75,6 +79,41 @@ public class ChatController {
         UpdateOnlineStatusDto updateOnlineStatusDto = buildUpdateOnlineStatusDto(id, onlineStatus);
         userService.updateOnlineStatus(updateOnlineStatusDto);
     }
+
+    @PostMapping("/image")
+    public String uploadImage(@RequestPart(value = "image") MultipartFile imageFile){
+
+        return fileService.saveFile(imageFile);
+    }
+
+    @PostMapping("/story-reply")
+    public NewChatDto sendStoryReply(@LoginUser SessionUser loginUser,
+                                     @RequestBody NewChatDto chatMessage) {
+        Long from = loginUser.getId();
+        Long to = chatMessage.getTo();
+
+        chatMessage.setTime(getCurrentFormattedTime());
+        chatService.save(chatMessage);
+
+//        if (!isUserChattingWith(to, from)) {
+//            Integer count = chatService.increaseUnReadChatCount(to, from);
+//            chatService.sentUnReadChatCountToUser(to, from, count);
+//        }
+//
+//        LastMessageDto lastMessage = chatService.setLastMessage(chatMessage);
+//        SendLastMessageDto sendLastMessageDto = buildSendLastMessageDto(from, to, lastMessage);
+//        chatService.sentLastMessage(sendLastMessageDto);
+
+        Long[] userIds = chatService.sortAndGet(from, to);
+
+        String destination = "/topic/chat/" + userIds[0] + "/" + userIds[1];
+        messagingTemplate.convertAndSend(destination, chatMessage);
+
+        log.info("chatMessage={}", chatMessage);
+
+        return chatMessage;
+    }
+
 
     @MessageMapping("/chat/{user1Id}/{user2Id}")
     @SendTo("/topic/chat/{user1Id}/{user2Id}")

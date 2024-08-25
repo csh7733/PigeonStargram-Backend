@@ -20,6 +20,7 @@ import com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.UNSUPPORTED_OPERATION;
 
@@ -108,7 +109,7 @@ public class PostBuilder {
     public static PostContentDto buildPostContentDto(Post post) {
         List<ImageDto> imageDtos = post.getImages().stream()
                 .map(PostBuilder::buildImageDto)
-                .toList();
+                .collect(Collectors.toList());
         PostProfileDto profileDto = buildPostProfileDto(post.getUser(), post.getModifiedDate());
         return PostContentDto.builder()
                 .id(post.getId())

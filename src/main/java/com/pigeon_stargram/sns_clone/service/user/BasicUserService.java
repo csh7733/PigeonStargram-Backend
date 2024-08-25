@@ -9,6 +9,7 @@ import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import com.pigeon_stargram.sns_clone.dto.user.internal.UpdateOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.user.internal.UpdatePasswordDto;
+import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
 import com.pigeon_stargram.sns_clone.exception.user.MultipleUsersFoundException;
 import com.pigeon_stargram.sns_clone.exception.login.RegisterFailException;
 import com.pigeon_stargram.sns_clone.exception.user.UserNotFoundException;
@@ -23,6 +24,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
@@ -91,7 +93,7 @@ public class BasicUserService implements UserService {
     public List<User> saveAll(List<UserDto> userDtoList) {
         List<User> users = userDtoList.stream()
                 .map(UserDto::toEntity)
-                .toList();
+                .collect(Collectors.toList());
         return userRepository.saveAll(users);
     }
 
@@ -128,14 +130,14 @@ public class BasicUserService implements UserService {
         return user.getFollowings().stream()
                 .map(Follow::getRecipient)
                 .map(FollowBuilder::buildResponseFollowerDto)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private static List<ResponseFollowerDto> getFollowerDtos(User user) {
         return user.getFollowers().stream()
                 .map(Follow::getSender)
                 .map(FollowBuilder::buildResponseFollowerDto)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -148,5 +150,13 @@ public class BasicUserService implements UserService {
     public ResponseOnlineStatusDto getOnlineStatus(Long id) {
         User user = findById(id);
         return buildResponseOnlineStatusDto(user.getId(), user.getOnlineStatus());
+    }
+
+    public List<ResponseUserInfoDto> getUserInfosByUserIds(List<Long> userIds) {
+
+        return userIds.stream()
+                .map(this::findById)
+                .map(ResponseUserInfoDto::new)
+                .collect(Collectors.toList());
     }
 }

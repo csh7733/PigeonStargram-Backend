@@ -7,6 +7,7 @@ import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDto;
 import com.pigeon_stargram.sns_clone.dto.user.internal.UpdateOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.user.internal.UpdatePasswordDto;
+import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
 
 import java.util.List;
 
@@ -32,5 +33,7 @@ public interface UserService {
     User updatePassword(UpdatePasswordDto updatePasswordDto);
 
     ResponseOnlineStatusDto getOnlineStatus(Long id);
+
+    List<ResponseUserInfoDto> getUserInfosByUserIds(List<Long> userIds);
 
 }

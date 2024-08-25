@@ -19,4 +19,8 @@ public class ResponseChatHistoryDto {
     private Long to;
     private String text;
     private String time;
+
+    private Boolean isImage;
+
+
 }

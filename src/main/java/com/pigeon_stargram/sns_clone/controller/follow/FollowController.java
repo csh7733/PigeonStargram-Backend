@@ -103,4 +103,12 @@ public class FollowController {
         followService.toggleNotificationEnabled(toggleNotificationEnabledDto);
     }
 
+    @GetMapping("/followings/recent-stories")
+    public List<ResponseFollowerDto> getMeAndFollowingsWhoUploadStory(@LoginUser SessionUser loginUser) {
+        Long userId = loginUser.getId();
+
+        log.info("id={}", userId);
+        return followService.findMeAndFollowingsWithRecentStories(userId);
+    }
+
 }

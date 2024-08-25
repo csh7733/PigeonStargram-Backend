@@ -16,6 +16,7 @@ import com.pigeon_stargram.sns_clone.repository.follow.FollowRepository;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.user.UserBuilder;
+import com.pigeon_stargram.sns_clone.service.story.StoryService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,9 +25,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.pigeon_stargram.sns_clone.service.follow.FollowBuilder.*;
+import static com.pigeon_stargram.sns_clone.service.user.UserBuilder.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -38,6 +41,7 @@ public class FollowService {
     private final ChatService chatService;
     private final FollowRepository followRepository;
     private final NotificationService notificationService;
+    private final StoryService storyService;
 
     public Follow createFollow(AddFollowDto dto) {
         Long senderId = dto.getSenderId();
@@ -64,18 +68,11 @@ public class FollowService {
         followRepository.deleteBySenderIdAndRecipientId(dto.getSenderId(), dto.getRecipientId());
     }
 
-    public List<ResponseFollowerDto> findFollowers(Long userId) {
-        return followRepository.findByRecipientId(userId).stream()
-                .map(Follow::getSender)
-                .map(sender -> new ResponseFollowerDto(sender, 1))
-                .toList();
-    }
-
     public List<ResponseFollowerDto> findFollowings(Long userId) {
         return followRepository.findBySenderId(userId).stream()
                 .map(Follow::getRecipient)
                 .map(recipient -> new ResponseFollowerDto(recipient, 1))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public List<ResponseFollowerDto> findFollowers(FindFollowersDto dto) {
@@ -87,9 +84,9 @@ public class FollowService {
                 .map(sender -> {
                     Integer isFollowing =
                             isFollowing(loginUserId, sender.getId()) ? 1 : 2;
-                    return new ResponseFollowerDto(sender, isFollowing);
+                    return buildResponseFollowerDto(sender, isFollowing);
                 })
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public Boolean isFollowing(Long sourceId, Long targetId) {
@@ -106,7 +103,7 @@ public class FollowService {
         return followRepository.findByRecipientId(userId).stream()
                 .filter(Follow::getIsNotificationEnabled)
                 .map(follow -> follow.getSender().getId())
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public List<ResponseFollowerDto> findFollowings(FindFollowingsDto dto) {
@@ -118,19 +115,19 @@ public class FollowService {
                 .map(recipient -> {
                     Integer isFollowing =
                             isFollowing(loginUserId, recipient.getId()) ? 1 : 2;
-                    return new ResponseFollowerDto(recipient, isFollowing);
+                    return buildResponseFollowerDto(recipient, isFollowing);
                 })
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public List<ResponseUserChatDto> findPartnersForChat(Long currentUserId) {
         List<User> followers = followRepository.findByRecipientId(currentUserId).stream()
                 .map(Follow::getSender)
-                .toList();
+                .collect(Collectors.toList());
 
         List<User> following = followRepository.findBySenderId(currentUserId).stream()
                 .map(Follow::getRecipient)
-                .toList();
+                .collect(Collectors.toList());
 
         return Stream.concat(followers.stream(), following.stream())
                 .distinct()
@@ -150,13 +147,13 @@ public class FollowService {
                         state = 0;
                     }
 
-                    return UserBuilder.buildResponseUserChatDto(
+                    return buildResponseUserChatDto(
                             user, unreadChatCount, lastMessage, state);
                 })
                 .sorted(Comparator.comparing(
                         ResponseUserChatDto::getLastMessage,
                         Comparator.nullsLast(Comparator.reverseOrder())))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public Long countFollowings(Long userId) {
@@ -181,5 +178,28 @@ public class FollowService {
                 .map(Follow::getIsNotificationEnabled)
                 .orElse(false);
     }
+
+    public List<ResponseFollowerDto> findMeAndFollowingsWithRecentStories(Long userId) {
+        log.info("followings={}", findFollowings(userId));
+        List<ResponseFollowerDto> followingsWithRecentStories = findFollowings(userId).stream()
+                .filter(following -> storyService.hasRecentStory(following.getId()))
+                .peek(following -> {
+                    boolean hasUnreadStories = storyService.hasUnreadStories(following.getId(), userId);
+                    following.setHasUnreadStories(hasUnreadStories);
+                })
+                .collect(Collectors.toList());
+
+        // 현재 사용자가 최근 스토리가 있는지 확인
+        boolean currentUserHasRecentStory = storyService.hasRecentStory(userId);
+        if (currentUserHasRecentStory) {
+            boolean currentUserHasUnreadStories = storyService.hasUnreadStories(userId, userId);
+            ResponseFollowerDto currentUserDto = new ResponseFollowerDto(userService.findById(userId), 1);
+            currentUserDto.setHasUnreadStories(currentUserHasUnreadStories);
+            followingsWithRecentStories.add(currentUserDto);
+        }
+
+        return followingsWithRecentStories;
+    }
+
 
 }

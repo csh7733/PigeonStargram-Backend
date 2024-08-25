@@ -25,8 +25,11 @@ import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.pigeon_stargram.sns_clone.config.WebSocketEventListener.isUserChattingWith;
@@ -47,6 +50,7 @@ public class ChatService {
     private final LastMessageRepository lastMessageRepository;
 
     public void save(NewChatDto dto){
+
         if(dto.getIsImage()) chatRepository.save(dto.toImageEntity());
         else chatRepository.save(dto.toTextEntity());
 
@@ -105,13 +109,25 @@ public class ChatService {
     public List<ResponseChatHistoryDto> getUserChats(GetUserChatsDto dto) {
         Long user1Id = dto.getUser1Id();
         Long user2Id = dto.getUser2Id();
-        List<TextChat> chatHistories =
-                chatRepository.findTextChatsBetweenUsers(user1Id, user2Id);
 
-        return chatHistories.stream()
+        List<TextChat> textChats = chatRepository.findTextChatsBetweenUsers(user1Id, user2Id);
+        List<ImageChat> imageChats = chatRepository.findImageChatsBetweenUsers(user1Id, user2Id);
+
+        List<ResponseChatHistoryDto> chatHistoryDtos = new ArrayList<>();
+
+        chatHistoryDtos.addAll(textChats.stream()
                 .map(ChatBuilder::buildResponseChatHistoryDto)
-                .toList();
+                .collect(Collectors.toList()));
+
+        chatHistoryDtos.addAll(imageChats.stream()
+                .map(ChatBuilder::buildResponseChatHistoryDto)
+                .collect(Collectors.toList()));
+
+        chatHistoryDtos.sort(Comparator.comparing(ResponseChatHistoryDto::getTime));
+
+        return chatHistoryDtos;
     }
+
 
     public Integer increaseUnReadChatCount(Long userId,Long toUserId){
         UnreadChat unReadChat = unreadChatRepository.findByUserIdAndToUserId(userId, toUserId)
@@ -141,7 +157,7 @@ public class ChatService {
         Long user2Id = chatMessage.getTo();
 
         Long[] userIds = sortAndGet(user1Id, user2Id);
-        String lastMessageText = chatMessage.getText();
+        String lastMessageText = chatMessage.getIsImage() ? "사진" : chatMessage.getText();
 
         LastMessage lastMessageEntity = lastMessageRepository.findByUser1IdAndUser2Id(userIds[0], userIds[1])
                 .orElse(new LastMessage(userIds[0], userIds[1], lastMessageText));
@@ -170,7 +186,7 @@ public class ChatService {
         setUnreadChatCount0(userId,partnerUserId);
     }
 
-    private static Long[] sortAndGet(Long user1Id, Long user2Id) {
+    public Long[] sortAndGet(Long user1Id, Long user2Id) {
         Long[] userIds = {user1Id, user2Id};
         Arrays.sort(userIds);
         return userIds;

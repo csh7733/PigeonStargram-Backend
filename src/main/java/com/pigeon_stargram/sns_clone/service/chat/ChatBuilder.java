@@ -1,5 +1,6 @@
 package com.pigeon_stargram.sns_clone.service.chat;
 
+import com.pigeon_stargram.sns_clone.domain.chat.ImageChat;
 import com.pigeon_stargram.sns_clone.domain.chat.TextChat;
 import com.pigeon_stargram.sns_clone.dto.chat.internal.GetUserChatsDto;
 import com.pigeon_stargram.sns_clone.dto.chat.internal.SendLastMessageDto;
@@ -29,6 +30,17 @@ public class ChatBuilder {
                 .to(textChat.getRecipientId())
                 .text(textChat.getText())
                 .time(formatTime(textChat.getCreatedDate()))
+                .isImage(false)
+                .build();
+    }
+
+    public static ResponseChatHistoryDto buildResponseChatHistoryDto(ImageChat imageChat) {
+        return ResponseChatHistoryDto.builder()
+                .from(imageChat.getSenderId())
+                .to(imageChat.getRecipientId())
+                .text(imageChat.getImagePath())
+                .time(formatTime(imageChat.getCreatedDate()))
+                .isImage(true)
                 .build();
     }
 

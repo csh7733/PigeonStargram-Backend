@@ -6,6 +6,7 @@ import com.pigeon_stargram.sns_clone.dto.post.response.PostProfileDto;
 import lombok.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @ToString
 @Getter
@@ -28,6 +29,6 @@ public class PostContentDto {
         this.content = post.getContent();
         this.images = post.getImages().stream()
                 .map(ImageDto::new)
-                .toList();
+                .collect(Collectors.toList());
     }
 }

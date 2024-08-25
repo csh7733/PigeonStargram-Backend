@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.service.comment.CommentBuilder.*;
 
@@ -46,7 +47,7 @@ public class CommentService {
                 .map(Comment::getId)
                 .sorted(Comparator.reverseOrder())
                 .map(this::getCombinedComment)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public ResponseCommentDto getCombinedComment(Long commentId) {

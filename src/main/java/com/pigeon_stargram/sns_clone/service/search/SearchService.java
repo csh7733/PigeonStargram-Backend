@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.service.search.SearchBuilder.*;
 
@@ -34,7 +35,7 @@ public class SearchService {
         return searchTermRepository.findTop5ByPrefixOrderByScoreDesc(prefix).stream()
                 .filter(searchTerm -> !searchTerm.getTerm().equalsIgnoreCase(prefix))
                 .map(SearchBuilder::buildResponseTopSearchDto)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public List<ResponseSearchHistoryDto> getTopSearchHistory(Long userId) {
@@ -42,7 +43,7 @@ public class SearchService {
 
         return searchHistoryRepository.findTop5ByUserOrderByModifiedDateDesc(user).stream()
                 .map(SearchBuilder::buildResponseSearchHistoryDto)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public void deleteSearchHistory(DeleteSearchHistoryDto dto) {
@@ -101,7 +102,7 @@ public class SearchService {
 
         return userService.findBySearchQuery(searchQuery).stream()
                 .map(UserBuilder::buildResponseUserInfoDto)
-                .toList();
+                .collect(Collectors.toList());
     }
 
 }

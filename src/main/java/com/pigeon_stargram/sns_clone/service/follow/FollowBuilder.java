@@ -83,4 +83,14 @@ public class FollowBuilder {
                 .follow(1)
                 .build();
     }
+
+    public static ResponseFollowerDto buildResponseFollowerDto(User user, Integer follow) {
+        return ResponseFollowerDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .avatar(user.getAvatar())
+                .location(user.getLocation())
+                .follow(follow)
+                .build();
+    }
 }

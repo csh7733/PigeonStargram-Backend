@@ -30,22 +30,29 @@ public class LocalFileService implements FileService {
         if(files == null) return null;
 
         for (MultipartFile file : files) {
-            try {
-                if (!Files.exists(uploadPath)) {
-                    Files.createDirectories(uploadPath);
-                }
-
-                String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                Path filePath = Paths.get(uploadDir + filename);
-
-                Files.copy(file.getInputStream(), filePath);
-
-                images.add(filename);
-            } catch (IOException e) {
-                throw new FileStorageException("Failed to save file: " + file.getOriginalFilename(), e);
-            }
+            images.add(saveFile(file));
         }
 
         return images;
+    }
+
+    @Override
+    public String saveFile(MultipartFile file) {
+        Path uploadPath = Paths.get(uploadDir);
+
+        try {
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            Path filePath = Paths.get(uploadDir + filename);
+
+            Files.copy(file.getInputStream(), filePath);
+
+            return filename;
+        } catch (IOException e) {
+            throw new FileStorageException("Failed to save file: " + file.getOriginalFilename(), e);
+        }
     }
 }

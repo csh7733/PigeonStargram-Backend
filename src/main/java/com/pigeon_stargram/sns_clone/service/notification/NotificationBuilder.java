@@ -23,8 +23,8 @@ public class NotificationBuilder {
                 .content(notification.getMessage())
                 .isRead(notification.getIsRead())
                 // 테스트를 위해 임시로 사용
-                .time(formatTime(LocalDateTime.now()))
-//        .time(formatTime(notification.getCreatedDate()))
+//                .time(formatTime(LocalDateTime.now()))
+                .time(formatTime(notification.getCreatedDate()))
                 .targetUserId(notification.getRecipient().getId())
                 .sourceId(notification.getSourceId())
                 .sourceId2(notification.getSourceId2())
