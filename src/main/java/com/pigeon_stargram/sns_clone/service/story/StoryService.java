@@ -2,6 +2,9 @@ package com.pigeon_stargram.sns_clone.service.story;
 
 import com.pigeon_stargram.sns_clone.domain.story.Story;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.story.internal.GetRecentStoriesDto;
+import com.pigeon_stargram.sns_clone.dto.story.internal.MarkStoryAsViewedDto;
+import com.pigeon_stargram.sns_clone.dto.story.internal.UploadStoryDto;
 import com.pigeon_stargram.sns_clone.dto.story.response.ResponseStoriesDto;
 import com.pigeon_stargram.sns_clone.dto.story.response.ResponseStoryDto;
 import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
@@ -17,6 +20,10 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.STORY_NOT_FOUND_ID;
+import static com.pigeon_stargram.sns_clone.service.story.StoryBuilder.buildStory;
+import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getExpirationTime;
+
 @Slf4j
 @RequiredArgsConstructor
 @Transactional
@@ -25,62 +32,49 @@ public class StoryService {
 
     private final StoryRepository storyRepository;
     private final UserService userService;
+
+    //레디스 사용전 임시로 메모리에서 관리할 set Map<StoryId, Set<UserID>>
     private final Map<Long, Set<Long>> storyViews = new ConcurrentHashMap<>();
 
-    public Story uploadStory(Long userId, String content, String img) {
-        User user = userService.findById(userId);
-
-        Story story = Story.builder()
-                .user(user)
-                .content(content)
-                .img(img)
-                .build();
+    public Story uploadStory(UploadStoryDto dto) {
+        User user = userService.findById(dto.getUserId());
+        Story story = buildStory(user, dto.getContent(), dto.getImageUrl());
 
         return storyRepository.save(story);
     }
 
     public void deleteStory(Long storyId) {
         Story story = storyRepository.findById(storyId)
-                .orElseThrow(() -> new StoryNotFoundException("Story not found"));
+                .orElseThrow(() -> new StoryNotFoundException(STORY_NOT_FOUND_ID));
 
         storyRepository.delete(story);
     }
 
-    public ResponseStoriesDto getRecentStories(Long userId, Long currentMemberId) {
-        User user = userService.findById(userId);
+    public void markStoryAsViewed(MarkStoryAsViewedDto dto) {
+        storyViews.computeIfAbsent(dto.getStoryId(), k -> ConcurrentHashMap.newKeySet()).add(dto.getUserId());
+    }
 
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime expirationTime = now.minusHours(24);
+    public ResponseStoriesDto getRecentStories(GetRecentStoriesDto dto) {
+        User user = userService.findById(dto.getUserId());
 
-        List<Story> recentStories = storyRepository.findAllByUserAndCreatedDateAfter(user, expirationTime);
+        List<Story> recentStories = findRecentStories(user);
+
         List<ResponseStoryDto> storyDtos = recentStories.stream()
                 .map(ResponseStoryDto::new)
                 .toList();
 
-        Integer lastReadIndex = getLastReadIndex(currentMemberId, recentStories);
+        Integer lastReadIndex = getLastReadIndex(dto.getCurrentMemberId(), recentStories);
 
         return new ResponseStoriesDto(storyDtos, lastReadIndex);
     }
 
     private Integer getLastReadIndex(Long currentMemberId, List<Story> recentStories) {
-        int lastReadIndex = 0;
         for (int i = 0; i < recentStories.size(); i++) {
             if (!hasUserViewedStory(recentStories.get(i).getId(), currentMemberId)) {
-                lastReadIndex = i;
-                break;
+                return i;
             }
         }
-
-        if (lastReadIndex == recentStories.size()) {
-            lastReadIndex = 0;
-        }
-        return lastReadIndex;
-    }
-
-
-    public void markStoryAsViewed(Long storyId, Long userId) {
-
-        storyViews.computeIfAbsent(storyId, k -> ConcurrentHashMap.newKeySet()).add(userId);
+        return 0;
     }
 
     public List<ResponseUserInfoDto> getUserInfosWhoViewedStory(Long storyId) {
@@ -97,18 +91,18 @@ public class StoryService {
     public Boolean hasRecentStory(Long userId) {
         User user = userService.findById(userId);
 
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime expirationTime = now.minusHours(24);
-
-        return storyRepository.existsByUserAndCreatedDateAfter(user, expirationTime);
+        return storyRepository.existsByUserAndCreatedDateAfter(user, getExpirationTime());
     }
 
     public boolean hasUnreadStories(Long userId, Long currentMemberId) {
-        List<Story> stories = storyRepository.findAllByUserAndCreatedDateAfter(
-                userService.findById(userId), LocalDateTime.now().minusHours(24)
-        );
+        User user = userService.findById(userId);
+        List<Story> stories = findRecentStories(user);
 
         return stories.stream().anyMatch(story -> !hasUserViewedStory(story.getId(), currentMemberId));
+    }
+
+    private List<Story> findRecentStories(User user) {
+        return storyRepository.findAllByUserAndCreatedDateAfter(user, getExpirationTime());
     }
 
 

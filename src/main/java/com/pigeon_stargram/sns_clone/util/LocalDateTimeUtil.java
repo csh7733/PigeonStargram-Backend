@@ -26,4 +26,8 @@ public class LocalDateTimeUtil {
                 Comparator.reverseOrder()
         );
     }
+
+    public static LocalDateTime getExpirationTime() {
+        return LocalDateTime.now().minusHours(24);
+    }
 }

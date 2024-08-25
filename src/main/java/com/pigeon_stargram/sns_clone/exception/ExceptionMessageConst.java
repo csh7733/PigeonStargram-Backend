@@ -38,4 +38,8 @@ public class ExceptionMessageConst {
     
     public static final String NOTIFICATION_NOT_FOUND_ID
             = "ID와 일치하는 알림이 없습니다.";
+
+    public static final String STORY_NOT_FOUND_ID
+            = "ID와 일치하는 스토리가 없습니다";
+
 }
