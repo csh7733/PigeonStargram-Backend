@@ -48,6 +48,7 @@ public class PostController {
 
         List<String> imageUrls = fileService.saveFiles(imagesFile);
 
+        log.info("RequestCreatePostDto={}", request);
         CreatePostDto createPostDto = buildCreatePostDto(request, loginUser, imageUrls);
         postService.createPost(createPostDto);
 
