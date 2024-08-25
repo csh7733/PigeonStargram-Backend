@@ -46,6 +46,7 @@ public class PostsController {
     public List<ResponsePostsDto> createPosts(@LoginUser SessionUser loginUser,
                                               @ModelAttribute RequestCreatePostDto request,
                                               @RequestPart(value = "images", required = false) List<MultipartFile> imagesFile) {
+        log.info("request = {}",request.getContent());
         Long userId = loginUser.getId();
         User user = userService.findById(userId);
 
