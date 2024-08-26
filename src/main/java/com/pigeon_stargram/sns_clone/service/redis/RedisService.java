@@ -2,7 +2,6 @@ package com.pigeon_stargram.sns_clone.service.redis;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -79,5 +78,33 @@ public class RedisService {
     public Long getSetSize(String setKey) {
         return redisTemplate.opsForSet().size(setKey);
     }
+
+    /**
+     * Redis Hash에 값을 저장합니다.
+     * 기본 직렬화기를 사용하여 객체를 직렬화한 후 Redis에 저장합니다.
+     *
+     * @param redisHashKey Redis Hash의 키
+     * @param fieldKey Redis Hash 내의 필드 키
+     * @param value 저장할 값 (객체)
+     */
+    public void putValueInHash(String redisHashKey, String fieldKey, Object value) {
+        redisTemplate.opsForHash().put(redisHashKey, fieldKey, value);
+    }
+
+    /**
+     * Redis Hash에서 값을 가져와 지정된 타입으로 반환합니다.
+     * 기본 직렬화기를 사용하여 객체를 역직렬화합니다.
+     *
+     * @param redisHashKey Redis Hash의 키
+     * @param fieldKey Redis Hash 내의 필드 키
+     * @param clazz 반환할 타입의 클래스
+     * @param <T> 반환할 타입
+     * @return 지정된 타입으로 변환된 값, 또는 null (값이 없을 경우)
+     */
+    public <T> T getValueFromHash(String redisHashKey, String fieldKey, Class<T> clazz) {
+        Object value = redisTemplate.opsForHash().get(redisHashKey, fieldKey);
+        return clazz.cast(value);
+    }
+
 
 }

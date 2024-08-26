@@ -17,4 +17,12 @@ public class JsonUtil {
             throw new RuntimeException("Error converting to JSON", e);
         }
     }
+
+    public <T> T convertValue(Object fromValue, Class<T> toValueType) {
+        try {
+            return objectMapper.convertValue(fromValue, toValueType);
+        } catch (Exception e) {
+            throw new RuntimeException("Error converting value to " + toValueType.getName(), e);
+        }
+    }
 }
