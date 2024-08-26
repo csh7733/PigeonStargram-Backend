@@ -42,4 +42,42 @@ public class RedisService {
     public Object popTask(String queueName) {
         return popTask(queueName, Duration.ZERO);
     }
+
+    /**
+     * Set에 값을 추가합니다.
+     * @param setKey Set의 키
+     * @param value 추가할 값
+     */
+    public void addToSet(String setKey, Object value) {
+        redisTemplate.opsForSet().add(setKey, value);
+    }
+
+    /**
+     * Set에서 값을 제거합니다.
+     * @param setKey Set의 키
+     * @param value 제거할 값
+     */
+    public void removeFromSet(String setKey, Object value) {
+        redisTemplate.opsForSet().remove(setKey, value);
+    }
+
+    /**
+     * Set에서 특정 값의 존재 여부를 확인합니다.
+     * @param setKey Set의 키
+     * @param value 확인할 값
+     * @return 값의 존재 여부
+     */
+    public Boolean isMemberOfSet(String setKey, Object value) {
+        return redisTemplate.opsForSet().isMember(setKey, value);
+    }
+
+    /**
+     * Set의 원소 갯수를 가져옵니다.
+     * @param setKey Set의 키
+     * @return Set에 포함된 원소의 갯수
+     */
+    public Long getSetSize(String setKey) {
+        return redisTemplate.opsForSet().size(setKey);
+    }
+
 }

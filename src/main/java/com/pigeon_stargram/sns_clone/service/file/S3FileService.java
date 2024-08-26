@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone.service.file;
 
 import com.pigeon_stargram.sns_clone.exception.file.FileLoadException;
 import com.pigeon_stargram.sns_clone.exception.file.FileUploadException;
+import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
@@ -32,6 +33,7 @@ import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
 public class S3FileService implements FileService{
 
     private final S3Client s3Client;
+    private final RedisService redisService;
 
     @Value("${aws.s3.bucketName}")
     private String bucketName;
