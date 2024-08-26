@@ -49,4 +49,9 @@ public class ExceptionMessageConst {
 
     public static final String FILE_UPLOAD_FAIL
             = "파일 업로드가 실패했습니다";
+
+    public static final String FILE_NOT_FOUND_OR_UNREADABLE
+            = "S3에서 파일을 찾을 수 없거나 읽을 수 없습니다: ";
+    public static final String MALFORMED_URL
+            = "S3에서 파일의 URL 형식이 잘못되었습니다: ";
 }
