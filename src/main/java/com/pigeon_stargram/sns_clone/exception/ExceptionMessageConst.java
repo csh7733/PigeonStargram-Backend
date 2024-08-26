@@ -46,4 +46,7 @@ public class ExceptionMessageConst {
             = "이미 팔로우중입니다.";
     public static final String STORY_NOT_FOUND_ID
             = "ID와 일치하는 스토리가 없습니다";
+
+    public static final String FILE_UPLOAD_FAIL
+            = "파일 업로드가 실패했습니다";
 }

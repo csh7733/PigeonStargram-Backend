@@ -4,6 +4,7 @@ import com.pigeon_stargram.sns_clone.domain.post.Image;
 import com.pigeon_stargram.sns_clone.exception.file.FileStorageException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional
 @Service
+@Profile("local")
 public class LocalFileService implements FileService {
 
     private final String uploadDir = "uploads/";
