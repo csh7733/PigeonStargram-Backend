@@ -52,8 +52,7 @@ public class PostService {
     private final RedisService redisService;
 
     public List<ResponsePostDto> getPostsByUserId(Long userId) {
-        return postCrudService.findByUserId(userId).stream()
-                .map(Post::getId)
+        return postCrudService.findPostIdsByUserId(userId).stream()
                 .filter(postId -> !redisService.isMemberOfSet(UPLOADING_POSTS_SET, postId))
                 .sorted(Comparator.reverseOrder())
                 .map(this::getCombinedPost)

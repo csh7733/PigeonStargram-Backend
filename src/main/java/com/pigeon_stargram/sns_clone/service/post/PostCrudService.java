@@ -5,6 +5,7 @@ import com.pigeon_stargram.sns_clone.exception.post.PostNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.post.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ public class PostCrudService {
 
     private final PostRepository repository;
 
+    @Cacheable(value = "post", keyGenerator = "CacheKeyGenerator")
     public Post findById(Long postId) {
         return repository.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException(POST_NOT_FOUND_ID));
@@ -28,6 +30,13 @@ public class PostCrudService {
 
     public List<Post> findByUserId(Long userId) {
         return repository.findByUserId(userId);
+    }
+
+    @Cacheable(value = "postId", keyGenerator = "CacheKeyGenerator")
+    public List<Long> findPostIdsByUserId(Long userId) {
+        return repository.findByUserId(userId).stream()
+                .map(Post::getId)
+                .toList();
     }
 
     public List<Post> findByUserIdAndCreatedDateAfter(Long userId,

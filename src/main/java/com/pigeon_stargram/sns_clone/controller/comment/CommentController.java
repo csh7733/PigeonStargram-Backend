@@ -32,7 +32,6 @@ public class CommentController {
     private final PostService postService;
     private final TimelineService timelineService;
     private final CommentService commentService;
-    private final UserService userService;
     private final CommentCrudService commentCrudService;
 
     @PostMapping
