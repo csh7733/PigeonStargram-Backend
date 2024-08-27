@@ -50,7 +50,7 @@ public class PostController {
         FileUploadResultDto result = fileService.saveFiles(imagesFile);
 
         List<String> images = result.getFileNames();
-        String fieldKey = result.getHashKey();
+        String fieldKey = result.getFieldKey();
 
         CreatePostDto createPostDto = buildCreatePostDto(request, loginUser, images, fieldKey);
         postService.createPost(createPostDto);

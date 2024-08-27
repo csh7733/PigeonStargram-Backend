@@ -11,5 +11,5 @@ import java.util.List;
 @AllArgsConstructor
 public class FileUploadResultDto {
     private List<String> fileNames;
-    private String hashKey;
+    private String fieldKey;
 }
