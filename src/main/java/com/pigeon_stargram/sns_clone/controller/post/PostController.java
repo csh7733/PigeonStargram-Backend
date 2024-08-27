@@ -41,7 +41,7 @@ public class PostController {
     }
 
     @PostMapping
-    public List<ResponsePostDto> createPosts(@LoginUser SessionUser loginUser,
+    public Long createPosts(@LoginUser SessionUser loginUser,
                                              @ModelAttribute RequestCreatePostDto request,
                                              @RequestPart(value = "images", required = false)
                                                  List<MultipartFile> imagesFile) {
@@ -53,9 +53,9 @@ public class PostController {
         String fieldKey = result.getFieldKey();
 
         CreatePostDto createPostDto = buildCreatePostDto(request, loginUser, images, fieldKey);
-        postService.createPost(createPostDto);
+        Long postId = postService.createPost(createPostDto);
 
-        return postService.getPostsByUserId(userId);
+        return postId;
     }
 
     @PatchMapping("/{postId}")

@@ -89,7 +89,7 @@ public class PostService {
         return buildPostLikeDto(false, count);
     }
 
-    public Post createPost(CreatePostDto dto) {
+    public Long createPost(CreatePostDto dto) {
         User loginUser = userService.findById(dto.getLoginUserId());
 
         Post post = buildPost(dto, loginUser);
@@ -120,7 +120,7 @@ public class PostService {
         // 태그된 유저에게 알림
         notifyTaggedUsers(dto, loginUser);
 
-        return save;
+        return save.getId();
     }
 
     private void notifyFollowers(CreatePostDto dto) {
