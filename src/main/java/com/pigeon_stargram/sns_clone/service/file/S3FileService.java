@@ -46,26 +46,20 @@ public class S3FileService implements FileService{
 
     @Override
     public FileUploadResultDto saveFiles(List<MultipartFile> files) {
-        if(files == null) return new FileUploadResultDto();
+        if (files == null) return new FileUploadResultDto();
 
-        String fieldKey = UUID.randomUUID().toString();
+        String fieldKey = generateFieldKey();
         int totalFiles = files.size();
         List<String> fileNames = new ArrayList<>();
 
-        for (int index = 0; index < totalFiles; index++) {
-            MultipartFile file = files.get(index);
-            boolean isLast = (index == totalFiles - 1);
-
+        for (MultipartFile file : files) {
             String fileName = getFilename(file);
             fileNames.add(fileName);
-            log.info("비동기 전");
-            fileUploadWorker.uploadFileAsync(file, fileName, fieldKey, isLast);
-            log.info("비동기 후");
+            fileUploadWorker.uploadFileAsync(file, fileName, fieldKey, totalFiles);
         }
 
         return new FileUploadResultDto(fileNames, fieldKey);
     }
-    
     @Override
     public String saveFile(MultipartFile file) {
         String filename = getFilename(file);
@@ -108,4 +102,9 @@ public class S3FileService implements FileService{
     private static String getFilename(MultipartFile file) {
         return System.currentTimeMillis() + "_" + file.getOriginalFilename();
     }
+
+    private static String generateFieldKey() {
+        return UUID.randomUUID().toString();
+    }
+
 }

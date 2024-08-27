@@ -106,6 +106,10 @@ public class RedisService {
     public <T> T getValueFromHash(String redisHashKey, String fieldKey, Class<T> clazz) {
         Object value = redisTemplate.opsForHash().get(redisHashKey, fieldKey);
 
+        if (value == null) {
+            return null;
+        }
+
         if (clazz.isInstance(value)) {
             return clazz.cast(value);
         }
