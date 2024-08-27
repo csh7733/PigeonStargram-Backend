@@ -14,8 +14,9 @@ import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.UnReadChatCountDto;
 import com.pigeon_stargram.sns_clone.dto.user.internal.UpdateOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.event.UserConnectEvent;
-import com.pigeon_stargram.sns_clone.repository.chat.ChatRepository;
+import com.pigeon_stargram.sns_clone.repository.chat.ImageChatRepository;
 import com.pigeon_stargram.sns_clone.repository.chat.LastMessageRepository;
+import com.pigeon_stargram.sns_clone.repository.chat.TextChatRepository;
 import com.pigeon_stargram.sns_clone.repository.chat.UnreadChatRepository;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import jakarta.transaction.Transactional;
@@ -45,14 +46,16 @@ public class ChatService {
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    private final ChatRepository chatRepository;
+    private final TextChatRepository textChatRepository;
+    private final ImageChatRepository imageChatRepository;
+
     private final UnreadChatRepository unreadChatRepository;
     private final LastMessageRepository lastMessageRepository;
 
     public void save(NewChatDto dto){
 
-        if(dto.getIsImage()) chatRepository.save(dto.toImageEntity());
-        else chatRepository.save(dto.toTextEntity());
+        if(dto.getIsImage()) imageChatRepository.save(dto.toImageEntity());
+        else textChatRepository.save(dto.toTextEntity());
 
         Long user1Id = dto.getFrom();
         Long user2Id = dto.getTo();
@@ -91,27 +94,15 @@ public class ChatService {
                 .toUserId(toUserId)
                 .text(text)
                 .build();
-        chatRepository.save(textChat);
-    }
-
-    /**
-     * TODO : 이미지 채팅 구현
-     */
-    public void saveImageChat(Long fromUserId, Long toUserId, String imagePath) {
-        ImageChat imageChat = ImageChat.builder()
-                .fromUserId(fromUserId)
-                .toUserId(toUserId)
-                .imagePath(imagePath)
-                .build();
-        chatRepository.save(imageChat);
+        textChatRepository.save(textChat);
     }
 
     public List<ResponseChatHistoryDto> getUserChats(GetUserChatsDto dto) {
         Long user1Id = dto.getUser1Id();
         Long user2Id = dto.getUser2Id();
 
-        List<TextChat> textChats = chatRepository.findTextChatsBetweenUsers(user1Id, user2Id);
-        List<ImageChat> imageChats = chatRepository.findImageChatsBetweenUsers(user1Id, user2Id);
+        List<TextChat> textChats = textChatRepository.findChatsBetweenUsers(user1Id, user2Id);
+        List<ImageChat> imageChats = imageChatRepository.findChatsBetweenUsers(user1Id, user2Id);
 
         List<ResponseChatHistoryDto> chatHistoryDtos = new ArrayList<>();
 
