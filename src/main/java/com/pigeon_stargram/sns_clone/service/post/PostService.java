@@ -20,6 +20,7 @@ import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
+import com.pigeon_stargram.sns_clone.worker.FileUploadWorker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,7 @@ public class PostService {
     private final UserService userService;
 
     private final RedisService redisService;
+    private final FileUploadWorker fileUploadWorker;
 
     public List<ResponsePostDto> getPostsByUserId(Long userId) {
         return postCrudService.findByUserId(userId).stream()
@@ -70,7 +72,6 @@ public class PostService {
                 .map(this::getCombinedPost)
                 .collect(Collectors.toList());
     }
-
 
     public ResponsePostDto getCombinedPost(Long postId) {
         PostContentDto contentDto = getPostContent(postId);
@@ -111,8 +112,11 @@ public class PostService {
             log.info("Redis에서 업로드 기록 추가 - {}", dto.getFieldKey());
             redisService.putValueInHash(UPLOADING_POSTS_HASH, dto.getFieldKey(), save.getId());
 
-            // 업로드 중인 게시물 ID를 Set에 추가
-            redisService.addToSet(UPLOADING_POSTS_SET, save.getId());
+            //이미지 업로드가 끝나지 않았을 경우
+            if(!fileUploadWorker.isUploadComplete(dto.getFieldKey())) {
+                // 업로드 중인 게시물 ID를 Set에 추가
+                redisService.addToSet(UPLOADING_POSTS_SET, save.getId());
+            }
         }
 
         // 팔로우중인 유저에게 알림

@@ -30,6 +30,7 @@ public class FileUploadWorker {
     private final RedisService redisService;
     private final S3Client s3Client;
     private final ConcurrentHashMap<String, Integer> uploadProgressMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Boolean> uploadCompletionMap = new ConcurrentHashMap<>();
 
     @Value("${aws.s3.bucketName}")
     private String bucketName;
@@ -47,6 +48,7 @@ public class FileUploadWorker {
 
         // 업로드 시작 시 총 파일 수를 맵에 저장
         uploadProgressMap.putIfAbsent(fieldKey, totalFiles);
+        uploadCompletionMap.putIfAbsent(fieldKey, false);  // 초기값은 false
 
         executorService.submit(() -> {
             log.info("비동기 중: 파일 업로드 시작 - {}", filename);
@@ -77,7 +79,13 @@ public class FileUploadWorker {
 
                 // 작업 완료 후 맵에서 해당 키 제거
                 uploadProgressMap.remove(fieldKey);
+                uploadCompletionMap.put(fieldKey, true);  // 업로드 완료 상태로 설정
             }
         });
+    }
+
+    // 업로드가 완료되었는지 확인하는 메서드
+    public Boolean isUploadComplete(String fieldKey) {
+        return uploadCompletionMap.getOrDefault(fieldKey, false);
     }
 }

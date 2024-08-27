@@ -53,9 +53,8 @@ public class PostController {
         String fieldKey = result.getFieldKey();
 
         CreatePostDto createPostDto = buildCreatePostDto(request, loginUser, images, fieldKey);
-        Long postId = postService.createPost(createPostDto);
 
-        return postId;
+        return postService.createPost(createPostDto);
     }
 
     @PatchMapping("/{postId}")
