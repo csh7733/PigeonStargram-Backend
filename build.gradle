@@ -24,25 +24,36 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'org.springframework.boot:spring-boot-starter-websocket'
-	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.session:spring-session-jdbc'
-	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	// Spring Boot 스타터 의존성
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // JPA 사용
+	implementation 'org.springframework.boot:spring-boot-starter-web' // Spring MVC와 RESTful 웹 서비스
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis' // Redis 사용
+	implementation 'org.springframework.boot:spring-boot-starter-websocket' // WebSocket 지원
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client' // OAuth 2.0 클라이언트
+	implementation 'org.springframework.boot:spring-boot-starter-security' // Spring Security 지원
+	implementation 'org.springframework.session:spring-session-jdbc' // JDBC 기반의 Spring Session 관리
+	implementation 'org.springframework.boot:spring-boot-starter-mail' // 이메일 발송 지원
 
-	implementation platform('software.amazon.awssdk:bom:2.20.56')
-	implementation 'software.amazon.awssdk:s3'
-	implementation 'software.amazon.awssdk:sts'
+	// AWS SDK 의존성
+	implementation platform('software.amazon.awssdk:bom:2.20.56') // AWS SDK BOM (Bill of Materials)
+	implementation 'software.amazon.awssdk:s3' // S3 사용
+	implementation 'software.amazon.awssdk:sts' // STS (Security Token Service) 사용
 
-	compileOnly 'org.projectlombok:lombok'
-	runtimeOnly 'com.h2database:h2'
+	// Redis 세션 관리를 위한 의존성
+	implementation 'org.springframework.session:spring-session-data-redis' // Redis 기반의 Spring Session 관리
 
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	// 컴파일 전용 의존성
+	compileOnly 'org.projectlombok:lombok' // Lombok 사용 (코드 간소화)
+
+	// 런타임 전용 의존성
+	runtimeOnly 'com.h2database:h2' // H2 Database 사용 (테스트 및 로컬 개발 용도)
+
+	// Annotation Processor 의존성
+	annotationProcessor 'org.projectlombok:lombok' // Lombok Annotation Processor
+
+	// 테스트 의존성
+	testImplementation 'org.springframework.boot:spring-boot-starter-test' // Spring Boot 테스트 지원
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher' // JUnit 플랫폼 런처
 }
 
 tasks.named('test') {
