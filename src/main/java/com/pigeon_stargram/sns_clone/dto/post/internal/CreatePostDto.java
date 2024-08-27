@@ -20,6 +20,7 @@ public class CreatePostDto implements NotificationConvertable {
     private String content;
     private List<Long> notificationRecipientIds;
     private List<String> imageUrls;
+    private String fieldKey;
     private Boolean hasImage;
     private List<Long> taggedUserIds;
 

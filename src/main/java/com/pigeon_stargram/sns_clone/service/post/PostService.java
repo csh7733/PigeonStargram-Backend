@@ -18,6 +18,7 @@ import com.pigeon_stargram.sns_clone.repository.post.ImageRepository;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
+import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.pigeon_stargram.sns_clone.constant.RedisPostConstants.UPLOADING_POSTS_HASH;
+import static com.pigeon_stargram.sns_clone.constant.RedisPostConstants.UPLOADING_POSTS_SET;
 import static com.pigeon_stargram.sns_clone.service.post.PostBuilder.*;
 
 @Slf4j
@@ -46,13 +49,17 @@ public class PostService {
     private final ImageRepository imageRepository;
     private final UserService userService;
 
+    private final RedisService redisService;
+
     public List<ResponsePostDto> getPostsByUserId(Long userId) {
         return postCrudService.findByUserId(userId).stream()
                 .map(Post::getId)
+                .filter(postId -> !redisService.isMemberOfSet(UPLOADING_POSTS_SET, postId))
                 .sorted(Comparator.reverseOrder())
                 .map(this::getCombinedPost)
                 .collect(Collectors.toList());
     }
+
 
     public List<ResponsePostDto> getRecentPostsByUser(Long userId) {
         LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
@@ -94,6 +101,15 @@ public class PostService {
                             .post(post)
                             .build())
                     .forEach(imageRepository::save);
+
+            // 이미지 업로드 중인 게시물 정보를 Redis Hash에 추가
+            // UPLOADING_POSTS_HASH는 현재 이미지가 업로드 중인 게시물 정보를 저장하는 Redis Key
+            // FieldKey : 게시물 ID를 위한 게시물 생성전 발급된 UUID , value : 게시물의 실제 ID
+            log.info("Redis에서 업로드 기록 추가 - {}", dto.getFieldKey());
+            redisService.putValueInHash(UPLOADING_POSTS_HASH, dto.getFieldKey(), save.getId());
+
+            // 업로드 중인 게시물 ID를 Set에 추가
+            redisService.addToSet(UPLOADING_POSTS_SET, save.getId());
         }
 
         // 팔로우중인 유저에게 알림

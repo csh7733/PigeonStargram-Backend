@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone.service.redis;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +11,7 @@ import java.time.Duration;
 @RequiredArgsConstructor
 @Transactional
 @Service
+@Slf4j
 public class RedisService {
 
     private final RedisTemplate<String, Object> redisTemplate;
@@ -103,7 +105,27 @@ public class RedisService {
      */
     public <T> T getValueFromHash(String redisHashKey, String fieldKey, Class<T> clazz) {
         Object value = redisTemplate.opsForHash().get(redisHashKey, fieldKey);
-        return clazz.cast(value);
+
+        if (clazz.isInstance(value)) {
+            return clazz.cast(value);
+        }
+
+        // Long타입을 원할때, Redis에서 Integer로 반환할 수 있기때문에 변환 과정이 필요
+        if (clazz == Long.class && value instanceof Integer) {
+            return clazz.cast(((Integer) value).longValue());
+        }
+
+        throw new IllegalArgumentException("변환할 수 없습니다. " + clazz.getName());
+    }
+
+    /**
+     * Redis Hash에서 특정 필드를 제거합니다.
+     *
+     * @param redisHashKey Redis Hash의 키
+     * @param fieldKey 제거할 필드의 키
+     */
+    public void removeFieldFromHash(String redisHashKey, String fieldKey) {
+        redisTemplate.opsForHash().delete(redisHashKey, fieldKey);
     }
 
 

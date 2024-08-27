@@ -32,11 +32,13 @@ public class PostBuilder {
 
     public static CreatePostDto buildCreatePostDto(RequestCreatePostDto dto,
                                                    SessionUser loginUser,
-                                                   List<String> imageUrls) {
+                                                   List<String> imageUrls,
+                                                   String fieldKey) {
         return CreatePostDto.builder()
                 .loginUserId(loginUser.getId())
                 .content(dto.getContent())
                 .imageUrls(imageUrls)
+                .fieldKey(fieldKey)
                 .hasImage(dto.getHasImage())
                 .taggedUserIds(dto.getTaggedUserIds())
                 .build();

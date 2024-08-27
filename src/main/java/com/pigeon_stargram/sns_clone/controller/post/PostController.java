@@ -3,6 +3,7 @@ package com.pigeon_stargram.sns_clone.controller.post;
 import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.file.internal.FileUploadResultDto;
 import com.pigeon_stargram.sns_clone.dto.post.internal.CreatePostDto;
 import com.pigeon_stargram.sns_clone.dto.post.internal.EditPostDto;
 import com.pigeon_stargram.sns_clone.dto.post.internal.LikePostDto;
@@ -46,10 +47,12 @@ public class PostController {
                                                  List<MultipartFile> imagesFile) {
         Long userId = loginUser.getId();
 
-        List<String> imageUrls = fileService.saveFiles(imagesFile);
+        FileUploadResultDto result = fileService.saveFiles(imagesFile);
 
-        log.info("RequestCreatePostDto={}", request);
-        CreatePostDto createPostDto = buildCreatePostDto(request, loginUser, imageUrls);
+        List<String> images = result.getFileNames();
+        String fieldKey = result.getHashKey();
+
+        CreatePostDto createPostDto = buildCreatePostDto(request, loginUser, images, fieldKey);
         postService.createPost(createPostDto);
 
         return postService.getPostsByUserId(userId);

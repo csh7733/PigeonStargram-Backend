@@ -1,8 +1,11 @@
 package com.pigeon_stargram.sns_clone.service.file;
 
+import com.pigeon_stargram.sns_clone.dto.file.internal.FileDto;
+import com.pigeon_stargram.sns_clone.dto.file.internal.FileUploadResultDto;
 import com.pigeon_stargram.sns_clone.exception.file.FileLoadException;
 import com.pigeon_stargram.sns_clone.exception.file.FileUploadException;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
+import com.pigeon_stargram.sns_clone.worker.FileUploadWorker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
@@ -20,9 +23,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.pigeon_stargram.sns_clone.constant.RedisQueueConstants.FILE_UPLOAD_QUEUE;
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
 
 @Slf4j
@@ -34,18 +40,31 @@ public class S3FileService implements FileService{
 
     private final S3Client s3Client;
     private final RedisService redisService;
+    private final FileUploadWorker fileUploadWorker;
 
     @Value("${aws.s3.bucketName}")
     private String bucketName;
 
     @Override
-    public List<String> saveFiles(List<MultipartFile> files) {
-        // 게시글 작성에서 이미지없이 글만작성을 하는 경우를 위해서 필요
-        if(files == null) return null;
+    public FileUploadResultDto saveFiles(List<MultipartFile> files) {
+        if(files == null) return new FileUploadResultDto();
 
-        return files.stream()
-                .map(this::saveFile)
-                .collect(Collectors.toList());
+        String fieldKey = UUID.randomUUID().toString();
+        int totalFiles = files.size();
+        List<String> fileNames = new ArrayList<>();
+
+        for (int index = 0; index < totalFiles; index++) {
+            MultipartFile file = files.get(index);
+            boolean isLast = (index == totalFiles - 1);
+
+            String fileName = getFilename(file);
+            fileNames.add(fileName);
+            log.info("비동기 전");
+            fileUploadWorker.uploadFileAsync(file, fileName, fieldKey, isLast);
+            log.info("비동기 후");
+        }
+
+        return new FileUploadResultDto(fileNames, fieldKey);
     }
     
     @Override
@@ -83,7 +102,7 @@ public class S3FileService implements FileService{
                 throw new FileLoadException(FILE_NOT_FOUND_OR_UNREADABLE + filename);
             }
         } catch (Exception e) {
-            throw new FileLoadException(FILE_NOT_FOUND_OR_UNREADABLE + filename, e);
+            throw new FileLoadException(MALFORMED_URL + filename, e);
         }
     }
 
