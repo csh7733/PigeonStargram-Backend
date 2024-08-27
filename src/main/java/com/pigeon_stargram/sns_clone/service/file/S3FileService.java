@@ -1,6 +1,5 @@
 package com.pigeon_stargram.sns_clone.service.file;
 
-import com.pigeon_stargram.sns_clone.dto.file.internal.FileDto;
 import com.pigeon_stargram.sns_clone.dto.file.internal.FileUploadResultDto;
 import com.pigeon_stargram.sns_clone.exception.file.FileLoadException;
 import com.pigeon_stargram.sns_clone.exception.file.FileUploadException;
