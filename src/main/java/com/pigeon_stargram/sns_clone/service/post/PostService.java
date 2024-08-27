@@ -65,9 +65,12 @@ public class PostService {
         LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
 
         return postCrudService.findByUserIdAndCreatedDateAfter(userId, oneDayAgo).stream()
-                .map(post -> getCombinedPost(post.getId()))
+                .map(Post::getId)
+                .filter(postId -> !redisService.isMemberOfSet(UPLOADING_POSTS_SET, postId))
+                .map(this::getCombinedPost)
                 .collect(Collectors.toList());
     }
+
 
     public ResponsePostDto getCombinedPost(Long postId) {
         PostContentDto contentDto = getPostContent(postId);
