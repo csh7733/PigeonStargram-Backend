@@ -135,8 +135,7 @@ public class PostService {
     }
 
     public void editPost(EditPostDto dto) {
-        Post post = postCrudService.findById(dto.getPostId());
-        post.modify(dto.getContent());
+        postCrudService.edit(dto.getPostId(), dto.getContent());
     }
 
 

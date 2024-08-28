@@ -27,7 +27,7 @@ public class SessionExpiredInterceptor implements HandlerInterceptor {
                              HttpServletResponse response,
                              Object handler) throws Exception {
         String requestUri = request.getRequestURI();
-        log.info("requestUri = {}", requestUri);
+        log.info("requestUri = {}, method = {}", requestUri, request.getMethod());
         SessionUser user = (SessionUser) httpSession.getAttribute("user");
         if (user == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

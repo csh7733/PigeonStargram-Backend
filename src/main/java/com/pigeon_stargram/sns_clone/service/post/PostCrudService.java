@@ -3,6 +3,7 @@ package com.pigeon_stargram.sns_clone.service.post;
 import com.pigeon_stargram.sns_clone.domain.post.Post;
 import com.pigeon_stargram.sns_clone.exception.post.PostNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.post.PostRepository;
+import com.pigeon_stargram.sns_clone.service.comment.CommentCrudService;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ public class PostCrudService {
     private final RedisService redisService;
 
     private final PostRepository repository;
+    private final CommentCrudService commentCrudService;
 
     @Cacheable(value = POST,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).POST_ID + '_' + #postId")
@@ -68,7 +70,7 @@ public class PostCrudService {
     }
 
     public List<Long> findPostIdsByUserIdAndCreatedDateAfter(Long userId,
-                                                                LocalDateTime createdDate) {
+                                                             LocalDateTime createdDate) {
         String cacheKey = cacheKeyGenerator(RECENT_POST_IDS, USER_ID, userId.toString());
 
         if (redisService.hasKey(cacheKey)) {
@@ -96,7 +98,7 @@ public class PostCrudService {
     }
 
     @CachePut(value = POST,
-            key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).USER_ID + '_' + #post.id")
+            key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).POST_ID + '_' + #post.id")
     public Post save(Post post) {
         Post save = repository.save(post);
 
@@ -110,7 +112,7 @@ public class PostCrudService {
         }
 
         String recentPostIds =
-                cacheKeyGenerator(ALL_POST_IDS, USER_ID, userId.toString());
+                cacheKeyGenerator(RECENT_POST_IDS, USER_ID, userId.toString());
         if (redisService.hasKey(recentPostIds)) {
             log.info("post 저장후 userId에 대한 최근 postId 캐시 저장 userId = {}", userId);
             redisService.addToSet(recentPostIds, post.getId());
@@ -119,8 +121,21 @@ public class PostCrudService {
         return save;
     }
 
+    @CachePut(value = POST,
+            key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).POST_ID + '_' + #postId")
+    public Post edit(Long postId,
+                     String newContent) {
+        // 영속화된 post
+        Post post = repository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException(POST_NOT_FOUND_ID));
+        post.modify(newContent);
+        log.info("postContent={}", post.getContent());
+
+        return post;
+    }
+
     @CacheEvict(value = POST,
-            key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).USER_ID + '_' + #postId")
+            key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).POST_ID + '_' + #postId")
     public void deleteById(Long postId) {
         Long postUserId = findById(postId).getUser().getId();
         repository.deleteById(postId);
@@ -133,7 +148,7 @@ public class PostCrudService {
         }
 
         String recentPostIds =
-                cacheKeyGenerator(ALL_POST_IDS, USER_ID, postUserId.toString());
+                cacheKeyGenerator(RECENT_POST_IDS, USER_ID, postUserId.toString());
         if (redisService.hasKey(recentPostIds)) {
             log.info("post 삭제후 userId에 대한 최근 postId 캐시 삭제 userId = {}", postUserId);
             redisService.removeFromSet(recentPostIds, postId);

@@ -61,7 +61,6 @@ public class Post extends BaseTimeEntity {
     }
 
     @PrePersist
-    @PreUpdate
     private void synchronizeImages() {
         this.images = new ArrayList<>(this.imagesForSerialization);
     }

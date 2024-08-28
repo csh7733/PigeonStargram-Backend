@@ -41,9 +41,8 @@ public class CommentService {
     private final ReplyCrudService replyCrudService;
 
     public List<ResponseCommentDto> getCommentDtosByPostId(Long postId) {
-        List<Comment> comments = commentCrudService.findCommentIdByPostId(postId);
-        return comments.stream()
-                .map(Comment::getId)
+        List<Long> commentIds = commentCrudService.findCommentIdByPostId(postId);
+        return commentIds.stream()
                 .sorted(Comparator.reverseOrder())
                 .map(this::getCombinedComment)
                 .collect(Collectors.toList());
@@ -90,10 +89,10 @@ public class CommentService {
     }
 
     public void deleteAllCommentsAndReplyByPostId(Long postId) {
-        List<Comment> comments = commentCrudService.findCommentIdByPostId(postId);
-        comments.forEach(comment -> {
-            replyCrudService.deleteAllByCommentId(comment.getId());
-            commentCrudService.deleteById(comment.getId());
+        List<Long> commentIds = commentCrudService.findCommentIdByPostId(postId);
+        commentIds.forEach(commentId -> {
+            replyCrudService.deleteAllByCommentId(commentId);
+            commentCrudService.deleteById(commentId);
         });
     }
 
