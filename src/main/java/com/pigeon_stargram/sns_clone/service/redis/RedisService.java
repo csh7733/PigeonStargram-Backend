@@ -3,7 +3,10 @@ package com.pigeon_stargram.sns_clone.service.redis;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -15,6 +18,7 @@ import java.time.Duration;
 public class RedisService {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisMessageListenerContainer redisMessageListenerContainer;
 
     /**
      * 메시지 큐에 태스크를 추가합니다.
@@ -132,5 +136,34 @@ public class RedisService {
         redisTemplate.opsForHash().delete(redisHashKey, fieldKey);
     }
 
+    /**
+     * Redis 채널에 메시지를 발행합니다.
+     * @param channelName 채널의 이름
+     * @param message 발행할 메시지 (Object 타입)
+     */
+    public void publishMessage(String channelName, Object message) {
+        redisTemplate.convertAndSend(channelName, message);
+        log.info("Published message to channel {}: {}", channelName, message);
+    }
+
+    /**
+     * Redis 채널을 구독하여 메시지를 수신합니다.
+     * @param channelName 채널의 이름
+     * @param listener 메시지를 수신할 리스너
+     */
+    public void subscribeToChannel(String channelName, MessageListener listener) {
+        redisMessageListenerContainer.addMessageListener(listener, new ChannelTopic(channelName));
+        log.info("Subscribed to channel: {}", channelName);
+    }
+
+    /**
+     * Redis 채널 구독을 해제합니다.
+     * @param channelName 채널의 이름
+     * @param listener 메시지를 수신할 리스너
+     */
+    public void unsubscribeFromChannel(String channelName, MessageListener listener) {
+        redisMessageListenerContainer.removeMessageListener(listener, new ChannelTopic(channelName));
+        log.info("Unsubscribed from channel: {}", channelName);
+    }
 
 }
