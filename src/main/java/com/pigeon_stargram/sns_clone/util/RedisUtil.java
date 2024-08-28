@@ -4,7 +4,9 @@ import org.springframework.stereotype.Component;
 
 public class RedisUtil {
 
-    public static String cacheKeyGenerator(String prefix, String suffix) {
-        return prefix + "_" + suffix;
+    public static String cacheKeyGenerator(String value,
+                                           String prefix,
+                                           String suffix) {
+        return value + "::" + prefix + "_" + suffix;
     }
 }

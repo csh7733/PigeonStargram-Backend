@@ -7,11 +7,13 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Set;
 
+@Slf4j
 @RequiredArgsConstructor
 @Transactional
 @Service
-@Slf4j
 public class RedisService {
 
     private final RedisTemplate<String, Object> redisTemplate;
@@ -54,6 +56,15 @@ public class RedisService {
     }
 
     /**
+     * Set에 List전체 값을 추가합니다.
+     * @param setKey Set의 키
+     * @param values 추가할 List
+     */
+    public <T> void addAllToSet(String setKey, List<T> values) {
+        redisTemplate.opsForSet().add(setKey, values.toArray());
+    }
+
+    /**
      * Set에서 값을 제거합니다.
      * @param setKey Set의 키
      * @param value 제거할 값
@@ -70,6 +81,15 @@ public class RedisService {
      */
     public Boolean isMemberOfSet(String setKey, Object value) {
         return redisTemplate.opsForSet().isMember(setKey, value);
+    }
+
+    /**
+     * Set의 모든 값들을 Set으로 가져옵니다.
+     * @param setKey
+     * @return 키에 해당하는 Set
+     */
+    public Set<Object> getSet(String setKey) {
+        return redisTemplate.opsForSet().members(setKey);
     }
 
     /**
@@ -145,4 +165,5 @@ public class RedisService {
     public Object getValue(String key) {
         return redisTemplate.opsForValue().get(key);
     }
+
 }
