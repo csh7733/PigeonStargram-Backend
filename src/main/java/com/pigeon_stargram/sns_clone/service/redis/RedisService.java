@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Service;
 
@@ -143,27 +144,44 @@ public class RedisService {
      */
     public void publishMessage(String channelName, Object message) {
         redisTemplate.convertAndSend(channelName, message);
-        log.info("Published message to channel {}: {}", channelName, message);
     }
 
     /**
-     * Redis 채널을 구독하여 메시지를 수신합니다.
-     * @param channelName 채널의 이름
+     * Redis 패턴을 구독하여 메시지를 수신합니다.
+     * @param pattern 구독할 패턴 (예: "chat.*.*")
      * @param listener 메시지를 수신할 리스너
      */
-    public void subscribeToChannel(String channelName, MessageListener listener) {
-        redisMessageListenerContainer.addMessageListener(listener, new ChannelTopic(channelName));
-        log.info("Subscribed to channel: {}", channelName);
+    public void subscribeToPattern(String pattern, MessageListener listener) {
+        redisMessageListenerContainer.addMessageListener(listener, new PatternTopic(pattern));
     }
 
     /**
-     * Redis 채널 구독을 해제합니다.
-     * @param channelName 채널의 이름
+     * Redis 패턴 구독을 해제합니다.
+     * @param pattern 구독을 해제할 패턴 (예: "chat.*.*")
      * @param listener 메시지를 수신할 리스너
      */
-    public void unsubscribeFromChannel(String channelName, MessageListener listener) {
-        redisMessageListenerContainer.removeMessageListener(listener, new ChannelTopic(channelName));
-        log.info("Unsubscribed from channel: {}", channelName);
+    public void unsubscribeFromPattern(String pattern, MessageListener listener) {
+        redisMessageListenerContainer.removeMessageListener(listener, new PatternTopic(pattern));
     }
+
+    /**
+     * 주어진 바이트 배열을 지정된 클래스 타입의 객체로 역직렬화합니다.
+     *
+     * @param messageBody 역직렬화할 바이트 배열입니다.
+     * @param clazz       바이트 배열을 변환할 클래스 타입입니다.
+     * @param <T>         반환할 객체의 타입을 나타냅니다.
+     * @return 지정된 타입으로 변환된 역직렬화된 객체를 반환합니다.
+     * @throws IllegalArgumentException 역직렬화된 객체를 지정된 클래스 타입으로 변환할 수 없을 경우 발생합니다.
+     */
+    public <T> T deserializeMessage(byte[] messageBody, Class<T> clazz) {
+        Object deserialized = redisTemplate.getValueSerializer().deserialize(messageBody);
+
+        if (clazz.isInstance(deserialized)) {
+            return clazz.cast(deserialized);
+        } else {
+            throw new IllegalArgumentException("변환할 수 없습니다. " + clazz.getName());
+        }
+    }
+
 
 }

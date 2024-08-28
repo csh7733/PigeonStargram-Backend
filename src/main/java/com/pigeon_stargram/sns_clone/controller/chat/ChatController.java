@@ -13,10 +13,12 @@ import com.pigeon_stargram.sns_clone.service.chat.ChatBuilder;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.file.FileService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
+import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserBuilder;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -44,6 +46,7 @@ public class ChatController {
     private final UserService userService;
     private final FileService fileService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final RedisService redisService;
 
 
     @GetMapping("/users")
@@ -116,13 +119,18 @@ public class ChatController {
 
 
     @MessageMapping("/chat/{user1Id}/{user2Id}")
-    @SendTo("/topic/chat/{user1Id}/{user2Id}")
-    public NewChatDto sendMessage(@Payload NewChatDto chatMessage) {
-
+    public void sendMessage(@Payload NewChatDto chatMessage,
+                                  @DestinationVariable Long user1Id,
+                                  @DestinationVariable Long user2Id) {
         chatMessage.setTime(getCurrentFormattedTime());
         chatService.save(chatMessage);
 
-        return chatMessage;
+        String channel = getChannel(user1Id, user2Id);
+        redisService.publishMessage(channel,chatMessage);
+    }
+
+    private static String getChannel(Long user1Id, Long user2Id) {
+        return "chat." + user1Id + "." + user2Id;
     }
 
 }
