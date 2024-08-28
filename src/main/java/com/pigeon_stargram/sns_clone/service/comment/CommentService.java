@@ -14,7 +14,6 @@ import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyCommentTagg
 import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.post.PostCrudService;
-import com.pigeon_stargram.sns_clone.service.post.PostService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyCrudService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -42,7 +41,7 @@ public class CommentService {
     private final ReplyCrudService replyCrudService;
 
     public List<ResponseCommentDto> getCommentDtosByPostId(Long postId) {
-        List<Comment> comments = commentCrudService.findByPostId(postId);
+        List<Comment> comments = commentCrudService.findCommentIdByPostId(postId);
         return comments.stream()
                 .map(Comment::getId)
                 .sorted(Comparator.reverseOrder())
@@ -91,7 +90,7 @@ public class CommentService {
     }
 
     public void deleteAllCommentsAndReplyByPostId(Long postId) {
-        List<Comment> comments = commentCrudService.findByPostId(postId);
+        List<Comment> comments = commentCrudService.findCommentIdByPostId(postId);
         comments.forEach(comment -> {
             replyCrudService.deleteAllByCommentId(comment.getId());
             commentCrudService.deleteById(comment.getId());

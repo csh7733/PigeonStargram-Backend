@@ -41,21 +41,20 @@ public class PostCrudService {
         return repository.findByUserId(userId);
     }
 
-    public List<Integer> findPostIdsByUserId(Long userId) {
+    public List<Long> findPostIdsByUserId(Long userId) {
         String cacheKey = cacheKeyGenerator(ALL_POST_IDS, USER_ID, userId.toString());
 
         if (redisService.hasKey(cacheKey)) {
             log.info("findPostIdsByUserId = {} 캐시 히트", userId);
 
             return redisService.getSet(cacheKey).stream()
-                    .map(postId -> (Integer) postId)
+                    .map(postId -> Long.valueOf((Integer) postId))
                     .collect(Collectors.toList());
         }
 
         log.info("findPostIdsByUserId = {} 캐시 미스", userId);
-        List<Integer> postIds = repository.findByUserId(userId).stream()
+        List<Long> postIds = repository.findByUserId(userId).stream()
                 .map(Post::getId)
-                .map(Math::toIntExact)
                 .collect(Collectors.toList());
 
         if (postIds.isEmpty()) {
@@ -68,7 +67,7 @@ public class PostCrudService {
         return postIds;
     }
 
-    public List<Integer> findPostIdsByUserIdAndCreatedDateAfter(Long userId,
+    public List<Long> findPostIdsByUserIdAndCreatedDateAfter(Long userId,
                                                                 LocalDateTime createdDate) {
         String cacheKey = cacheKeyGenerator(RECENT_POST_IDS, USER_ID, userId.toString());
 
@@ -76,15 +75,14 @@ public class PostCrudService {
             log.info("findPostIdsByUserIdAncCreatedDateAfter = {} 캐시 히트", userId);
 
             return redisService.getSet(cacheKey).stream()
-                    .map(postId -> (Integer) postId)
+                    .map(postId -> Long.valueOf((Integer) postId))
                     .collect(Collectors.toList());
         }
 
         log.info("findPostIdsByUserIdAncCreatedDateAfter = {} 캐시 미스", userId);
-        List<Integer> postIds =
+        List<Long> postIds =
                 repository.findByUserIdAndCreatedDateAfter(userId, createdDate).stream()
                         .map(Post::getId)
-                        .map(Math::toIntExact)
                         .collect(Collectors.toList());
 
         if (postIds.isEmpty()) {
