@@ -1,6 +1,7 @@
-package com.pigeon_stargram.sns_clone.config;
+package com.pigeon_stargram.sns_clone.event.webSocket;
 
 import com.pigeon_stargram.sns_clone.event.user.UserConnectEvent;
+import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -10,16 +11,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.pigeon_stargram.sns_clone.constant.RedisUserConstants.ACTIVE_USERS_KEY_PREFIX;
+import static com.pigeon_stargram.sns_clone.constant.RedisUserConstants.SESSION_USER_MAP_KEY;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class WebSocketEventListener{
 
+    private final RedisService redisService;
     private final ApplicationEventPublisher eventPublisher;
-    private static final ConcurrentHashMap<Long, ConcurrentHashMap<Long, Boolean>> activeUsers = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<String, Long> sessionUserMap = new ConcurrentHashMap<>();
 
     @EventListener
     public void handleSessionConnected(SessionConnectEvent event) {
@@ -28,11 +32,11 @@ public class WebSocketEventListener{
         Long partnerUserId = stringToLong(sha.getFirstNativeHeader("partner-user-id"));
 
         if (userId != null && partnerUserId != null) {
-            sessionUserMap.put(sha.getSessionId(), userId);
-            activeUsers.putIfAbsent(userId, new ConcurrentHashMap<>());
-            activeUsers.get(userId).put(partnerUserId, true);
-            log.info("User connected: {} -> is chatting with {}",userId,partnerUserId);
+            redisService.putValueInHash(SESSION_USER_MAP_KEY, sha.getSessionId(), userId);
+            String activeUsersKey = ACTIVE_USERS_KEY_PREFIX + userId;
+            redisService.putValueInHash(activeUsersKey, String.valueOf(partnerUserId), true);
 
+            log.info("User connected: {} -> is chatting with {}",userId,partnerUserId);
             eventPublisher.publishEvent(new UserConnectEvent(this, userId, partnerUserId));
         }
     }
@@ -41,19 +45,19 @@ public class WebSocketEventListener{
     public void handleSessionDisconnect(SessionDisconnectEvent event) {
         StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
         String sessionId = sha.getSessionId();
-        Long userId = sessionUserMap.remove(sessionId);
+        Long userId = redisService.getValueFromHash(SESSION_USER_MAP_KEY, sessionId, Long.class);
 
 
         if (userId != null) {
-            ConcurrentHashMap<Long, Boolean> activeUser = activeUsers.get(userId);
-            if (activeUser != null) {
-                for (Long partnerUserId : activeUser.keySet()) {
-                    activeUser.remove(partnerUserId);
-                }
-                if (activeUser.isEmpty()) {
-                    activeUsers.remove(userId);
-                }
+            redisService.removeFieldFromHash(SESSION_USER_MAP_KEY, sessionId);
+
+            String activeUsersKey = ACTIVE_USERS_KEY_PREFIX + userId;
+            Map<Object, Object> activeUsersMap = redisService.getAllFieldsFromHash(activeUsersKey);
+
+            for (Object partnerUserId : activeUsersMap.keySet()) {
+                redisService.removeFieldFromHash(activeUsersKey, String.valueOf(partnerUserId));
             }
+
             log.info("User disconnected: " + userId);
         }
     }
@@ -64,10 +68,6 @@ public class WebSocketEventListener{
         } catch (NumberFormatException e) {
             return null;
         }
-    }
-
-    public static Boolean isUserChattingWith(Long userId, Long partnerUserId) {
-        return activeUsers.containsKey(userId) && activeUsers.get(userId).getOrDefault(partnerUserId, false);
     }
 
 }

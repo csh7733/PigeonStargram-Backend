@@ -11,6 +11,7 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Transactional
@@ -128,6 +129,16 @@ public class RedisService {
     }
 
     /**
+     * Redis Hash에서 모든 필드와 값을 가져옵니다.
+     *
+     * @param redisHashKey Redis Hash의 키
+     * @return 모든 필드와 값이 포함된 맵을 반환합니다.
+     */
+    public Map<Object, Object> getAllFieldsFromHash(String redisHashKey) {
+        return redisTemplate.opsForHash().entries(redisHashKey);
+    }
+
+    /**
      * Redis Hash에서 특정 필드를 제거합니다.
      *
      * @param redisHashKey Redis Hash의 키
@@ -135,6 +146,27 @@ public class RedisService {
      */
     public void removeFieldFromHash(String redisHashKey, String fieldKey) {
         redisTemplate.opsForHash().delete(redisHashKey, fieldKey);
+    }
+
+    /**
+     * Redis Hash에서 특정 필드의 존재 여부를 확인합니다.
+     * @param hashKey Hash의 키
+     * @param fieldKey 확인할 필드의 키
+     * @return 필드의 존재 여부
+     */
+    public Boolean hasFieldInHash(String hashKey, String fieldKey) {
+        return redisTemplate.opsForHash().hasKey(hashKey, fieldKey);
+    }
+
+    /**
+     * Redis Hash에서 특정 필드의 값을 증가시킵니다.
+     * @param hashKey Hash의 키
+     * @param fieldKey 증가시킬 필드의 키
+     * @param delta 증가시킬 값
+     * @return 증가된 값
+     */
+    public Long incrementHashValue(String hashKey, String fieldKey, long delta) {
+        return redisTemplate.opsForHash().increment(hashKey, fieldKey, delta);
     }
 
     /**

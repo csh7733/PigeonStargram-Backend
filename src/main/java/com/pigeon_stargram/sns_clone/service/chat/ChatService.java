@@ -29,7 +29,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.pigeon_stargram.sns_clone.config.WebSocketEventListener.isUserChattingWith;
+import static com.pigeon_stargram.sns_clone.constant.RedisUserConstants.ACTIVE_USERS_KEY_PREFIX;
 import static com.pigeon_stargram.sns_clone.service.chat.ChatBuilder.buildSendLastMessageDto;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFormattedTime;
 
@@ -75,8 +75,9 @@ public class ChatService {
     }
 
     public void sentUnReadChatCountToUser(Long toUserId, Long fromUserId, Integer count) {
-        String destination = "/topic/users/status/" + toUserId;
-        messagingTemplate.convertAndSend(destination, new UnReadChatCountDto(fromUserId, count));
+        String channel = getUnReadChatCountChannelName(toUserId);
+        UnReadChatCountDto unReadChatCountDto = new UnReadChatCountDto(toUserId,fromUserId, count);
+        redisService.publishMessage(channel, unReadChatCountDto);
     }
 
     public void sentLastMessage(SendLastMessageDto dto) {
@@ -191,5 +192,14 @@ public class ChatService {
         long largerId = Math.max(user1Id, user2Id);
 
         return "lastMessage.chat." + smallerId + "." + largerId;
+    }
+
+    private String getUnReadChatCountChannelName(Long toUserId) {
+        return "unreadChatCount." + toUserId;
+    }
+
+    public boolean isUserChattingWith(Long userId, Long partnerUserId) {
+        String activeUsersKey = ACTIVE_USERS_KEY_PREFIX + userId;
+        return redisService.hasFieldInHash(activeUsersKey, String.valueOf(partnerUserId));
     }
 }
