@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.config.redis.eventListener;
+package com.pigeon_stargram.sns_clone.event.redis.eventListener;
 
 import com.pigeon_stargram.sns_clone.dto.chat.internal.NewChatDto;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;

@@ -1,7 +1,7 @@
-package com.pigeon_stargram.sns_clone.config.redis;
+package com.pigeon_stargram.sns_clone.event.redis;
 
-import com.pigeon_stargram.sns_clone.config.redis.eventListener.RedisChatMessageListener;
-import com.pigeon_stargram.sns_clone.config.redis.eventListener.RedisOnlineStatusListener;
+import com.pigeon_stargram.sns_clone.event.redis.eventListener.RedisChatMessageListener;
+import com.pigeon_stargram.sns_clone.event.redis.eventListener.RedisOnlineStatusListener;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;

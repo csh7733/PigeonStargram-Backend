@@ -1,6 +1,6 @@
 package com.pigeon_stargram.sns_clone.config;
 
-import com.pigeon_stargram.sns_clone.event.UserConnectEvent;
+import com.pigeon_stargram.sns_clone.event.user.UserConnectEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
