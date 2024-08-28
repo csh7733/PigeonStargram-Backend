@@ -15,6 +15,7 @@ import com.pigeon_stargram.sns_clone.repository.chat.ImageChatRepository;
 import com.pigeon_stargram.sns_clone.repository.chat.LastMessageRepository;
 import com.pigeon_stargram.sns_clone.repository.chat.TextChatRepository;
 import com.pigeon_stargram.sns_clone.repository.chat.UnreadChatRepository;
+import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +47,8 @@ public class ChatService {
     private final UnreadChatRepository unreadChatRepository;
     private final LastMessageRepository lastMessageRepository;
 
+    private final RedisService redisService;
+
     public void save(NewChatDto dto){
 
         if(dto.getIsImage()) imageChatRepository.save(dto.toImageEntity());
@@ -62,7 +65,13 @@ public class ChatService {
         LastMessageDto lastMessage = setLastMessage(dto);
         SendLastMessageDto sendLastMessageDto =
                 buildSendLastMessageDto(user1Id, user2Id, lastMessage);
-        sentLastMessage(sendLastMessageDto);
+
+        publishLastMessage(sendLastMessageDto);
+    }
+
+    private void publishLastMessage(SendLastMessageDto dto) {
+        String channel = getChatLastMessageChannelName(dto.getUser1Id(), dto.getUser2Id());
+        redisService.publishMessage(channel, dto);
     }
 
     public void sentUnReadChatCountToUser(Long toUserId, Long fromUserId, Integer count) {
@@ -175,5 +184,12 @@ public class ChatService {
         Long[] userIds = {user1Id, user2Id};
         Arrays.sort(userIds);
         return userIds;
+    }
+
+    private String getChatLastMessageChannelName(Long user1Id, Long user2Id) {
+        long smallerId = Math.min(user1Id, user2Id);
+        long largerId = Math.max(user1Id, user2Id);
+
+        return "lastMessage.chat." + smallerId + "." + largerId;
     }
 }

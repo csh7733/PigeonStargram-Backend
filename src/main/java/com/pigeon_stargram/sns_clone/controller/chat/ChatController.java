@@ -25,12 +25,8 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
-import static com.pigeon_stargram.sns_clone.config.WebSocketEventListener.isUserChattingWith;
 import static com.pigeon_stargram.sns_clone.service.chat.ChatBuilder.*;
 import static com.pigeon_stargram.sns_clone.service.user.UserBuilder.*;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFormattedTime;
@@ -45,7 +41,6 @@ public class ChatController {
     private final FollowService followService;
     private final UserService userService;
     private final FileService fileService;
-    private final SimpMessagingTemplate messagingTemplate;
     private final RedisService redisService;
 
 
@@ -98,7 +93,7 @@ public class ChatController {
         chatMessage.setTime(getCurrentFormattedTime());
         chatService.save(chatMessage);
 
-        String channel = getChannelName(from, to);
+        String channel = getChatChannelName(from, to);
         redisService.publishMessage(channel,chatMessage);
 
         return chatMessage;
@@ -112,16 +107,15 @@ public class ChatController {
         chatMessage.setTime(getCurrentFormattedTime());
         chatService.save(chatMessage);
 
-        String channel = getChannelName(user1Id, user2Id);
+        String channel = getChatChannelName(user1Id, user2Id);
         redisService.publishMessage(channel,chatMessage);
     }
 
-    private static String getChannelName(Long user1Id, Long user2Id) {
+    private String getChatChannelName(Long user1Id, Long user2Id) {
         long smallerId = Math.min(user1Id, user2Id);
         long largerId = Math.max(user1Id, user2Id);
 
         return "chat." + smallerId + "." + largerId;
     }
-
 
 }

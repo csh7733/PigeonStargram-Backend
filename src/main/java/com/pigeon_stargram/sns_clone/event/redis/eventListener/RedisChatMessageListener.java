@@ -20,7 +20,7 @@ public class RedisChatMessageListener implements MessageListener {
     @Override
     public void onMessage(Message message, byte[] pattern) {
         NewChatDto chatMessage = redisService.deserializeMessage(message.getBody(), NewChatDto.class);
-        log.info("메시지 = {}",chatMessage.toString());
+        log.info("ChatMessage = {}",chatMessage.toString());
 
         long user1Id = Math.min(chatMessage.getFrom(), chatMessage.getTo());
         long user2Id = Math.max(chatMessage.getFrom(), chatMessage.getTo());

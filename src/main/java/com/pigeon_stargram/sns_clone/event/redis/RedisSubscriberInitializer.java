@@ -1,5 +1,6 @@
 package com.pigeon_stargram.sns_clone.event.redis;
 
+import com.pigeon_stargram.sns_clone.event.redis.eventListener.RedisChatLastMessageListener;
 import com.pigeon_stargram.sns_clone.event.redis.eventListener.RedisChatMessageListener;
 import com.pigeon_stargram.sns_clone.event.redis.eventListener.RedisOnlineStatusListener;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
@@ -16,10 +17,12 @@ public class RedisSubscriberInitializer {
     private final RedisService redisService;
     private final RedisChatMessageListener chatMessageListener;
     private final RedisOnlineStatusListener onlineStatusListener;
+    private final RedisChatLastMessageListener chatLastMessageListener;
 
     @PostConstruct
     public void init() {
         redisService.subscribeToPattern("chat.*.*", chatMessageListener);
         redisService.subscribeToPattern("user.online.status", onlineStatusListener);
+        redisService.subscribeToPattern("lastMessage.chat.*.*", chatLastMessageListener);
     }
 }
