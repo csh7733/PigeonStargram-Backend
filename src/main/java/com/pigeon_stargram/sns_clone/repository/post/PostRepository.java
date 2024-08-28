@@ -11,5 +11,6 @@ import java.util.List;
 public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByUserId(Long userId);
 
-    List<Post> findByUserIdAndCreatedDateAfter(@Param("userId") Long userId, @Param("startDate") LocalDateTime startDate);
+    List<Post> findByUserIdAndCreatedDateAfter(@Param("userId") Long userId,
+                                               @Param("startDate") LocalDateTime startDate);
 }

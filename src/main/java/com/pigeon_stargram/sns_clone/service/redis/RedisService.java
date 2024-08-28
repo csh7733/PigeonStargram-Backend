@@ -128,5 +128,21 @@ public class RedisService {
         redisTemplate.opsForHash().delete(redisHashKey, fieldKey);
     }
 
+    /**
+     * 레디스에 key에 해당하는 자료구조가 있는지 확인합니다.
+     * @param key 자료구조 키
+     * @return 키에 해당하는 자료구조 존재여부
+     */
+    public Boolean hasKey(String key) {
+        return redisTemplate.hasKey(key);
+    }
 
+    /**
+     * 레디스의 key:value 에서 값을 가져옵니다.
+     * @param key - 키값
+     * @return 키에 해당하는 값
+     */
+    public Object getValue(String key) {
+        return redisTemplate.opsForValue().get(key);
+    }
 }

@@ -21,6 +21,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -40,10 +41,13 @@ public class TestData {
     private final FollowService followService;
     private final ChatService chatService;
 
+    private final RedisTemplate<String, Object> redisTemplate;
+
     public List<UserDto> userDtoList;
 
     @PostConstruct
     public void initData() throws IOException {
+        redisTemplate.getConnectionFactory().getConnection().flushAll();
         initData1();
         initData2();
         initData3();

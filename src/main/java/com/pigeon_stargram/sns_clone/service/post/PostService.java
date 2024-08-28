@@ -53,6 +53,7 @@ public class PostService {
 
     public List<ResponsePostDto> getPostsByUserId(Long userId) {
         return postCrudService.findPostIdsByUserId(userId).stream()
+                .map(Long::valueOf)
                 .filter(postId -> !redisService.isMemberOfSet(UPLOADING_POSTS_SET, postId))
                 .sorted(Comparator.reverseOrder())
                 .map(this::getCombinedPost)
@@ -63,8 +64,8 @@ public class PostService {
     public List<ResponsePostDto> getRecentPostsByUser(Long userId) {
         LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
 
-        return postCrudService.findByUserIdAndCreatedDateAfter(userId, oneDayAgo).stream()
-                .map(Post::getId)
+        return postCrudService.findPostIdsByUserIdAndCreatedDateAfter(userId, oneDayAgo).stream()
+                .map(Long::valueOf)
                 .filter(postId -> !redisService.isMemberOfSet(UPLOADING_POSTS_SET, postId))
                 .map(this::getCombinedPost)
                 .collect(Collectors.toList());
