@@ -98,21 +98,8 @@ public class ChatController {
         chatMessage.setTime(getCurrentFormattedTime());
         chatService.save(chatMessage);
 
-//        if (!isUserChattingWith(to, from)) {
-//            Integer count = chatService.increaseUnReadChatCount(to, from);
-//            chatService.sentUnReadChatCountToUser(to, from, count);
-//        }
-//
-//        LastMessageDto lastMessage = chatService.setLastMessage(chatMessage);
-//        SendLastMessageDto sendLastMessageDto = buildSendLastMessageDto(from, to, lastMessage);
-//        chatService.sentLastMessage(sendLastMessageDto);
-
-        Long[] userIds = chatService.sortAndGet(from, to);
-
-        String destination = "/topic/chat/" + userIds[0] + "/" + userIds[1];
-        messagingTemplate.convertAndSend(destination, chatMessage);
-
-        log.info("chatMessage={}", chatMessage);
+        String channel = getChannelName(from, to);
+        redisService.publishMessage(channel,chatMessage);
 
         return chatMessage;
     }
@@ -125,12 +112,16 @@ public class ChatController {
         chatMessage.setTime(getCurrentFormattedTime());
         chatService.save(chatMessage);
 
-        String channel = getChannel(user1Id, user2Id);
+        String channel = getChannelName(user1Id, user2Id);
         redisService.publishMessage(channel,chatMessage);
     }
 
-    private static String getChannel(Long user1Id, Long user2Id) {
-        return "chat." + user1Id + "." + user2Id;
+    private static String getChannelName(Long user1Id, Long user2Id) {
+        long smallerId = Math.min(user1Id, user2Id);
+        long largerId = Math.max(user1Id, user2Id);
+
+        return "chat." + smallerId + "." + largerId;
     }
+
 
 }
