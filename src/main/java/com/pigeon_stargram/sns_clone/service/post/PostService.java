@@ -80,6 +80,14 @@ public class PostService {
 
     public PostContentDto getPostContent(Long postId) {
         Post post = postCrudService.findById(postId);
+
+        // 캐시 히트된 경우 역직렬화된 데이터를 images로 복사
+        List<Image> images = post.getImages();
+        List<Image> imagesForSerialization = post.getImagesForSerialization();
+        if(images.isEmpty() && !imagesForSerialization.isEmpty()){
+            images.addAll(imagesForSerialization);
+        }
+
         return buildPostContentDto(post);
     }
 
@@ -93,15 +101,20 @@ public class PostService {
 
         Post post = buildPost(dto, loginUser);
         Post save = postCrudService.save(post);
+        List<Image> postImages = save.getImagesForSerialization();
 
         // 이미지 저장
         if (dto.getHasImage()) {
             dto.getImageUrls().stream()
-                    .map(imageUrl -> Image.builder()
-                            .img(imageUrl)
-                            .featured(true)
-                            .post(post)
-                            .build())
+                    .map(imageUrl -> {
+                        Image image = Image.builder()
+                                .img(imageUrl)
+                                .featured(true)
+                                .post(save)
+                                .build();
+                        postImages.add(image);
+                        return image;
+                    })
                     .forEach(imageRepository::save);
 
             // 이미지 업로드 중인 게시물 정보를 Redis Hash에 추가
@@ -116,6 +129,7 @@ public class PostService {
                 redisService.addToSet(UPLOADING_POSTS_SET, save.getId());
             }
         }
+        postCrudService.updateImage(save);
 
         // 팔로우중인 유저에게 알림
         notifyFollowers(dto);

@@ -153,4 +153,10 @@ public class PostCrudService {
             redisService.removeFromSet(recentPostIds, postId);
         }
     }
+
+    @CachePut(value = POST,
+            key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).POST_ID + '_' + #post.id")
+    public Post updateImage(Post post) {
+        return post;
+    }
 }
