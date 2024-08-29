@@ -18,6 +18,7 @@ public class CacheConstants {
     public static final String POST_LIKE_USER_IDS = "recentReplyIds";
 
     public static final String UNREAD_CHAT_COUNT = "unreadChatCount";
+    public static final String LAST_MESSAGE = "lastMessage";
 
     // key
     public static final String USER_ID = "userId";

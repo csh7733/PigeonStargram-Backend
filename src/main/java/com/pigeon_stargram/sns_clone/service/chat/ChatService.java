@@ -26,8 +26,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.pigeon_stargram.sns_clone.constant.CacheConstants.UNREAD_CHAT_COUNT;
-import static com.pigeon_stargram.sns_clone.constant.CacheConstants.USER_ID;
+import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
 import static com.pigeon_stargram.sns_clone.constant.RedisUserConstants.ACTIVE_USERS_KEY_PREFIX;
 import static com.pigeon_stargram.sns_clone.service.chat.ChatBuilder.buildSendLastMessageDto;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFormattedTime;
@@ -203,28 +202,79 @@ public class ChatService {
         Long user1Id = chatMessage.getFrom();
         Long user2Id = chatMessage.getTo();
 
+        // 사용자 ID 정렬 및 캐시 키 생성
         Long[] userIds = sortAndGet(user1Id, user2Id);
         String lastMessageText = chatMessage.getIsImage() ? "사진" : chatMessage.getText();
 
-        LastMessage lastMessageEntity = lastMessageRepository.findByUser1IdAndUser2Id(userIds[0], userIds[1])
-                .orElse(new LastMessage(userIds[0], userIds[1], lastMessageText));
+        String hashKey = cacheKeyGenerator(LAST_MESSAGE, USER_ID, userIds[0].toString());
+        String fieldKey = userIds[1].toString();
 
-        lastMessageEntity.update(lastMessageText);
+        LastMessageDto lastMessageDto;
 
-        //실시간 반영
-        LastMessageDto lastMessageDto = new LastMessageDto(lastMessageRepository.save(lastMessageEntity));
-        lastMessageDto.setTime(getCurrentFormattedTime());
+        // 캐시에서 조회
+        if (redisService.hasFieldInHash(hashKey, fieldKey)) {
+            log.info("캐시 히트: user1Id={}, user2Id={}", userIds[0], userIds[1]);
+            lastMessageDto = redisService.getValueFromHash(hashKey, fieldKey, LastMessageDto.class);
+
+            // 캐시에서 가져온 DTO를 업데이트
+            lastMessageDto.setLastMessage(lastMessageText);
+            lastMessageDto.setTime(getCurrentFormattedTime());
+
+            // DB 업데이트
+            LastMessage lastMessageEntity = lastMessageRepository.findByUser1IdAndUser2Id(userIds[0], userIds[1])
+                    .orElse(new LastMessage(userIds[0], userIds[1], lastMessageText));
+            lastMessageEntity.update(lastMessageText);
+            lastMessageRepository.save(lastMessageEntity);
+
+            // 캐시 갱신
+            redisService.putValueInHash(hashKey, fieldKey, lastMessageDto);
+
+        } else {
+            // 캐시 미스
+            log.info("캐시 미스: user1Id={}, user2Id={}", userIds[0], userIds[1]);
+
+            // DB 조회 및 생성
+            LastMessage lastMessageEntity = lastMessageRepository.findByUser1IdAndUser2Id(userIds[0], userIds[1])
+                    .orElse(new LastMessage(userIds[0], userIds[1], lastMessageText));
+            lastMessageEntity.update(lastMessageText);
+
+            // DB 저장 후 DTO 생성
+            lastMessageDto = new LastMessageDto(lastMessageRepository.save(lastMessageEntity));
+            lastMessageDto.setTime(getCurrentFormattedTime());
+
+            // 캐시에 저장
+            redisService.putValueInHash(hashKey, fieldKey, lastMessageDto);
+        }
 
         return lastMessageDto;
     }
 
     public LastMessageDto getLastMessage(Long user1Id, Long user2Id) {
+        // 사용자 ID 정렬
         Long[] userIds = sortAndGet(user1Id, user2Id);
 
-        return lastMessageRepository.findByUser1IdAndUser2Id(userIds[0], userIds[1])
+        // Redis Hash의 키와 필드 키 생성
+        String hashKey = cacheKeyGenerator(LAST_MESSAGE, USER_ID, userIds[0].toString());
+        String fieldKey = userIds[1].toString();
+
+        // 캐시에서 조회
+        if (redisService.hasFieldInHash(hashKey, fieldKey)) {
+            log.info("캐시 히트: user1Id={}, user2Id={}", userIds[0], userIds[1]);
+            return redisService.getValueFromHash(hashKey, fieldKey, LastMessageDto.class);
+        }
+
+        // 캐시 미스: DB에서 조회하고 캐시에 저장
+        log.info("캐시 미스: user1Id={}, user2Id={}", userIds[0], userIds[1]);
+        LastMessageDto lastMessageDto = lastMessageRepository.findByUser1IdAndUser2Id(userIds[0], userIds[1])
                 .map(LastMessageDto::new)
-                .orElseGet(LastMessageDto::new);
+                .orElseGet(() -> new LastMessageDto(userIds[0], userIds[1]));
+
+        // 조회한 결과를 Redis Hash에 저장
+        redisService.putValueInHash(hashKey, fieldKey, lastMessageDto);
+
+        return lastMessageDto;
     }
+
 
     @EventListener
     public void handleUserConnect(UserConnectEvent event) {

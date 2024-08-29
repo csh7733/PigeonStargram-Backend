@@ -22,6 +22,12 @@ public class LastMessageDto {
         this.time = formatTime(lastMessage.getModifiedDate());
     }
 
+    public LastMessageDto(Long user1Id,Long user2Id){
+        this.user1Id = user1Id;
+        this.user2Id = user2Id;
+        this.lastMessage = this.lastMessage = "대화 기록 없음";
+    }
+
     public LastMessageDto(){
         this.lastMessage = "대화 기록 없음";
     }
