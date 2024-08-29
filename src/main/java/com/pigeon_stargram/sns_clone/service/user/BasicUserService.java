@@ -16,6 +16,7 @@ import com.pigeon_stargram.sns_clone.exception.user.UserNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowBuilder;
+import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,7 @@ public class BasicUserService implements UserService {
     private final SimpMessagingTemplate messagingTemplate;
 
     private final UserRepository userRepository;
+    private final RedisService redisService;
 
     public User findById(Long id) {
         return userRepository.findById(id)
@@ -102,12 +104,12 @@ public class BasicUserService implements UserService {
         User user = findById(dto.getUserId());
         user.updateOnlineStatus(dto.getOnlineStatus());
 
-        sentOnlineStatus(dto);
+        redisService.publishMessage("user.online.status", dto);
 
         return user;
     }
 
-    public void sentOnlineStatus(UpdateOnlineStatusDto dto) {
+    public void handleOnlineStatusUpdate(UpdateOnlineStatusDto dto) {
         Long userId = dto.getUserId();
         String onlineStatus = dto.getOnlineStatus();
 

@@ -11,7 +11,9 @@ import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.formatTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 public class UnReadChatCountDto {
+    private Long toUserId;
     private Long userId;
     private Integer count;
 }

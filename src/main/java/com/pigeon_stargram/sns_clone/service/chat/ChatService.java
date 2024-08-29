@@ -4,20 +4,18 @@ import com.pigeon_stargram.sns_clone.domain.chat.ImageChat;
 import com.pigeon_stargram.sns_clone.domain.chat.LastMessage;
 import com.pigeon_stargram.sns_clone.domain.chat.TextChat;
 import com.pigeon_stargram.sns_clone.domain.chat.UnreadChat;
-import com.pigeon_stargram.sns_clone.dto.Follow.response.ResponseFollowerDto;
 import com.pigeon_stargram.sns_clone.dto.chat.internal.GetUserChatsDto;
 import com.pigeon_stargram.sns_clone.dto.chat.internal.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.internal.SendLastMessageDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseChatHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
-import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.UnReadChatCountDto;
-import com.pigeon_stargram.sns_clone.dto.user.internal.UpdateOnlineStatusDto;
-import com.pigeon_stargram.sns_clone.event.UserConnectEvent;
-import com.pigeon_stargram.sns_clone.repository.chat.ChatRepository;
+import com.pigeon_stargram.sns_clone.event.user.UserConnectEvent;
+import com.pigeon_stargram.sns_clone.repository.chat.ImageChatRepository;
 import com.pigeon_stargram.sns_clone.repository.chat.LastMessageRepository;
+import com.pigeon_stargram.sns_clone.repository.chat.TextChatRepository;
 import com.pigeon_stargram.sns_clone.repository.chat.UnreadChatRepository;
-import com.pigeon_stargram.sns_clone.service.follow.FollowService;
+import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,10 +28,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static com.pigeon_stargram.sns_clone.config.WebSocketEventListener.isUserChattingWith;
-import static com.pigeon_stargram.sns_clone.service.chat.ChatBuilder.buildResponseOnlineStatusDto;
+import static com.pigeon_stargram.sns_clone.constant.RedisUserConstants.ACTIVE_USERS_KEY_PREFIX;
 import static com.pigeon_stargram.sns_clone.service.chat.ChatBuilder.buildSendLastMessageDto;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFormattedTime;
 
@@ -45,14 +41,18 @@ public class ChatService {
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    private final ChatRepository chatRepository;
+    private final TextChatRepository textChatRepository;
+    private final ImageChatRepository imageChatRepository;
+
     private final UnreadChatRepository unreadChatRepository;
     private final LastMessageRepository lastMessageRepository;
 
+    private final RedisService redisService;
+
     public void save(NewChatDto dto){
 
-        if(dto.getIsImage()) chatRepository.save(dto.toImageEntity());
-        else chatRepository.save(dto.toTextEntity());
+        if(dto.getIsImage()) imageChatRepository.save(dto.toImageEntity());
+        else textChatRepository.save(dto.toTextEntity());
 
         Long user1Id = dto.getFrom();
         Long user2Id = dto.getTo();
@@ -65,12 +65,19 @@ public class ChatService {
         LastMessageDto lastMessage = setLastMessage(dto);
         SendLastMessageDto sendLastMessageDto =
                 buildSendLastMessageDto(user1Id, user2Id, lastMessage);
-        sentLastMessage(sendLastMessageDto);
+
+        publishLastMessage(sendLastMessageDto);
+    }
+
+    private void publishLastMessage(SendLastMessageDto dto) {
+        String channel = getChatLastMessageChannelName(dto.getUser1Id(), dto.getUser2Id());
+        redisService.publishMessage(channel, dto);
     }
 
     public void sentUnReadChatCountToUser(Long toUserId, Long fromUserId, Integer count) {
-        String destination = "/topic/users/status/" + toUserId;
-        messagingTemplate.convertAndSend(destination, new UnReadChatCountDto(fromUserId, count));
+        String channel = getUnReadChatCountChannelName(toUserId);
+        UnReadChatCountDto unReadChatCountDto = new UnReadChatCountDto(toUserId,fromUserId, count);
+        redisService.publishMessage(channel, unReadChatCountDto);
     }
 
     public void sentLastMessage(SendLastMessageDto dto) {
@@ -91,27 +98,15 @@ public class ChatService {
                 .toUserId(toUserId)
                 .text(text)
                 .build();
-        chatRepository.save(textChat);
-    }
-
-    /**
-     * TODO : 이미지 채팅 구현
-     */
-    public void saveImageChat(Long fromUserId, Long toUserId, String imagePath) {
-        ImageChat imageChat = ImageChat.builder()
-                .fromUserId(fromUserId)
-                .toUserId(toUserId)
-                .imagePath(imagePath)
-                .build();
-        chatRepository.save(imageChat);
+        textChatRepository.save(textChat);
     }
 
     public List<ResponseChatHistoryDto> getUserChats(GetUserChatsDto dto) {
         Long user1Id = dto.getUser1Id();
         Long user2Id = dto.getUser2Id();
 
-        List<TextChat> textChats = chatRepository.findTextChatsBetweenUsers(user1Id, user2Id);
-        List<ImageChat> imageChats = chatRepository.findImageChatsBetweenUsers(user1Id, user2Id);
+        List<TextChat> textChats = textChatRepository.findChatsBetweenUsers(user1Id, user2Id);
+        List<ImageChat> imageChats = imageChatRepository.findChatsBetweenUsers(user1Id, user2Id);
 
         List<ResponseChatHistoryDto> chatHistoryDtos = new ArrayList<>();
 
@@ -190,5 +185,21 @@ public class ChatService {
         Long[] userIds = {user1Id, user2Id};
         Arrays.sort(userIds);
         return userIds;
+    }
+
+    private String getChatLastMessageChannelName(Long user1Id, Long user2Id) {
+        long smallerId = Math.min(user1Id, user2Id);
+        long largerId = Math.max(user1Id, user2Id);
+
+        return "lastMessage.chat." + smallerId + "." + largerId;
+    }
+
+    private String getUnReadChatCountChannelName(Long toUserId) {
+        return "unreadChatCount." + toUserId;
+    }
+
+    public boolean isUserChattingWith(Long userId, Long partnerUserId) {
+        String activeUsersKey = ACTIVE_USERS_KEY_PREFIX + userId;
+        return redisService.hasFieldInHash(activeUsersKey, String.valueOf(partnerUserId));
     }
 }

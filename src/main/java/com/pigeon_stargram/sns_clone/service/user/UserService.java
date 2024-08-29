@@ -29,6 +29,7 @@ public interface UserService {
     List<User> saveAll(List<UserDto> userDtoList);
 
     User updateOnlineStatus(UpdateOnlineStatusDto updateOnlineStatusDto);
+    public void handleOnlineStatusUpdate(UpdateOnlineStatusDto dto);
 
     User updatePassword(UpdatePasswordDto updatePasswordDto);
 

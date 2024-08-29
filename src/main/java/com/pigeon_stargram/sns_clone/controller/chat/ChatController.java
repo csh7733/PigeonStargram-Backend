@@ -13,22 +13,20 @@ import com.pigeon_stargram.sns_clone.service.chat.ChatBuilder;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.file.FileService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
+import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserBuilder;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
-import static com.pigeon_stargram.sns_clone.config.WebSocketEventListener.isUserChattingWith;
 import static com.pigeon_stargram.sns_clone.service.chat.ChatBuilder.*;
 import static com.pigeon_stargram.sns_clone.service.user.UserBuilder.*;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFormattedTime;
@@ -43,7 +41,7 @@ public class ChatController {
     private final FollowService followService;
     private final UserService userService;
     private final FileService fileService;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final RedisService redisService;
 
 
     @GetMapping("/users")
@@ -95,34 +93,29 @@ public class ChatController {
         chatMessage.setTime(getCurrentFormattedTime());
         chatService.save(chatMessage);
 
-//        if (!isUserChattingWith(to, from)) {
-//            Integer count = chatService.increaseUnReadChatCount(to, from);
-//            chatService.sentUnReadChatCountToUser(to, from, count);
-//        }
-//
-//        LastMessageDto lastMessage = chatService.setLastMessage(chatMessage);
-//        SendLastMessageDto sendLastMessageDto = buildSendLastMessageDto(from, to, lastMessage);
-//        chatService.sentLastMessage(sendLastMessageDto);
-
-        Long[] userIds = chatService.sortAndGet(from, to);
-
-        String destination = "/topic/chat/" + userIds[0] + "/" + userIds[1];
-        messagingTemplate.convertAndSend(destination, chatMessage);
-
-        log.info("chatMessage={}", chatMessage);
+        String channel = getChatChannelName(from, to);
+        redisService.publishMessage(channel,chatMessage);
 
         return chatMessage;
     }
 
 
     @MessageMapping("/chat/{user1Id}/{user2Id}")
-    @SendTo("/topic/chat/{user1Id}/{user2Id}")
-    public NewChatDto sendMessage(@Payload NewChatDto chatMessage) {
-
+    public void sendMessage(@Payload NewChatDto chatMessage,
+                                  @DestinationVariable Long user1Id,
+                                  @DestinationVariable Long user2Id) {
         chatMessage.setTime(getCurrentFormattedTime());
         chatService.save(chatMessage);
 
-        return chatMessage;
+        String channel = getChatChannelName(user1Id, user2Id);
+        redisService.publishMessage(channel,chatMessage);
+    }
+
+    private String getChatChannelName(Long user1Id, Long user2Id) {
+        long smallerId = Math.min(user1Id, user2Id);
+        long largerId = Math.max(user1Id, user2Id);
+
+        return "chat." + smallerId + "." + largerId;
     }
 
 }
