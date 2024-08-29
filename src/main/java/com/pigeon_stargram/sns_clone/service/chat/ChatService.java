@@ -23,15 +23,15 @@ import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.pigeon_stargram.sns_clone.constant.CacheConstants.UNREAD_CHAT_COUNT;
+import static com.pigeon_stargram.sns_clone.constant.CacheConstants.USER_ID;
 import static com.pigeon_stargram.sns_clone.constant.RedisUserConstants.ACTIVE_USERS_KEY_PREFIX;
 import static com.pigeon_stargram.sns_clone.service.chat.ChatBuilder.buildSendLastMessageDto;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFormattedTime;
+import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 
 @Service
 @RequiredArgsConstructor
@@ -124,27 +124,79 @@ public class ChatService {
     }
 
 
-    public Integer increaseUnReadChatCount(Long userId,Long toUserId){
+    public Integer increaseUnReadChatCount(Long userId, Long toUserId) {
+        // 캐시 키 생성
+        String cacheKey = cacheKeyGenerator(UNREAD_CHAT_COUNT, USER_ID, userId.toString());
+        String fieldKey = toUserId.toString();
+
+        // Redis Hash에서 해당 값이 있는지 확인하고, 있으면 값을 증가시킵니다.
+        if (redisService.hasFieldInHash(cacheKey, fieldKey)) {
+            log.info("캐시 히트: userId={}, toUserId={}", userId, toUserId);
+            Long newCount = redisService.incrementHashValue(cacheKey, fieldKey, 1);
+            return newCount.intValue();
+        }
+
+        // 캐시 미스: DB에서 가져와서 값을 증가시키고, 캐시에 저장합니다.
+        log.info("캐시 미스1: userId={}, toUserId={}", userId, toUserId);
         UnreadChat unReadChat = unreadChatRepository.findByUserIdAndToUserId(userId, toUserId)
                 .orElse(new UnreadChat(userId, toUserId));
 
         Integer count = unReadChat.incrementCount();
+
+        // DB에 저장
         unreadChatRepository.save(unReadChat);
+
+        // 캐시에 저장
+        redisService.putValueInHash(cacheKey, fieldKey, count);
+
         return count;
     }
 
+
     public Integer getUnreadChatCount(Long userId, Long toUserId) {
-        return unreadChatRepository.findByUserIdAndToUserId(userId, toUserId)
+        // 캐시 키 생성
+        String cacheKey = cacheKeyGenerator(UNREAD_CHAT_COUNT, USER_ID, userId.toString());
+        String fieldKey = toUserId.toString();
+
+        // Redis Hash에서 조회
+        if (redisService.hasFieldInHash(cacheKey, fieldKey)) {
+            log.info("캐시 히트: userId={}, toUserId={}", userId, toUserId);
+            return redisService.getValueFromHash(cacheKey, fieldKey, Integer.class);
+        }
+
+        // 캐시 미스: DB에서 가져와서 캐시에 저장
+        log.info("캐시 미스2: userId={}, toUserId={}", userId, toUserId);
+        Integer count = unreadChatRepository.findByUserIdAndToUserId(userId, toUserId)
                 .map(UnreadChat::getCount)
                 .orElse(0);
+
+        // 조회한 결과를 Redis Hash에 저장
+        redisService.putValueInHash(cacheKey, fieldKey, count);
+
+        return count;
     }
 
     public void setUnreadChatCount0(Long userId, Long toUserId) {
-        unreadChatRepository.findByUserIdAndToUserId(userId, toUserId)
-                .ifPresent(unreadChat -> {
-                    unreadChat.resetCount();
-                    unreadChatRepository.save(unreadChat);
-                });
+        // 캐시 키 생성
+        String cacheKey = cacheKeyGenerator(UNREAD_CHAT_COUNT, USER_ID, userId.toString());
+        String fieldKey = toUserId.toString();
+
+        // 캐시에서 값이 있는지 확인하고, 있다면 값을 0으로 업데이트 (캐시 히트 처리)
+        if (redisService.hasFieldInHash(cacheKey, fieldKey)) {
+            log.info("캐시 히트: userId={}, toUserId={}", userId, toUserId);
+            redisService.putValueInHash(cacheKey, fieldKey, 0);
+        } else {
+            // 캐시 미스: 캐시에 값이 없다면 DB에서 가져와서 0으로 설정 후, 캐시에도 반영
+            log.info("캐시 미스3: userId={}, toUserId={}", userId, toUserId);
+            unreadChatRepository.findByUserIdAndToUserId(userId, toUserId)
+                    .ifPresent(unreadChat -> {
+                        unreadChat.resetCount();
+                        unreadChatRepository.save(unreadChat);
+
+                        // 캐시에 저장
+                        redisService.putValueInHash(cacheKey, fieldKey, 0);
+                    });
+        }
     }
 
     public LastMessageDto setLastMessage(NewChatDto chatMessage) {
@@ -178,7 +230,7 @@ public class ChatService {
     public void handleUserConnect(UserConnectEvent event) {
         Long userId = event.getUserId();
         Long partnerUserId = event.getPartnerUserId();
-        setUnreadChatCount0(userId,partnerUserId);
+        if(!userId.equals(partnerUserId)) setUnreadChatCount0(userId,partnerUserId);
     }
 
     public Long[] sortAndGet(Long user1Id, Long user2Id) {
