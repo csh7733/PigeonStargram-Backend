@@ -30,7 +30,6 @@ public class PostCrudService {
     private final RedisService redisService;
 
     private final PostRepository repository;
-    private final CommentCrudService commentCrudService;
 
     @Cacheable(value = POST,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).POST_ID + '_' + #postId")
