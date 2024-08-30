@@ -17,12 +17,8 @@ public class FileController {
     private final FileService fileService;
 
     @GetMapping("/{filename:.+}")
-    public ResponseEntity<Resource> getFile(@PathVariable String filename) {
-        Resource resource = fileService.loadFileAsResource(filename);
+    public String getFile(@PathVariable String filename) {
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
+        return fileService.loadFileAsPresignedUrl(filename);
     }
-
 }
