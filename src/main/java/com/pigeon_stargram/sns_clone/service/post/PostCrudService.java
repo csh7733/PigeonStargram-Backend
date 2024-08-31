@@ -3,7 +3,6 @@ package com.pigeon_stargram.sns_clone.service.post;
 import com.pigeon_stargram.sns_clone.domain.post.Post;
 import com.pigeon_stargram.sns_clone.exception.post.PostNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.post.PostRepository;
-import com.pigeon_stargram.sns_clone.service.comment.CommentCrudService;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,29 +41,28 @@ public class PostCrudService {
         return repository.findByUserId(userId);
     }
 
-    public List<Long> findPostIdsByUserId(Long userId) {
+    public List<Long> findPostIdByUserId(Long userId) {
         String cacheKey = cacheKeyGenerator(ALL_POST_IDS, USER_ID, userId.toString());
 
         if (redisService.hasKey(cacheKey)) {
             log.info("findPostIdsByUserId = {} 캐시 히트", userId);
 
             return redisService.getSet(cacheKey).stream()
+                    .filter(postId -> !postId.equals(0))
                     .map(postId -> Long.valueOf((Integer) postId))
                     .collect(Collectors.toList());
         }
 
         log.info("findPostIdsByUserId = {} 캐시 미스", userId);
+
         List<Long> postIds = repository.findByUserId(userId).stream()
                 .map(Post::getId)
                 .collect(Collectors.toList());
 
-        if (postIds.isEmpty()) {
-            redisService.addToSet(cacheKey, "dummy");
-            redisService.removeFromSet(cacheKey, "dummy");
-        } else {
-            redisService.addAllToSet(cacheKey, postIds);
-        }
+        postIds.add(0L);
+        redisService.addAllToSet(cacheKey, postIds);
 
+        postIds.remove(0L);
         return postIds;
     }
 
@@ -76,6 +74,7 @@ public class PostCrudService {
             log.info("findPostIdsByUserIdAncCreatedDateAfter = {} 캐시 히트", userId);
 
             return redisService.getSet(cacheKey).stream()
+                    .filter(postId -> !postId.equals(0))
                     .map(postId -> Long.valueOf((Integer) postId))
                     .collect(Collectors.toList());
         }
@@ -86,13 +85,10 @@ public class PostCrudService {
                         .map(Post::getId)
                         .collect(Collectors.toList());
 
-        if (postIds.isEmpty()) {
-            redisService.addToSet(cacheKey, "dummy");
-            redisService.removeFromSet(cacheKey, "dummy");
-        } else {
-            redisService.addAllToSet(cacheKey, postIds);
-        }
+        postIds.add(0L);
+        redisService.addAllToSet(cacheKey, postIds);
 
+        postIds.remove(0L);
         return postIds;
     }
 
@@ -128,7 +124,6 @@ public class PostCrudService {
         Post post = repository.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException(POST_NOT_FOUND_ID));
         post.modify(newContent);
-        log.info("postContent={}", post.getContent());
 
         return post;
     }

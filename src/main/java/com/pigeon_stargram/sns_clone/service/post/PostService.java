@@ -2,7 +2,6 @@ package com.pigeon_stargram.sns_clone.service.post;
 
 import com.pigeon_stargram.sns_clone.domain.post.Image;
 import com.pigeon_stargram.sns_clone.domain.post.Post;
-import com.pigeon_stargram.sns_clone.domain.post.PostLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 
 
@@ -54,7 +53,7 @@ public class PostService {
     private final FileUploadWorker fileUploadWorker;
 
     public List<ResponsePostDto> getPostsByUserId(Long userId) {
-        return postCrudService.findPostIdsByUserId(userId).stream()
+        return postCrudService.findPostIdByUserId(userId).stream()
                 .filter(postId -> !redisService.isMemberOfSet(UPLOADING_POSTS_SET, postId))
                 .sorted(Comparator.reverseOrder())
                 .map(this::getCombinedPost)
@@ -163,20 +162,7 @@ public class PostService {
     }
 
     public void likePost(LikePostDto dto) {
-        User user = userService.findById(dto.getLoginUserId());
-        Post post = postCrudService.findById(dto.getPostId());
 
-        postLikeCrudService.findByUserIdAndPostId(user.getId(), post.getId())
-                .ifPresentOrElse(
-                        existingLike -> {
-                            postLikeCrudService.delete(existingLike);
-                        },
-                        () -> {
-                            PostLike postsLike = buildPostLike(user, post);
-                            postLikeCrudService.save(postsLike);
-                            notificationService.send(dto);
-                        }
-                );
+        postLikeCrudService.toggleLike(dto.getLoginUserId(), dto.getPostId());
     }
-
 }

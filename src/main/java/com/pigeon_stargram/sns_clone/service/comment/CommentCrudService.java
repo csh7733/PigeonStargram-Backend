@@ -1,11 +1,9 @@
 package com.pigeon_stargram.sns_clone.service.comment;
 
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
-import com.pigeon_stargram.sns_clone.domain.post.Post;
 import com.pigeon_stargram.sns_clone.exception.comment.CommentNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
-import com.pigeon_stargram.sns_clone.service.reply.ReplyCrudService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,23 +43,21 @@ public class CommentCrudService {
             log.info("findCommentIdsByPostId = {} 캐시 히트", postId);
 
             return redisService.getSet(cacheKey).stream()
+                    .filter(commentId -> !commentId.equals(0))
                     .map(commentId -> Long.valueOf((Integer) commentId))
                     .collect(Collectors.toList());
         }
 
         log.info("findCommentIdsByPostId = {} 캐시 미스", postId);
-        List<Long> postIds = repository.findByPostId(postId).stream()
+        List<Long> commentIds = repository.findByPostId(postId).stream()
                 .map(Comment::getId)
                 .collect(Collectors.toList());
 
-        if (postIds.isEmpty()) {
-            redisService.addToSet(cacheKey, "dummy");
-            redisService.removeFromSet(cacheKey, "dummy");
-        } else {
-            redisService.addAllToSet(cacheKey, postIds);
-        }
+        commentIds.add(0L);
+        redisService.addAllToSet(cacheKey, commentIds);
 
-        return postIds;
+        commentIds.remove(0L);
+        return commentIds;
     }
 
     @CachePut(value = COMMENT,
@@ -71,21 +67,33 @@ public class CommentCrudService {
 
         Long postId = comment.getPost().getId();
 
-        String allPostIds =
+        String allCommentIds =
                 cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
-        if (redisService.hasKey(allPostIds)) {
+        if (redisService.hasKey(allCommentIds)) {
             log.info("comment 저장후 postId에 대한 모든 commentId 캐시 저장 commentId = {}", postId);
-            redisService.addToSet(allPostIds, comment.getId());
+            redisService.addToSet(allCommentIds, comment.getId());
         }
 
-        String recentPostIds =
+        String recentCommentIds =
                 cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
-        if (redisService.hasKey(recentPostIds)) {
+        if (redisService.hasKey(recentCommentIds)) {
             log.info("comment 저장후 postId에 대한 최근 commentId 캐시 저장 commentId = {}", postId);
-            redisService.addToSet(recentPostIds, comment.getId());
+            redisService.addToSet(recentCommentIds, comment.getId());
         }
 
         return save;
+    }
+
+    @CachePut(value = COMMENT,
+            key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).COMMENT_ID + '_' + #commentId")
+    public Comment edit(Long commentId,
+                        String newContent) {
+        // 영속화된 comment
+        Comment comment = repository.findById(commentId)
+                .orElseThrow(() -> new CommentNotFoundException(COMMENT_NOT_FOUND_ID));
+        comment.modify(newContent);
+
+        return comment;
     }
 
     @CacheEvict(value = COMMENT,

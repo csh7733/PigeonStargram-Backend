@@ -2,20 +2,17 @@ package com.pigeon_stargram.sns_clone.controller.post;
 
 import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
-import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.file.internal.FileUploadResultDto;
 import com.pigeon_stargram.sns_clone.dto.post.internal.CreatePostDto;
 import com.pigeon_stargram.sns_clone.dto.post.internal.EditPostDto;
 import com.pigeon_stargram.sns_clone.dto.post.internal.LikePostDto;
 import com.pigeon_stargram.sns_clone.dto.post.request.RequestCreatePostDto;
-import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.dto.post.request.RequestEditPostDto;
 import com.pigeon_stargram.sns_clone.dto.post.request.RequestLikePostDto;
+import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.service.file.FileService;
-import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.post.PostService;
 import com.pigeon_stargram.sns_clone.service.timeline.TimelineService;
-import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -42,9 +39,9 @@ public class PostController {
 
     @PostMapping
     public Long createPosts(@LoginUser SessionUser loginUser,
-                                             @ModelAttribute RequestCreatePostDto request,
-                                             @RequestPart(value = "images", required = false)
-                                                 List<MultipartFile> imagesFile) {
+                            @ModelAttribute RequestCreatePostDto request,
+                            @RequestPart(value = "images", required = false)
+                                List<MultipartFile> imagesFile) {
         Long userId = loginUser.getId();
 
         FileUploadResultDto result = fileService.saveFiles(imagesFile);

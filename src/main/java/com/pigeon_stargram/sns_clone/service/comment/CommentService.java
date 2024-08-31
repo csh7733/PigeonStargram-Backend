@@ -84,8 +84,7 @@ public class CommentService {
     }
 
     public void editComment(EditCommentDto dto) {
-        Comment comment = commentCrudService.findById(dto.getCommentId());
-        comment.modify(dto.getContent());
+        commentCrudService.edit(dto.getCommentId(), dto.getContent());
     }
 
     public void deleteAllCommentsAndReplyByPostId(Long postId) {
@@ -102,20 +101,6 @@ public class CommentService {
     }
 
     public void likeComment(LikeCommentDto dto) {
-        User loginUser = userService.findById(dto.getLoginUserId());
-        Comment comment = commentCrudService.findById(dto.getCommentId());
-        dto.setWriterId(comment.getUser().getId());
-
-        commentLikeCrudService.findByUserIdAndCommentId(dto.getLoginUserId(), comment.getId())
-                .ifPresentOrElse(
-                        existingLike -> {
-                            commentLikeCrudService.delete(existingLike);
-                        },
-                        () -> {
-                            CommentLike commentLike = buildCommentLike(loginUser, comment);
-                            commentLikeCrudService.save(commentLike);
-                            notificationService.send(dto);
-                        }
-                );
+        commentLikeCrudService.toggleLike(dto.getLoginUserId(), dto.getCommentId());
     }
 }

@@ -11,7 +11,6 @@ import com.pigeon_stargram.sns_clone.dto.reply.internal.LikeReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.ReplyContentDto;
 import com.pigeon_stargram.sns_clone.dto.reply.response.ReplyLikeDto;
 import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
-import com.pigeon_stargram.sns_clone.exception.reply.ReplyNotFoundException;
 import com.pigeon_stargram.sns_clone.service.comment.CommentCrudService;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -23,7 +22,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
 import static com.pigeon_stargram.sns_clone.service.reply.ReplyBuilder.*;
 
 @RequiredArgsConstructor
@@ -38,8 +36,7 @@ public class ReplyService {
     private final CommentCrudService commentCrudService;
 
     public List<ResponseReplyDto> getReplyDtosByCommentId(Long commentId) {
-        return replyCrudService.findByCommentId(commentId).stream()
-                .map(Reply::getId)
+        return replyCrudService.findReplyIdByCommentId(commentId).stream()
                 .sorted(Comparator.reverseOrder())
                 .map(this::getCombinedReply)
                 .collect(Collectors.toList());
@@ -83,26 +80,11 @@ public class ReplyService {
     }
 
     public void editReply(EditReplyDto dto) {
-        Reply reply = replyCrudService.findById(dto.getReplyId());
-        reply.modify(dto.getContent());
+        replyCrudService.edit(dto.getReplyId(), dto.getContent());
     }
 
     public void likeReply(LikeReplyDto dto) {
-        User loginUser = userService.findById(dto.getLoginUserId());
-        Reply reply = replyCrudService.findById(dto.getReplyId());
-        dto.setWriterId(reply.getUser().getId());
-
-        replyLikeCrudService.findByUserIdAndReplyId(loginUser.getId(), reply.getId())
-                .ifPresentOrElse(
-                        existingLike -> {
-                            replyLikeCrudService.delete(existingLike);
-                        },
-                        () -> {
-                            ReplyLike replyLike = buildReplyLike(loginUser, reply);
-                            replyLikeCrudService.save(replyLike);
-                            notificationService.send(dto);
-                        }
-                );
+        replyLikeCrudService.toggleLike(dto.getLoginUserId(), dto.getReplyId());
     }
 }
 
