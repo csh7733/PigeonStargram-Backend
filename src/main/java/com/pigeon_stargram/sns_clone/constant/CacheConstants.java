@@ -19,6 +19,9 @@ public class CacheConstants {
     public static final String COMMENT_LIKE_USER_IDS = "commentLikeUserIds";
     public static final String REPLY_LIKE_USER_IDS = "replyLikeUserIds";
 
+    public static final String FOLLOWER_IDS = "followerIds";
+    public static final String FOLLOWING_IDS = "followingIds";
+
     // key
     public static final String USER_ID = "userId";
     public static final String POST_ID = "postId";
