@@ -24,7 +24,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,6 +38,8 @@ import static com.pigeon_stargram.sns_clone.service.user.UserBuilder.*;
 @Transactional
 @Service
 public class FollowService {
+
+    private final FollowCrudService followCrudService;
 
     private final UserService userService;
     private final ChatService chatService;
@@ -76,17 +80,53 @@ public class FollowService {
     }
 
     public List<ResponseFollowerDto> findFollowers(FindFollowersDto dto) {
-        Long loginUserId = dto.getLoginUserId();
-        Long userId = dto.getUserId();
+        Set<Long> targetUserFollowerIdSet =
+                followCrudService.findFollowers(dto.getUserId())
+                        .stream().collect(Collectors.toSet());
+        Set<Long> loginUserFollowingIdSet =
+                followCrudService.findFollowings(dto.getLoginUserId())
+                        .stream().collect(Collectors.toSet());
 
-        return followRepository.findByRecipientId(userId).stream()
-                .map(Follow::getSender)
-                .map(sender -> {
-                    Integer isFollowing =
-                            isFollowing(loginUserId, sender.getId()) ? 1 : 2;
-                    return buildResponseFollowerDto(sender, isFollowing);
-                })
+        // 타겟유저를 팔로우 하는 사람 중, 내가 팔로우중인 사람
+        return getResponseFollowerDtos(loginUserFollowingIdSet, targetUserFollowerIdSet);
+    }
+
+
+    public List<ResponseFollowerDto> findFollowings(FindFollowingsDto dto) {
+        Set<Long> targetUserFollowingIdSet =
+                followCrudService.findFollowings(dto.getUserId())
+                        .stream().collect(Collectors.toSet());
+        Set<Long> loginUserFollowingIdSet =
+                followCrudService.findFollowings(dto.getLoginUserId())
+                        .stream().collect(Collectors.toSet());
+
+        return getResponseFollowerDtos(loginUserFollowingIdSet, targetUserFollowingIdSet);
+    }
+
+    private List<ResponseFollowerDto> getResponseFollowerDtos(Set<Long> loginUserFollowingIdSet,
+                                                              Set<Long> targetUserFollowingIdSet) {
+        Set<Long> intersection = new HashSet<>(loginUserFollowingIdSet);
+        Set<Long> disjoint = new HashSet<>(targetUserFollowingIdSet);
+
+        // 타겟유저에 대한 팔로우 유저 중, 로그인 유저가 팔로우중인 사람
+        intersection.retainAll(targetUserFollowingIdSet);
+        List<ResponseFollowerDto> followIntersection = convertUserIdSetToFollowerDtoList(intersection, 1);
+
+        // 타겟유저에 대한 팔로우 유저 중, 로그인 유저가 팔로우 하지 않은 사람
+        disjoint.removeAll(intersection);
+        List<ResponseFollowerDto> followDisjoint = convertUserIdSetToFollowerDtoList(disjoint, 2);
+
+        return Stream.concat(followIntersection.stream(), followDisjoint.stream())
                 .collect(Collectors.toList());
+    }
+
+    private List<ResponseFollowerDto> convertUserIdSetToFollowerDtoList(Set<Long> userIdSet,
+                                                                        int follow) {
+        return userIdSet.stream()
+                .map(userId -> {
+                    User user = userService.findById(userId);
+                    return buildResponseFollowerDto(user, follow);
+                }).collect(Collectors.toList());
     }
 
     public Boolean isFollowing(Long sourceId, Long targetId) {
@@ -106,19 +146,6 @@ public class FollowService {
                 .collect(Collectors.toList());
     }
 
-    public List<ResponseFollowerDto> findFollowings(FindFollowingsDto dto) {
-        Long loginUserId = dto.getLoginUserId();
-        Long userId = dto.getUserId();
-
-        return followRepository.findBySenderId(userId).stream()
-                .map(Follow::getRecipient)
-                .map(recipient -> {
-                    Integer isFollowing =
-                            isFollowing(loginUserId, recipient.getId()) ? 1 : 2;
-                    return buildResponseFollowerDto(recipient, isFollowing);
-                })
-                .collect(Collectors.toList());
-    }
 
     public List<ResponseUserChatDto> findPartnersForChat(Long currentUserId) {
         List<User> followers = followRepository.findByRecipientId(currentUserId).stream()

@@ -25,6 +25,7 @@ public class FollowCrudService {
     @Cacheable(value = FOLLOWER_IDS,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).USER_ID + '_' + #userId")
     public List<Long> findFollowers(Long userId) {
+        log.info("findFollowers 캐시미스 userId = {}", userId);
         return repository.findByRecipientId(userId).stream()
                 .map(Follow::getSender)
                 .map(User::getId)
@@ -34,6 +35,7 @@ public class FollowCrudService {
     @Cacheable(value = FOLLOWING_IDS,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).USER_ID + '_' + #userId")
     public List<Long> findFollowings(Long userId) {
+        log.info("findFollowings 캐시미스 userId = {}", userId);
         return repository.findBySenderId(userId).stream()
                 .map(Follow::getRecipient)
                 .map(User::getId)
