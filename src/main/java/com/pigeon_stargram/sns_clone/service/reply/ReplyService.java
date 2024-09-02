@@ -58,7 +58,6 @@ public class ReplyService {
         return buildReplyLikeDto(false, count);
     }
 
-
     public Reply createReply(CreateReplyDto dto) {
         User loginUser = userService.findById(dto.getLoginUserId());
         Comment comment = commentCrudService.findById(dto.getCommentId());
