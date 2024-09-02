@@ -1,7 +1,6 @@
 package com.pigeon_stargram.sns_clone.service.search;
 
 import com.pigeon_stargram.sns_clone.domain.search.SearchHistory;
-import com.pigeon_stargram.sns_clone.domain.search.SearchTerm;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.search.internal.DeleteSearchHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.search.internal.SaveSearchHistoryDto;
@@ -68,14 +67,5 @@ public class SearchBuilder {
                 .build();
     }
 
-    public static SearchTerm buildSearchTerm(String term,
-                                             String prefix) {
-        return SearchTerm.builder()
-                .prefix(prefix)
-                .term(term)
-                .score(0L)
-                .build();
-
-    }
 
 }
