@@ -115,6 +115,20 @@ public class CommentCrudService {
             log.info("comment 삭제후 postId에 대한 최근 commentId 캐시 삭제 postId = {}", postId);
             redisService.removeFromSet(recentCommentIds, postId);
         }
+
+        String allReplyIds =
+                cacheKeyGenerator(ALL_REPLY_IDS, COMMENT_ID, commentId.toString());
+        if (redisService.hasKey(allReplyIds)) {
+            log.info("comment 삭제후 commentId에 대한 replyId 캐시 key 삭제 commentId = {}", commentId);
+            redisService.removeSet(allReplyIds);
+        }
+
+        String commentLikeUserIds =
+                cacheKeyGenerator(COMMENT_LIKE_USER_IDS, COMMENT_ID, commentId.toString());
+        if (redisService.hasKey(commentLikeUserIds)) {
+            log.info("comment 삭제후 commentId에 대한 commentLikeUserIds 캐시 삭제 commentId = {}", commentId);
+            redisService.removeSet(commentLikeUserIds);
+        }
     }
 
 }

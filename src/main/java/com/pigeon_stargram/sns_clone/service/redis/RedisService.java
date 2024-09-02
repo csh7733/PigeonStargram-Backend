@@ -81,6 +81,15 @@ public class RedisService {
         redisTemplate.opsForSet().remove(setKey, value);
     }
 
+
+    /**
+     * Set의 모든 값을 제거합니다.
+     * @param setKey Set의 키
+     */
+    public void removeSet(String setKey) {
+        redisTemplate.delete(setKey);
+    }
+
     /**
      * Set에서 특정 값의 존재 여부를 확인합니다.
      * @param setKey Set의 키

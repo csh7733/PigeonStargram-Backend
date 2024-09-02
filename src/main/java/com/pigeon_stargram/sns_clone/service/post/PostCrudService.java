@@ -147,6 +147,20 @@ public class PostCrudService {
             log.info("post 삭제후 userId에 대한 최근 postId 캐시 삭제 userId = {}", postUserId);
             redisService.removeFromSet(recentPostIds, postId);
         }
+
+        String allCommentIds =
+                cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
+        if (redisService.hasKey(allCommentIds)) {
+            log.info("post 삭제후 postId에 대한 commentId 캐시 key 삭제 postId = {}", postId);
+            redisService.removeSet(allCommentIds);
+        }
+
+        String postLikeUserIds =
+                cacheKeyGenerator(POST_LIKE_USER_IDS, POST_ID, postId.toString());
+        if (redisService.hasKey(postLikeUserIds)) {
+            log.info("post 삭제후 postId에 대한 postLikeUserIds 캐시 삭제 postId = {}", postId);
+            redisService.removeSet(postLikeUserIds);
+        }
     }
 
     @CachePut(value = POST,

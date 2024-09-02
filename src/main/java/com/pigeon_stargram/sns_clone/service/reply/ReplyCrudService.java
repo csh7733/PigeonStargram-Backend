@@ -119,6 +119,13 @@ public class ReplyCrudService {
             log.info("reply 삭제후 commentId에 대한 최근 replyId 캐시 삭제 commentId = {}", commentId);
             redisService.removeFromSet(recentReplyIds, replyId);
         }
+
+        String replyLikeUserIds =
+                cacheKeyGenerator(REPLY_LIKE_USER_IDS, REPLY_ID, replyId.toString());
+        if (redisService.hasKey(replyLikeUserIds)) {
+            log.info("reply 삭제후 replyId에 대한 replyLikeUserIds 캐시 삭제 replyId = {}", replyId);
+            redisService.removeSet(replyLikeUserIds);
+        }
     }
 
 }

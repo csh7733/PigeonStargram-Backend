@@ -71,7 +71,7 @@ public class CommentController {
         Long postUserId = request.getPostUserId();
         String context = request.getContext();
 
-        commentService.deleteAllCommentsAndReplyByPostId(commentId);
+        commentService.deleteComment(commentId);
 
         return getPostsBasedOnContext(context, loginUserId, postUserId);
     }
