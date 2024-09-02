@@ -11,9 +11,11 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -275,14 +277,28 @@ public class RedisService {
     }
 
     /**
-     * Sorted Set에서 가장 높은 점수 상위 N개의 값을 가져옵니다.
+     * Redis의 Sorted Set에서 상위 N개의 값을 점수순으로 가져와 지정된 타입으로 반환합니다.
+     *
      * @param setKey Sorted Set의 키
-     * @param count 가져올 값의 개수
-     * @return 상위 N개의 값들의 Set
+     * @param count  가져올 값의 개수
+     * @param clazz  반환할 값의 타입
+     * @param <T>    반환할 타입
+     * @return 상위 N개의 값을 지정된 타입으로 변환하여 List로 반환
      */
-    public Set<Object> getTopNFromSortedSet(String setKey, int count) {
-        return redisTemplate.opsForZSet().reverseRange(setKey, 0, count - 1);
+    public <T> List<T> getTopNFromSortedSet(String setKey, int count, Class<T> clazz) {
+        Set<Object> rawResults = redisTemplate.opsForZSet().reverseRange(setKey, 0, count - 1);
+
+        if (rawResults == null) {
+            return Collections.emptyList();
+        }
+
+        return rawResults.stream()
+                .filter(clazz::isInstance)
+                .map(clazz::cast)
+                .collect(Collectors.toList());
     }
+
+
 
     /**
      * Sorted Set에서 특정 값을 제거합니다.
@@ -342,6 +358,18 @@ public class RedisService {
         }
 
         throw new IllegalArgumentException("변환할 수 없습니다. " + clazz.getName());
+    }
+
+    /**
+     * Redis의 Sorted Set에서 특정 값의 점수를 증가시킵니다.
+     *
+     * @param setKey Sorted Set의 키
+     * @param value  점수를 증가시킬 값
+     * @param delta  증가시킬 점수
+     * @return 증가된 후의 점수
+     */
+    public Double incrementScoreInSortedSet(String setKey, String value, double delta) {
+        return redisTemplate.opsForZSet().incrementScore(setKey, value, delta);
     }
 
 

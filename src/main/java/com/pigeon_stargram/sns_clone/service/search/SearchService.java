@@ -38,12 +38,21 @@ public class SearchService {
     private final UserService userService;
     private final RedisService redisService;
 
+
     public List<ResponseTopSearchDto> getTopSearchTermsByPrefix(String prefix) {
-        return searchTermRepository.findTop5ByPrefixOrderByScoreDesc(prefix).stream()
-                .filter(searchTerm -> !searchTerm.getTerm().equalsIgnoreCase(prefix))
-                .map(SearchBuilder::buildResponseTopSearchDto)
+        // 캐시 키 생성
+        String searchKey = cacheKeyGenerator(SEARCH_TERM_SCORES, prefix);
+
+        // Redis에서 상위 5개의 검색어를 점수순으로 가져옴
+        List<String> topSearchTerms = redisService.getTopNFromSortedSet(searchKey, 5, String.class);
+
+        // 검색어 목록을 DTO로 변환하여 반환
+        return topSearchTerms.stream()
+                .filter(term -> !term.equalsIgnoreCase(prefix)) // prefix와 동일하지 않은 검색어만 필터링
+                .map(SearchBuilder::buildResponseTopSearchDto)  // ResponseTopSearchDto로 변환
                 .collect(Collectors.toList());
     }
+
 
     public List<ResponseSearchHistoryDto> getTopSearchHistory(Long userId) {
         // 캐시 키 생성
@@ -52,7 +61,7 @@ public class SearchService {
         // Redis에서 해당 Sorted Set이 존재하는지 확인
         if (redisService.isSortedSetExists(cacheKey)) {
             // Sorted Set이 존재하면 상위 5개의 검색 기록을 가져옴 (캐시 히트)
-            Set<Object> cachedSearchHistory = redisService.getTopNFromSortedSet(cacheKey, 5);
+            List<Object> cachedSearchHistory = redisService.getTopNFromSortedSet(cacheKey, 5, Object.class);
 
             // 캐시에서 가져온 검색 기록을 DTO로 변환하여 반환
             return cachedSearchHistory.stream()
@@ -143,15 +152,18 @@ public class SearchService {
 
 
     public void updateSearchTermScores(String term) {
+        // 검색어의 prefix 생성
         List<String> prefixes = generatePrefixes(term);
 
+        // 각 prefix에 대해 term을 값으로 하여 점수 업데이트
         prefixes.forEach(prefix -> {
-            SearchTerm searchTerm = searchTermRepository.findByTermAndPrefix(term, prefix)
-                    .orElse(buildSearchTerm(term, prefix));
-            searchTerm.updateScore();
-            searchTermRepository.save(searchTerm);
+            // 캐시 키 생성
+            String searchKey = cacheKeyGenerator(SEARCH_TERM_SCORES, prefix);
+            // 각 prefix를 키로 사용하고, term을 값으로 점수를 증가시킴
+            redisService.incrementScoreInSortedSet(searchKey, term, 1.0);
         });
     }
+
 
     private List<String> generatePrefixes(String term) {
         List<String> prefixes = new ArrayList<>();

@@ -22,9 +22,9 @@ public class SearchBuilder {
         throw new UnsupportedOperationException(UNSUPPORTED_OPERATION);
     }
 
-    public static ResponseTopSearchDto buildResponseTopSearchDto(SearchTerm searchTerm) {
+    public static ResponseTopSearchDto buildResponseTopSearchDto(String searchTerm) {
         return ResponseTopSearchDto.builder()
-                .term(searchTerm.getTerm())
+                .term(searchTerm)
                 .build();
     }
 

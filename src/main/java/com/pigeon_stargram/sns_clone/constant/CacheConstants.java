@@ -28,6 +28,7 @@ public class CacheConstants {
     public static final String STORY_VIEWS = "storyViews";
     public static final String USER_STORIES = "userStories";
     public static final String SEARCH_HISTORY = "searchHistory";
+    public static final String SEARCH_TERM_SCORES = "searchTermScores";
 
 
     // key
