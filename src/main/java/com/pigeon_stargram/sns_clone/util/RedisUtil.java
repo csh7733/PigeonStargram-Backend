@@ -9,4 +9,9 @@ public class RedisUtil {
                                            String suffix) {
         return value + "::" + prefix + "_" + suffix;
     }
+
+    public static String cacheKeyGenerator(String value,
+                                           String prefix) {
+        return value + "::" + prefix;
+    }
 }

@@ -11,9 +11,11 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -252,4 +254,124 @@ public class RedisService {
             throw new IllegalArgumentException("변환할 수 없습니다. " + clazz.getName());
         }
     }
+
+    /**
+     * Sorted Set에 값을 추가합니다.
+     * @param setKey Sorted Set의 키
+     * @param score 정렬 기준이 될 점수 (예: 타임스탬프)
+     * @param value 추가할 값
+     */
+    public void addToSortedSet(String setKey, double score, Object value) {
+        redisTemplate.opsForZSet().add(setKey, value, score);
+    }
+
+    /**
+     * Sorted Set에서 특정 범위 내의 값을 가져옵니다.
+     * @param setKey Sorted Set의 키
+     * @param startScore 시작 점수
+     * @param endScore 종료 점수
+     * @return 점수 범위 내의 값들의 Set
+     */
+    public Set<Object> getRangeByScore(String setKey, double startScore, double endScore) {
+        return redisTemplate.opsForZSet().rangeByScore(setKey, startScore, endScore);
+    }
+
+    /**
+     * Redis의 Sorted Set에서 상위 N개의 값을 점수순으로 가져와 지정된 타입으로 반환합니다.
+     *
+     * @param setKey Sorted Set의 키
+     * @param count  가져올 값의 개수
+     * @param clazz  반환할 값의 타입
+     * @param <T>    반환할 타입
+     * @return 상위 N개의 값을 지정된 타입으로 변환하여 List로 반환
+     */
+    public <T> List<T> getTopNFromSortedSet(String setKey, int count, Class<T> clazz) {
+        Set<Object> rawResults = redisTemplate.opsForZSet().reverseRange(setKey, 0, count - 1);
+
+        if (rawResults == null) {
+            return Collections.emptyList();
+        }
+
+        return rawResults.stream()
+                .filter(clazz::isInstance)
+                .map(clazz::cast)
+                .collect(Collectors.toList());
+    }
+
+
+
+    /**
+     * Sorted Set에서 특정 값을 제거합니다.
+     * @param setKey Sorted Set의 키
+     * @param value 제거할 값
+     */
+    public void removeFromSortedSet(String setKey, Object value) {
+        redisTemplate.opsForZSet().remove(setKey, value);
+    }
+
+    /**
+     * Sorted Set에서 값을 삭제합니다.
+     * @param setKey Sorted Set의 키
+     */
+    public void removeSortedSet(String setKey) {
+        redisTemplate.delete(setKey);
+    }
+
+    /**
+     * Sorted Set의 크기를 가져옵니다.
+     * @param setKey Sorted Set의 키
+     * @return Sorted Set의 원소 개수
+     */
+    public Long getSortedSetSize(String setKey) {
+        return redisTemplate.opsForZSet().size(setKey);
+    }
+
+    /**
+     * Redis에서 주어진 키에 해당하는 Sorted Set이 존재하는지 확인합니다.
+     *
+     * @param setKey 확인할 Sorted Set의 키
+     * @return 키에 해당하는 Sorted Set이 존재하면 true, 존재하지 않으면 false
+     */
+    public Boolean isSortedSetExists(String setKey) {
+        // Redis에서 해당 키가 존재하는지 확인
+        return redisTemplate.hasKey(setKey);
+    }
+
+    /**
+     * Redis의 Sorted Set에서 특정 값에 해당하는 점수를 가져와 지정된 타입으로 반환합니다.
+     *
+     * @param setKey Sorted Set의 키
+     * @param value  점수를 가져올 값
+     * @param clazz  반환할 타입의 클래스
+     * @param <T>    반환할 타입
+     * @return 해당 값에 대한 점수(타임스탬프)를 지정된 타입으로 변환하여 반환, 존재하지 않으면 null
+     */
+    public <T> T getScoreFromSortedSet(String setKey, Object value, Class<T> clazz) {
+        Double score = redisTemplate.opsForZSet().score(setKey, value);
+
+        if (score == null) {
+            return null;
+        }
+
+        if (clazz.isInstance(score)) {
+            return clazz.cast(score);
+        }
+
+        throw new IllegalArgumentException("변환할 수 없습니다. " + clazz.getName());
+    }
+
+    /**
+     * Redis의 Sorted Set에서 특정 값의 점수를 증가시킵니다.
+     *
+     * @param setKey Sorted Set의 키
+     * @param value  점수를 증가시킬 값
+     * @param delta  증가시킬 점수
+     * @return 증가된 후의 점수
+     */
+    public Double incrementScoreInSortedSet(String setKey, String value, double delta) {
+        return redisTemplate.opsForZSet().incrementScore(setKey, value, delta);
+    }
+
+
+
 }
