@@ -252,4 +252,61 @@ public class RedisService {
             throw new IllegalArgumentException("변환할 수 없습니다. " + clazz.getName());
         }
     }
+
+    /**
+     * Sorted Set에 값을 추가합니다.
+     * @param setKey Sorted Set의 키
+     * @param score 정렬 기준이 될 점수 (예: 타임스탬프)
+     * @param value 추가할 값
+     */
+    public void addToSortedSet(String setKey, double score, Object value) {
+        redisTemplate.opsForZSet().add(setKey, value, score);
+    }
+
+    /**
+     * Sorted Set에서 특정 범위 내의 값을 가져옵니다.
+     * @param setKey Sorted Set의 키
+     * @param startScore 시작 점수
+     * @param endScore 종료 점수
+     * @return 점수 범위 내의 값들의 Set
+     */
+    public Set<Object> getRangeByScore(String setKey, double startScore, double endScore) {
+        return redisTemplate.opsForZSet().rangeByScore(setKey, startScore, endScore);
+    }
+
+    /**
+     * Sorted Set에서 가장 높은 점수 상위 N개의 값을 가져옵니다.
+     * @param setKey Sorted Set의 키
+     * @param count 가져올 값의 개수
+     * @return 상위 N개의 값들의 Set
+     */
+    public Set<Object> getTopNFromSortedSet(String setKey, int count) {
+        return redisTemplate.opsForZSet().reverseRange(setKey, 0, count - 1);
+    }
+
+    /**
+     * Sorted Set에서 특정 값을 제거합니다.
+     * @param setKey Sorted Set의 키
+     * @param value 제거할 값
+     */
+    public void removeFromSortedSet(String setKey, Object value) {
+        redisTemplate.opsForZSet().remove(setKey, value);
+    }
+
+    /**
+     * Sorted Set에서 값을 삭제합니다.
+     * @param setKey Sorted Set의 키
+     */
+    public void removeSortedSet(String setKey) {
+        redisTemplate.delete(setKey);
+    }
+
+    /**
+     * Sorted Set의 크기를 가져옵니다.
+     * @param setKey Sorted Set의 키
+     * @return Sorted Set의 원소 개수
+     */
+    public Long getSortedSetSize(String setKey) {
+        return redisTemplate.opsForZSet().size(setKey);
+    }
 }
