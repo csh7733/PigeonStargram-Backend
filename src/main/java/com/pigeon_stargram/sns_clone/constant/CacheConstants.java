@@ -27,6 +27,8 @@ public class CacheConstants {
     public static final String LAST_MESSAGE = "lastMessage";
     public static final String STORY_VIEWS = "storyViews";
     public static final String USER_STORIES = "userStories";
+    public static final String SEARCH_HISTORY = "searchHistory";
+
 
     // key
     public static final String USER_ID = "userId";

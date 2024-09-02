@@ -309,4 +309,41 @@ public class RedisService {
     public Long getSortedSetSize(String setKey) {
         return redisTemplate.opsForZSet().size(setKey);
     }
+
+    /**
+     * Redis에서 주어진 키에 해당하는 Sorted Set이 존재하는지 확인합니다.
+     *
+     * @param setKey 확인할 Sorted Set의 키
+     * @return 키에 해당하는 Sorted Set이 존재하면 true, 존재하지 않으면 false
+     */
+    public Boolean isSortedSetExists(String setKey) {
+        // Redis에서 해당 키가 존재하는지 확인
+        return redisTemplate.hasKey(setKey);
+    }
+
+    /**
+     * Redis의 Sorted Set에서 특정 값에 해당하는 점수를 가져와 지정된 타입으로 반환합니다.
+     *
+     * @param setKey Sorted Set의 키
+     * @param value  점수를 가져올 값
+     * @param clazz  반환할 타입의 클래스
+     * @param <T>    반환할 타입
+     * @return 해당 값에 대한 점수(타임스탬프)를 지정된 타입으로 변환하여 반환, 존재하지 않으면 null
+     */
+    public <T> T getScoreFromSortedSet(String setKey, Object value, Class<T> clazz) {
+        Double score = redisTemplate.opsForZSet().score(setKey, value);
+
+        if (score == null) {
+            return null;
+        }
+
+        if (clazz.isInstance(score)) {
+            return clazz.cast(score);
+        }
+
+        throw new IllegalArgumentException("변환할 수 없습니다. " + clazz.getName());
+    }
+
+
+
 }

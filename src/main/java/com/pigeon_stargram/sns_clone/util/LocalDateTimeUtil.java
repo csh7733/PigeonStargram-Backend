@@ -1,6 +1,7 @@
 package com.pigeon_stargram.sns_clone.util;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 
@@ -29,5 +30,15 @@ public class LocalDateTimeUtil {
 
     public static LocalDateTime getExpirationTime() {
         return LocalDateTime.now().minusHours(24);
+    }
+
+    public static Double getCurrentTimeMillis(){
+        return (double) System.currentTimeMillis();
+    }
+
+    public static Double getTimeMillis(LocalDateTime time) {
+        return (double) time.atZone(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli();
     }
 }

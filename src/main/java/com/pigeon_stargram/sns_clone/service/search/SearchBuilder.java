@@ -9,6 +9,10 @@ import com.pigeon_stargram.sns_clone.dto.search.response.ResponseSearchHistoryDt
 import com.pigeon_stargram.sns_clone.dto.search.response.ResponseTopSearchDto;
 import com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.UNSUPPORTED_OPERATION;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.*;
 
@@ -27,7 +31,16 @@ public class SearchBuilder {
     public static ResponseSearchHistoryDto buildResponseSearchHistoryDto(SearchHistory searchHistory) {
         return ResponseSearchHistoryDto.builder()
                 .searchQuery(searchHistory.getSearchQuery())
-                .time(formatTime(searchHistory.getCreatedDate()))
+                .time(formatTime(searchHistory.getModifiedDate()))
+                .build();
+    }
+
+    public static ResponseSearchHistoryDto buildResponseSearchHistoryDto(String searchQuery, Double score) {
+        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(score.longValue()), ZoneId.systemDefault());
+
+        return ResponseSearchHistoryDto.builder()
+                .searchQuery(searchQuery)
+                .time(formatTime(dateTime))
                 .build();
     }
 
