@@ -9,7 +9,6 @@ import com.pigeon_stargram.sns_clone.dto.search.response.ResponseSearchHistoryDt
 import com.pigeon_stargram.sns_clone.dto.search.response.ResponseTopSearchDto;
 import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
 import com.pigeon_stargram.sns_clone.repository.search.SearchHistoryRepository;
-import com.pigeon_stargram.sns_clone.repository.search.SearchTermRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserBuilder;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -33,7 +32,6 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 @Transactional
 public class SearchService {
 
-    private final SearchTermRepository searchTermRepository;
     private final SearchHistoryRepository searchHistoryRepository;
     private final UserService userService;
     private final RedisService redisService;
