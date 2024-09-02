@@ -85,5 +85,10 @@ public class ReplyService {
     public void likeReply(LikeReplyDto dto) {
         replyLikeCrudService.toggleLike(dto.getLoginUserId(), dto.getReplyId());
     }
+
+    public void deleteAllReplyByCommentId(Long commentId) {
+        List<Long> replyIds = replyCrudService.findReplyIdByCommentId(commentId);
+        replyIds.forEach(replyCrudService::deleteById);
+    }
 }
 

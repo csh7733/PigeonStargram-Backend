@@ -121,8 +121,4 @@ public class ReplyCrudService {
         }
     }
 
-    public void deleteAllByCommentId(Long commentId) {
-        repository.deleteAllByCommentId(commentId);
-    }
-
 }

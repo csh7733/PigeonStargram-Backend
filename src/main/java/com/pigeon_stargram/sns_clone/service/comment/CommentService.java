@@ -89,10 +89,12 @@ public class CommentService {
 
     public void deleteAllCommentsAndReplyByPostId(Long postId) {
         List<Long> commentIds = commentCrudService.findCommentIdByPostId(postId);
-        commentIds.forEach(commentId -> {
-            replyCrudService.deleteAllByCommentId(commentId);
-            commentCrudService.deleteById(commentId);
-        });
+        commentIds.forEach(this::deleteComment);
+    }
+
+    public void deleteComment(Long commentId) {
+        replyService.deleteAllReplyByCommentId(commentId);
+        commentCrudService.deleteById(commentId);
     }
 
     public CommentLikeDto getCommentLike(Long commentId) {
