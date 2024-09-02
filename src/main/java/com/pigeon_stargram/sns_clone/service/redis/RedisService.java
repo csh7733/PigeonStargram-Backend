@@ -3,12 +3,17 @@ package com.pigeon_stargram.sns_clone.service.redis;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.PatternTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -17,6 +22,7 @@ import java.util.Set;
 public class RedisService {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisMessageListenerContainer redisMessageListenerContainer;
 
     /**
      * 메시지 큐에 태스크를 추가합니다.
@@ -143,6 +149,16 @@ public class RedisService {
     }
 
     /**
+     * Redis Hash에서 모든 필드와 값을 가져옵니다.
+     *
+     * @param redisHashKey Redis Hash의 키
+     * @return 모든 필드와 값이 포함된 맵을 반환합니다.
+     */
+    public Map<Object, Object> getAllFieldsFromHash(String redisHashKey) {
+        return redisTemplate.opsForHash().entries(redisHashKey);
+    }
+
+    /**
      * Redis Hash에서 특정 필드를 제거합니다.
      *
      * @param redisHashKey Redis Hash의 키
@@ -170,4 +186,70 @@ public class RedisService {
         return redisTemplate.opsForValue().get(key);
     }
 
+    /**
+     * Redis Hash에서 특정 필드의 존재 여부를 확인합니다.
+     * @param hashKey Hash의 키
+     * @param fieldKey 확인할 필드의 키
+     * @return 필드의 존재 여부
+     */
+    public Boolean hasFieldInHash(String hashKey, String fieldKey) {
+        return redisTemplate.opsForHash().hasKey(hashKey, fieldKey);
+    }
+
+    /**
+     * Redis Hash에서 특정 필드의 값을 증가시킵니다.
+     * @param hashKey Hash의 키
+     * @param fieldKey 증가시킬 필드의 키
+     * @param delta 증가시킬 값
+     * @return 증가된 값
+     */
+    public Long incrementHashValue(String hashKey, String fieldKey, long delta) {
+        return redisTemplate.opsForHash().increment(hashKey, fieldKey, delta);
+    }
+
+    /**
+     * Redis 채널에 메시지를 발행합니다.
+     * @param channelName 채널의 이름
+     * @param message 발행할 메시지 (Object 타입)
+     */
+    public void publishMessage(String channelName, Object message) {
+        redisTemplate.convertAndSend(channelName, message);
+    }
+
+    /**
+     * Redis 패턴을 구독하여 메시지를 수신합니다.
+     * @param pattern 구독할 패턴 (예: "chat.*.*")
+     * @param listener 메시지를 수신할 리스너
+     */
+    public void subscribeToPattern(String pattern, MessageListener listener) {
+        redisMessageListenerContainer.addMessageListener(listener, new PatternTopic(pattern));
+    }
+
+    /**
+     * Redis 패턴 구독을 해제합니다.
+     * @param pattern 구독을 해제할 패턴 (예: "chat.*.*")
+     * @param listener 메시지를 수신할 리스너
+     */
+    public void unsubscribeFromPattern(String pattern, MessageListener listener) {
+        redisMessageListenerContainer.removeMessageListener(listener, new PatternTopic(pattern));
+    }
+
+    /**
+     * 주어진 바이트 배열을 지정된 클래스 타입의 객체로 역직렬화합니다.
+     *
+     * @param messageBody 역직렬화할 바이트 배열입니다.
+     * @param clazz       바이트 배열을 변환할 클래스 타입입니다.
+     * @param <T>         반환할 객체의 타입을 나타냅니다.
+     * @return 지정된 타입으로 변환된 역직렬화된 객체를 반환합니다.
+     * @throws IllegalArgumentException 역직렬화된 객체를 지정된 클래스 타입으로 변환할 수 없을 경우 발생합니다.
+     */
+    public <T> T deserializeMessage(byte[] messageBody, Class<T> clazz) {
+        Object deserialized = redisTemplate.getValueSerializer().deserialize(messageBody);
+
+        if (clazz.isInstance(deserialized)) {
+            return clazz.cast(deserialized);
+        } else {
+            throw new IllegalArgumentException("변환할 수 없습니다. " + clazz.getName());
+        }
+    }
 }

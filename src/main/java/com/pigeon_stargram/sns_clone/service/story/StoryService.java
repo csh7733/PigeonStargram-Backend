@@ -10,6 +10,7 @@ import com.pigeon_stargram.sns_clone.dto.story.response.ResponseStoryDto;
 import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
 import com.pigeon_stargram.sns_clone.exception.story.StoryNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.story.StoryRepository;
+import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,9 +22,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.STORY_NOT_FOUND_ID;
 import static com.pigeon_stargram.sns_clone.service.story.StoryBuilder.buildStory;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getExpirationTime;
+import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -31,28 +34,40 @@ import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getExpiration
 @Service
 public class StoryService {
 
-    private final StoryRepository storyRepository;
+    private final StoryCrudService storyCrudService;
     private final UserService userService;
-
-    //레디스 사용전 임시로 메모리에서 관리할 set Map<StoryId, Set<UserID>>
-    private final Map<Long, Set<Long>> storyViews = new ConcurrentHashMap<>();
+    private final RedisService redisService;
 
     public Story uploadStory(UploadStoryDto dto) {
         User user = userService.findById(dto.getUserId());
         Story story = buildStory(user, dto.getContent(), dto.getImageUrl());
 
-        return storyRepository.save(story);
+        // 캐시와 동기화된 저장
+        Story savedStory = storyCrudService.save(story);
+
+        // 캐시에 storyId 추가
+        String userStorySetKey = cacheKeyGenerator(USER_STORIES, USER_ID, dto.getUserId().toString());
+        redisService.addToSet(userStorySetKey, savedStory.getId());
+
+        return savedStory;
     }
 
-    public void deleteStory(Long storyId) {
-        Story story = storyRepository.findById(storyId)
-                .orElseThrow(() -> new StoryNotFoundException(STORY_NOT_FOUND_ID));
 
-        storyRepository.delete(story);
+    public void deleteStory(Long storyId) {
+        // 캐시나 데이터베이스에서 스토리 조회
+        Story story = storyCrudService.findById(storyId);
+
+        // 사용자 스토리 Set에서 storyId 제거
+        String userStorySetKey = cacheKeyGenerator(USER_STORIES, USER_ID, story.getUser().getId().toString());
+        redisService.removeFromSet(userStorySetKey, storyId);
+
+        // 캐시와 데이터베이스에서 삭제
+        storyCrudService.delete(storyId);
     }
 
     public void markStoryAsViewed(MarkStoryAsViewedDto dto) {
-        storyViews.computeIfAbsent(dto.getStoryId(), k -> ConcurrentHashMap.newKeySet()).add(dto.getUserId());
+        String redisSetKey = cacheKeyGenerator(STORY_VIEWS, STORY_ID, dto.getStoryId().toString());
+        redisService.addToSet(redisSetKey, dto.getUserId());
     }
 
     public ResponseStoriesDto getRecentStories(GetRecentStoriesDto dto) {
@@ -79,31 +94,80 @@ public class StoryService {
     }
 
     public List<ResponseUserInfoDto> getUserInfosWhoViewedStory(Long storyId) {
-        Set<Long> userIdsWhoViewed = storyViews.getOrDefault(storyId, Collections.emptySet());
+        String redisSetKey = cacheKeyGenerator(STORY_VIEWS, STORY_ID, storyId.toString());
+        Set<Object> userIdsWhoViewed = redisService.getSet(redisSetKey);
 
-        return userService.getUserInfosByUserIds(new ArrayList<>(userIdsWhoViewed));
+        return userIdsWhoViewed.stream()
+                .map(id -> ((Integer) id).longValue())
+                .collect(Collectors.collectingAndThen(Collectors.toList(), userIdList ->
+                        userIdList.isEmpty() ? Collections.emptyList() : userService.getUserInfosByUserIds(userIdList)
+                ));
     }
 
     public boolean hasUserViewedStory(Long storyId, Long userId) {
+        String redisSetKey = cacheKeyGenerator(STORY_VIEWS, STORY_ID, storyId.toString());
 
-        return storyViews.getOrDefault(storyId, Collections.emptySet()).contains(userId);
+        return redisService.isMemberOfSet(redisSetKey, userId);
     }
 
     public Boolean hasRecentStory(Long userId) {
         User user = userService.findById(userId);
 
-        return storyRepository.existsByUserAndCreatedDateAfter(user, getExpirationTime());
+        // 유효한 스토리 ID를 가져옴
+        List<Long> recentStoryIds = findRecentStoryIds(user);
+
+        // 유효한 스토리 ID가 하나라도 있으면 true 반환
+        return !recentStoryIds.isEmpty();
     }
 
     public boolean hasUnreadStories(Long userId, Long currentMemberId) {
         User user = userService.findById(userId);
-        List<Story> stories = findRecentStories(user);
 
-        return stories.stream().anyMatch(story -> !hasUserViewedStory(story.getId(), currentMemberId));
+        // 유효한 스토리 ID를 가져옴
+        List<Long> recentStoryIds = findRecentStoryIds(user);
+
+        // 유효한 스토리 ID 중에서 사용자가 읽지 않은 스토리가 있는지 확인
+        return recentStoryIds.stream()
+                .anyMatch(storyId -> !hasUserViewedStory(storyId, currentMemberId));
     }
 
+
     private List<Story> findRecentStories(User user) {
-        return storyRepository.findAllByUserAndCreatedDateAfter(user, getExpirationTime());
+        List<Long> recentStoryIds = findRecentStoryIds(user);
+
+        return recentStoryIds.stream()
+                .map(storyCrudService::findById)
+                .collect(Collectors.toList());
+    }
+
+    private List<Long> findRecentStoryIds(User user) {
+        String userStorySetKey = cacheKeyGenerator(USER_STORIES, USER_ID, user.getId().toString());
+
+        // 만료된 스토리들을 제거
+        removeExpiredStoriesFromSet(userStorySetKey);
+
+        // 유효한 storyId들을 반환
+        Set<Object> validStoryIds = redisService.getSet(userStorySetKey);
+
+        return validStoryIds.stream()
+                .map(id -> ((Integer) id).longValue())
+                .collect(Collectors.toList());
+    }
+
+    private void removeExpiredStoriesFromSet(String userStorySetKey) {
+        Set<Object> storyIds = redisService.getSet(userStorySetKey);
+
+        for (Object storyIdObj : storyIds) {
+            // Object를 Integer로 변환 후 Long으로 캐스팅
+            Long storyId = ((Integer) storyIdObj).longValue();
+
+            Story story = storyCrudService.findById(storyId);
+
+            // 24시간이 지난 스토리인지 확인
+            if (story.getCreatedDate().isBefore(getExpirationTime())) {
+                redisService.removeFromSet(userStorySetKey, storyId);
+            }
+        }
     }
 
 

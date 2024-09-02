@@ -1,22 +1,28 @@
 package com.pigeon_stargram.sns_clone.domain.chat;
 
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
+import com.pigeon_stargram.sns_clone.domain.MongoBaseTimeEntity;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-@Entity
-@DiscriminatorValue("TEXT")
-public class TextChat extends Chat {
+@Document(collection = "text_chats")
+public class TextChat  extends MongoBaseTimeEntity {
 
+    @Id
+    private String id;
+    private Long senderId;
+    private Long recipientId;
     private String text;
 
     @Builder
     public TextChat(Long fromUserId, Long toUserId, String text) {
-        super(fromUserId, toUserId);
+        this.senderId = fromUserId;
+        this.recipientId = toUserId;
         this.text = text;
     }
 }

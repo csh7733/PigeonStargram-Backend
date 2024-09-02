@@ -10,5 +10,5 @@ import java.util.List;
 public interface FileService {
     FileUploadResultDto saveFiles(List<MultipartFile> files);
     String saveFile(MultipartFile file);
-    public Resource loadFileAsResource(String fileUrl);
+    public String loadFileAsPresignedUrl(String filename);
 }

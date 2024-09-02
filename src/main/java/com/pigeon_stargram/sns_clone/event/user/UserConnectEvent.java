@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.event;
+package com.pigeon_stargram.sns_clone.event.user;
 
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
