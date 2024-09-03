@@ -213,8 +213,12 @@ public class BasicUserService implements UserService {
     // 로그인과 관련된 정보는 캐시하지 않음 (DB에서 조회)
     @Override
     public User updatePassword(UpdatePasswordDto dto) {
-        User user = findById(dto.getUserId());
+        Long userId = dto.getUserId();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_ID + "id=" + userId));
         user.updatePassword(dto.getPassword());
+        
         return user;
     }
 
