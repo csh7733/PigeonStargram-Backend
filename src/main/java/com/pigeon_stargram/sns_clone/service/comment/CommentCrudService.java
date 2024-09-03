@@ -106,14 +106,14 @@ public class CommentCrudService {
                 cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
         if (redisService.hasKey(allCommentIds)) {
             log.info("comment 삭제후 postId에 대한 모든 commentId 캐시 삭제 postId = {}", postId);
-            redisService.removeFromSet(allCommentIds, postId);
+            redisService.removeFromSet(allCommentIds, commentId);
         }
 
         String recentCommentIds =
                 cacheKeyGenerator(RECENT_COMMENT_IDS, POST_ID, postId.toString());
         if (redisService.hasKey(recentCommentIds)) {
             log.info("comment 삭제후 postId에 대한 최근 commentId 캐시 삭제 postId = {}", postId);
-            redisService.removeFromSet(recentCommentIds, postId);
+            redisService.removeFromSet(recentCommentIds, commentId);
         }
 
         String allReplyIds =

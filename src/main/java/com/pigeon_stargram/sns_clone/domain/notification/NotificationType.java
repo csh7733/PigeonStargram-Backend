@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum NotificationType {
     FOLLOW,
-    FOLLOW_BACK,
     FOLLOWING_POST,
     MY_POST_COMMENT,
     MY_POST_LIKE,

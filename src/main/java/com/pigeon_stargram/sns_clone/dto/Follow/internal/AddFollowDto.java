@@ -35,7 +35,7 @@ public class AddFollowDto implements NotificationConvertable {
                 .sender(sender)
                 .recipient(recipient)
                 .isRead(false)
-                .type(getNotificationType(sender, recipient))
+                .type(NotificationType.FOLLOW)
                 .message(generateMessage(sender, recipient))
                 .sourceId(senderId)
                 .build();
@@ -46,25 +46,9 @@ public class AddFollowDto implements NotificationConvertable {
         return Arrays.asList(recipientId);
     }
 
-    public NotificationType getNotificationType(User sender, User recipient) {
-        return isFollowBack(sender, recipient)
-                ? NotificationType.FOLLOW_BACK
-                : NotificationType.FOLLOW;
-    }
-
-    private boolean isFollowBack(User sender, User recipient) {
-        return recipient.getFollowings().stream()
-                .map(Follow::getRecipient)
-                .toList()
-                .contains(sender);
-    }
-
     @Override
     public String generateMessage(User sender, User recipient) {
-        return sender.getName() +
-                (isFollowBack(sender, recipient)
-                ? "님이 나를 맞팔로우 했습니다."
-                : "님이 나를 팔로우 했습니다.");
+        return sender.getName() + "님이 나를 팔로우 했습니다.";
     }
 
     @Override
