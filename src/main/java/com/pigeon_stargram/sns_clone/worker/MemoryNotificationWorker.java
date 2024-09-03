@@ -1,9 +1,6 @@
 package com.pigeon_stargram.sns_clone.worker;
 
-import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
-import com.pigeon_stargram.sns_clone.repository.notification.NotificationRepository;
-import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -18,7 +15,7 @@ import java.util.Queue;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class MemoryNotificationWorker implements NotificationWorker{
+public class MemoryNotificationWorker implements NotificationWorker {
 
     private final Queue<ResponseNotificationDto> queue = new LinkedList<>();
     private final SimpMessagingTemplate messagingTemplate;
@@ -36,7 +33,9 @@ public class MemoryNotificationWorker implements NotificationWorker{
     }
 
     @Override
-    public void enqueue(ResponseNotificationDto notification) {
-        queue.add(notification);
+    public void enqueue(Object notification) {
+        if (notification.getClass().isInstance(ResponseNotificationDto.class)) {
+            queue.add((ResponseNotificationDto) notification);
+        }
     }
 }

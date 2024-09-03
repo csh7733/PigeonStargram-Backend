@@ -53,10 +53,9 @@ public class NotificationService {
                     .map(userService::findById)
                     .collect(Collectors.toList());
 
-            NotificationBatchDto.builder()
-                    .sender(sender)
-                    .batchRecipients(batchRecipients)
-                    .type()
+            NotificationBatchDto notificationBatchDto =
+                    dto.toNotificationBatchDto(sender, batchRecipients);
+
         }
 
         List<Notification> notifications = convertDtoToNotifications(dto, senderId, sender);
@@ -78,16 +77,18 @@ public class NotificationService {
                 .forEach(notificationWorker::enqueue);
     }
 
+    private void insertIntoMessageQueue(NotificationBatchDto dto) {
+        notifications.stream()
+                .map(NotificationBuilder::buildResponseNotificationDto)
+                .forEach(notificationWorker::enqueue);
+    }
+
     private List<Notification> convertDtoToNotifications(NotificationConvertable dto, Long senderId, User sender) {
         return dto.getRecipientIds().stream()
                 .filter(recipientId -> !recipientId.equals(senderId))
                 .map(userService::findById)
                 .map(recipient -> dto.toNotification(sender, recipient))
                 .collect(Collectors.toList());
-    }
-
-    private NotificationBatchDto buildNotificationBatchDto(NotificationConvertable dto) {
-        return No
     }
 
     public List<ResponseNotificationDto> findUnreadNotifications(Long userId) {

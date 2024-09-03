@@ -5,5 +5,5 @@ import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificat
 
 public interface NotificationWorker {
     void work();
-    void enqueue(ResponseNotificationDto notification);
+    void enqueue(Object notification);
 }
