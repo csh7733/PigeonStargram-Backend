@@ -36,6 +36,22 @@ public class NotifyReplyTaggedDto implements NotificationConvertable {
     }
 
     @Override
+    public NotificationBatchDto toNotificationBatchDto(User sender,
+                                                       List<User> batchRecipients) {
+        User recipient = batchRecipients.getFirst();
+
+        return NotificationBatchDto.builder()
+                .batchRecipients(batchRecipients)
+                .sender(sender)
+                .type(NotificationType.REPLY_TAG)
+                .isRead(false)
+                .message(generateMessage(sender, recipient))
+                .sourceId(postUserId)
+                .sourceId2(postId)
+                .build();
+    }
+
+    @Override
     public Long getSenderId() {
         return userId;
     }

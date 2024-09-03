@@ -5,6 +5,7 @@ import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.notification.internal.NotificationBatchDto;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,6 +35,21 @@ public class AddFollowDto implements NotificationConvertable {
         return Notification.builder()
                 .sender(sender)
                 .recipient(recipient)
+                .isRead(false)
+                .type(getNotificationType(sender, recipient))
+                .message(generateMessage(sender, recipient))
+                .sourceId(senderId)
+                .build();
+    }
+
+    @Override
+    public NotificationBatchDto toNotificationBatchDto(User sender,
+                                                       List<User> batchRecipients) {
+        User recipient = batchRecipients.getFirst();
+
+        return NotificationBatchDto.builder()
+                .sender(sender)
+                .batchRecipients(batchRecipients)
                 .isRead(false)
                 .type(getNotificationType(sender, recipient))
                 .message(generateMessage(sender, recipient))

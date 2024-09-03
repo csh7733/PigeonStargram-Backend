@@ -4,6 +4,7 @@ package com.pigeon_stargram.sns_clone.service.notification;
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.notification.internal.NotificationBatchDto;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
 import com.pigeon_stargram.sns_clone.exception.notification.NotificationNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.notification.NotificationRepository;
@@ -14,10 +15,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
+import static com.pigeon_stargram.sns_clone.worker.WorkerConstants.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -36,7 +39,25 @@ public class NotificationService {
         Long senderId = dto.getSenderId();
         User sender = userService.findById(senderId);
 
+        List<Long> recipientIds = dto.getRecipientIds();
+        int iterationMax = getIterationMax(recipientIds);
+        for (int i = 0; i < iterationMax; i++) {
 
+            int leftIndex = i * batchSize;
+            int rightIndex = (i == iterationMax - 1) ?
+                    recipientIds.size() : (i + 1) * batchSize;
+
+            List<Long> subList = recipientIds.subList(leftIndex, rightIndex);
+            List<Long> batchIds = new ArrayList<>(subList);
+            List<User> batchRecipients = batchIds.stream()
+                    .map(userService::findById)
+                    .collect(Collectors.toList());
+
+            NotificationBatchDto.builder()
+                    .sender(sender)
+                    .batchRecipients(batchRecipients)
+                    .type()
+        }
 
         List<Notification> notifications = convertDtoToNotifications(dto, senderId, sender);
 
@@ -45,6 +66,10 @@ public class NotificationService {
         insertIntoMessageQueue(notifications);
 
         return saveNotifications;
+    }
+
+    private static int getIterationMax(List<Long> recipientIds) {
+        return (recipientIds.size() - 1) / batchSize + 1;
     }
 
     private void insertIntoMessageQueue(List<Notification> notifications) {
@@ -59,6 +84,10 @@ public class NotificationService {
                 .map(userService::findById)
                 .map(recipient -> dto.toNotification(sender, recipient))
                 .collect(Collectors.toList());
+    }
+
+    private NotificationBatchDto buildNotificationBatchDto(NotificationConvertable dto) {
+        return No
     }
 
     public List<ResponseNotificationDto> findUnreadNotifications(Long userId) {

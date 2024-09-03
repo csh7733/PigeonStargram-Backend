@@ -5,6 +5,7 @@ import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
 import com.pigeon_stargram.sns_clone.domain.post.Image;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.notification.internal.NotificationBatchDto;
 import lombok.*;
 
 import java.util.List;
@@ -39,6 +40,21 @@ public class CreatePostDto implements NotificationConvertable {
     public Notification toNotification(User sender, User recipient) {
         return Notification.builder()
                 .recipient(recipient)
+                .sender(sender)
+                .type(NotificationType.FOLLOWING_POST)
+                .isRead(false)
+                .message(generateMessage(sender, recipient))
+                .sourceId(loginUserId)
+                .build();
+    }
+
+    @Override
+    public NotificationBatchDto toNotificationBatchDto(User sender,
+                                                       List<User> batchRecipients) {
+        User recipient = batchRecipients.getFirst();
+
+        return NotificationBatchDto.builder()
+                .batchRecipients(batchRecipients)
                 .sender(sender)
                 .type(NotificationType.FOLLOWING_POST)
                 .isRead(false)

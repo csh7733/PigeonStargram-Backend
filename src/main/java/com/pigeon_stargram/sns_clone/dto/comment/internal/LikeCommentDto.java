@@ -4,6 +4,7 @@ import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.notification.internal.NotificationBatchDto;
 import lombok.*;
 
 import java.util.Arrays;
@@ -30,6 +31,22 @@ public class LikeCommentDto implements NotificationConvertable {
                 .isRead(false)
                 .sender(sender)
                 .recipient(recipient)
+                .sourceId(postUserId)
+                .sourceId2(postId)
+                .build();
+    }
+
+    @Override
+    public NotificationBatchDto toNotificationBatchDto(User sender,
+                                                       List<User> batchRecipients) {
+        User recipient = batchRecipients.getFirst();
+
+        return NotificationBatchDto.builder()
+                .type(NotificationType.MY_COMMENT_LIKE)
+                .message(generateMessage(sender, recipient))
+                .isRead(false)
+                .sender(sender)
+                .batchRecipients(batchRecipients)
                 .sourceId(postUserId)
                 .sourceId2(postId)
                 .build();
