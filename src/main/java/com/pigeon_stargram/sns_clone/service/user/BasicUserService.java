@@ -168,7 +168,10 @@ public class BasicUserService implements UserService {
         // 사용자의 온라인 상태 업데이트
         user.updateOnlineStatus(dto.getOnlineStatus());
 
-        // 변경된 사용자 정보를 캐시에 업데이트 (Write-through 캐싱 전략)
+        // 변경된 사용자 정보를 데이터베이스에 저장 (Write-through 캐싱 전략)
+        userRepository.save(user);
+
+        // 변경된 사용자 정보를 캐시에 업데이트
         redisService.putValueInHash(USER_CACHE_KEY, user.getId().toString(), user);
 
         // Redis 채널을 통해 다른 서비스에 상태 변경 전파
@@ -218,7 +221,7 @@ public class BasicUserService implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_ID + "id=" + userId));
         user.updatePassword(dto.getPassword());
-        
+
         return user;
     }
 
