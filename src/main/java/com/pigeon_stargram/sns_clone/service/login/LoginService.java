@@ -8,6 +8,7 @@ import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestResetPasswordDto;
 import com.pigeon_stargram.sns_clone.dto.user.internal.UpdateOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.user.internal.UpdatePasswordDto;
+import com.pigeon_stargram.sns_clone.exception.login.EmailMismatchException;
 import com.pigeon_stargram.sns_clone.exception.login.EmailNotSentException;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserBuilder;
@@ -59,19 +60,14 @@ public class LoginService {
 
         httpSession.invalidate();
     }
+    
+    public void register(String email,RequestRegisterDto request) {
 
-    /**
-     * todo: 애플리케이션 레벨 예외처리 추가
-     *      같은 요청 두개가 동시에 들어오는 경우 테스트
-     */
-    public void register(RequestRegisterDto request) {
+        if(!email.equals(request.getEmail())) throw new EmailMismatchException(EMAIL_MISMATCH);
 
         userService.save(request);
     }
 
-    /**
-     * TODO : 블로킹 비동기로 처리하기
-     */
     public void sendPasswordResetLink(String email) {
         log.info("email = {}", email);
 

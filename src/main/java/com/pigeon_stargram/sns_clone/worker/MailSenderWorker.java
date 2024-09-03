@@ -52,7 +52,8 @@ public class MailSenderWorker {
                 }
             } catch (QueryTimeoutException e) {
                 // Lettuce 클라이언트는 기본적으로 1분후에 타임아웃 시킴
-                // 서버의 안전성을 위해 1분(기본값)마다 연결을 재시도한 후 블로킹시킴
+                // 서버의 안전성을 위해 작업큐에 task가 없다면
+                // 1분(기본값)후에 연결을 재시도한 후 다시 블로킹
                 log.info("[MAIL BLOCKING POP 재설정] MAIL 작업큐에 1분동안 작업이없어서 다시 연결합니다");
             } catch (RedisConnectionException e) {
                 log.error("Redis 서버와의 연결이 끊어졌습니다. 다시 연결 시도 중...", e);
