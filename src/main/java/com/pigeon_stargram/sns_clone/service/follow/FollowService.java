@@ -51,17 +51,16 @@ public class FollowService {
         Long senderId = dto.getSenderId();
         Long recipientId = dto.getRecipientId();
 
-        followRepository.findBySenderIdAndRecipientId(senderId, recipientId)
-                .ifPresent(follow -> {
-                    throw new FollowExistException("이미 팔로우 중입니다.");
-                });
+        if (followCrudService.findFollowers(recipientId).contains(senderId)) {
+            throw new FollowExistException("이미 팔로우 중입니다.");
+        }
 
         User sender = userService.findById(senderId);
         User recipient = userService.findById(recipientId);
         log.info("sender ={}, recipient = {}",sender.getId(),recipient.getId());
 
         Follow follow = buildFollow(sender, recipient);
-        Follow save = followRepository.save(follow);
+        Follow save = followCrudService.save(follow);
 
         notificationService.send(dto);
 

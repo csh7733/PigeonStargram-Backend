@@ -82,24 +82,26 @@ public class FollowCrudService {
         return followingIds;
     }
 
-//    public Follow createFollow(AddFollowDto dto) {
-//        Long senderId = dto.getSenderId();
-//        Long recipientId = dto.getRecipientId();
-//
-//        repository.findBySenderIdAndRecipientId(senderId, recipientId)
-//                .ifPresent(follow -> {
-//                    throw new FollowExistException("이미 팔로우 중입니다.");
-//                });
-//
-//        User sender = userService.findById(senderId);
-//        User recipient = userService.findById(recipientId);
-//        log.info("sender ={}, recipient = {}",sender.getId(),recipient.getId());
-//
-//        Follow follow = buildFollow(sender, recipient);
-//        Follow save = followRepository.save(follow);
-//
-//        notificationService.send(dto);
-//
-//        return save;
-//    }
+    public Follow save(Follow follow) {
+        Follow save = repository.save(follow);
+
+        Long senderId = save.getSender().getId();
+        Long recipientId = save.getRecipient().getId();
+
+        String followerIds =
+                cacheKeyGenerator(FOLLOWER_IDS, USER_ID, recipientId.toString());
+        if (redisService.hasKey(followerIds)) {
+            log.info("follow 저장후 recipient 에 대한 senderId 캐시 저장 recipientId = {}", recipientId);
+            redisService.addToSet(followerIds, senderId);
+        }
+
+        String followingIds =
+                cacheKeyGenerator(FOLLOWING_IDS, USER_ID, senderId.toString());
+        if (redisService.hasKey(followingIds)) {
+            log.info("follow 저장후 senderId 에 대한 recipientId 캐시 저장 senderId = {}", senderId);
+            redisService.addToSet(followingIds, recipientId);
+        }
+
+        return save;
+    }
 }
