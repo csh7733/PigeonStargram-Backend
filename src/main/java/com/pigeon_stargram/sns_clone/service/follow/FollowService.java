@@ -68,7 +68,10 @@ public class FollowService {
     }
 
     public void deleteFollow(DeleteFollowDto dto){
-        followRepository.deleteBySenderIdAndRecipientId(dto.getSenderId(), dto.getRecipientId());
+        Long senderId = dto.getSenderId();
+        Long recipientId = dto.getRecipientId();
+
+        followCrudService.deleteFollowBySenderIdAndRecipientId(senderId, recipientId);
     }
 
     public List<ResponseFollowerDto> findFollowings(Long userId) {

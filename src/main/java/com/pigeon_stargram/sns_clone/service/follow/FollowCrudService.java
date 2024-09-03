@@ -91,17 +91,40 @@ public class FollowCrudService {
         String followerIds =
                 cacheKeyGenerator(FOLLOWER_IDS, USER_ID, recipientId.toString());
         if (redisService.hasKey(followerIds)) {
-            log.info("follow 저장후 recipient 에 대한 senderId 캐시 저장 recipientId = {}", recipientId);
+            log.info("follow 저장후 recipient 에 대한 senderId 캐시 저장 recipientId = {}, senderId = {}",
+                    recipientId, senderId);
             redisService.addToSet(followerIds, senderId);
         }
 
         String followingIds =
                 cacheKeyGenerator(FOLLOWING_IDS, USER_ID, senderId.toString());
         if (redisService.hasKey(followingIds)) {
-            log.info("follow 저장후 senderId 에 대한 recipientId 캐시 저장 senderId = {}", senderId);
+            log.info("follow 저장후 senderId 에 대한 recipientId 캐시 저장 senderId = {}, recipientId = {}",
+                    senderId, recipientId);
             redisService.addToSet(followingIds, recipientId);
         }
 
         return save;
+    }
+
+    public void deleteFollowBySenderIdAndRecipientId(Long senderId,
+                                                     Long recipientId) {
+        repository.deleteBySenderIdAndRecipientId(senderId, recipientId);
+
+        String followerIds =
+                cacheKeyGenerator(FOLLOWER_IDS, USER_ID, recipientId.toString());
+        if (redisService.hasKey(followerIds)) {
+            log.info("follow 삭제후 recipient 에 대한 senderId 캐시 삭제 recipientId = {}, senderId = {}",
+                    recipientId, senderId);
+            redisService.removeFromSet(followerIds, senderId);
+        }
+
+        String followingIds =
+                cacheKeyGenerator(FOLLOWING_IDS, USER_ID, senderId.toString());
+        if (redisService.hasKey(followingIds)) {
+            log.info("follow 삭제후 senderId 에 대한 recipientId 캐시 삭제 senderId = {}, recipientId = {}",
+                    senderId, recipientId);
+            redisService.removeFromSet(followingIds, recipientId);
+        }
     }
 }

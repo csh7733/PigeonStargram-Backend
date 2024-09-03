@@ -70,6 +70,7 @@ public class FollowController {
         Long loginUserId = loginUser.getId();
         DeleteFollowDto deleteFollowDto =
                 buildDeleteFollowDto(loginUserId, followeeId);
+
         followService.deleteFollow(deleteFollowDto);
     }
 
