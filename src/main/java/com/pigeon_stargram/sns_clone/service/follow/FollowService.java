@@ -193,18 +193,12 @@ public class FollowService {
     }
 
     public void toggleNotificationEnabled(ToggleNotificationEnabledDto dto) {
-        Long loginUserId = dto.getLoginUserId();
-        Long targetUserId = dto.getTargetUserId();
-        followRepository.findBySenderIdAndRecipientId(loginUserId, targetUserId)
-                .ifPresent(Follow::toggleNotificationEnabled);
+       followCrudService.toggleNotificationEnabled(dto.getLoginUserId(), dto.getTargetUserId());
     }
 
     public Boolean getNotificationEnabled(GetNotificationEnabledDto dto) {
-        Long senderId = dto.getLoginUserId();
-        Long recipientId = dto.getTargetUserId();
-        return followRepository.findBySenderIdAndRecipientId(senderId, recipientId)
-                .map(Follow::getIsNotificationEnabled)
-                .orElse(false);
+        return followCrudService.findNotificationEnabledIds(dto.getTargetUserId())
+                .contains(dto.getLoginUserId());
     }
 
     public List<ResponseFollowerDto> findMeAndFollowingsWithRecentStories(Long userId) {

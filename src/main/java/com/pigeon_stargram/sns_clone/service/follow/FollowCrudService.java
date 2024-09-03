@@ -1,23 +1,22 @@
 package com.pigeon_stargram.sns_clone.service.follow;
 
 import com.pigeon_stargram.sns_clone.domain.follow.Follow;
-import com.pigeon_stargram.sns_clone.domain.reply.Reply;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.Follow.internal.AddFollowDto;
-import com.pigeon_stargram.sns_clone.exception.follow.FollowExistException;
+import com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst;
+import com.pigeon_stargram.sns_clone.exception.follow.FollowNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.follow.FollowRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
-import static com.pigeon_stargram.sns_clone.service.follow.FollowBuilder.buildFollow;
+import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 
 @Slf4j
@@ -49,11 +48,7 @@ public class FollowCrudService {
                 .map(User::getId)
                 .collect(Collectors.toList());
 
-        followerIds.add(0L);
-        redisService.addAllToSet(cacheKey, followerIds);
-
-        followerIds.remove(0L);
-        return followerIds;
+        return cacheListToSetAndReturn(followerIds, cacheKey);
     }
 
     public List<Long> findFollowings(Long userId) {
@@ -75,11 +70,38 @@ public class FollowCrudService {
                 .map(User::getId)
                 .collect(Collectors.toList());
 
-        followingIds.add(0L);
-        redisService.addAllToSet(cacheKey, followingIds);
+        return cacheListToSetAndReturn(followingIds, cacheKey);
+    }
 
-        followingIds.remove(0L);
-        return followingIds;
+    public List<Long> findNotificationEnabledIds(Long userId) {
+        String cacheKey = cacheKeyGenerator(NOTIFICATION_ENABLED_IDS, USER_ID, userId.toString());
+
+        if (redisService.hasKey(cacheKey)) {
+            log.info("findNotificationEnabledIds(userId = {}) 캐시 히트", userId);
+
+            return redisService.getSet(cacheKey).stream()
+                    .filter(replyId -> !replyId.equals(0))
+                    .map(replyId -> Long.valueOf((Integer) replyId))
+                    .collect(Collectors.toList());
+        }
+
+        log.info("findNotificationEnabledIds(userId = {}) 캐시 미스", userId);
+
+        List<Long> notificationEnabledUserIds = repository.findByRecipientId(userId).stream()
+                .filter(Follow::getIsNotificationEnabled)
+                .map(Follow::getSender)
+                .map(User::getId)
+                .collect(Collectors.toList());
+
+        return cacheListToSetAndReturn(notificationEnabledUserIds, cacheKey);
+    }
+
+    private List<Long> cacheListToSetAndReturn(List<Long> list, String cacheKey) {
+        list.add(0L);
+        redisService.addAllToSet(cacheKey, list);
+
+        list.remove(0L);
+        return list;
     }
 
     public Follow save(Follow follow) {
@@ -107,6 +129,25 @@ public class FollowCrudService {
         return save;
     }
 
+    public void toggleNotificationEnabled(Long senderId,
+                                          Long recipientId) {
+        String cacheKey = cacheKeyGenerator(NOTIFICATION_ENABLED_IDS, USER_ID, recipientId.toString());
+
+        if (redisService.hasKey(cacheKey)) {
+            log.info("toggleNotificationEnabled(recipientId = {}) 캐시 히트", recipientId);
+
+            if (redisService.isMemberOfSet(cacheKey, senderId)) {
+                redisService.removeFromSet(cacheKey, senderId);
+            } else {
+                redisService.addToSet(cacheKey, senderId);
+            }
+        }
+
+        Follow follow = repository.findBySenderIdAndRecipientId(senderId, recipientId)
+                .orElseThrow(() -> new FollowNotFoundException(FOLLOW_NOT_FOUND));
+        follow.toggleNotificationEnabled();
+    }
+
     public void deleteFollowBySenderIdAndRecipientId(Long senderId,
                                                      Long recipientId) {
         repository.deleteBySenderIdAndRecipientId(senderId, recipientId);
@@ -126,5 +167,15 @@ public class FollowCrudService {
                     senderId, recipientId);
             redisService.removeFromSet(followingIds, recipientId);
         }
+
+        String notificationEnabledIds =
+                cacheKeyGenerator(NOTIFICATION_ENABLED_IDS, USER_ID, recipientId.toString());
+        if (redisService.hasKey(notificationEnabledIds)) {
+            log.info("follow 삭제후 recipientId 에 대한 notificationEnabledId 캐시 삭제 notificationEnabledId = {}, recipientId = {}",
+                    senderId, recipientId);
+            redisService.removeFromSet(notificationEnabledIds, senderId);
+        }
     }
+
+
 }

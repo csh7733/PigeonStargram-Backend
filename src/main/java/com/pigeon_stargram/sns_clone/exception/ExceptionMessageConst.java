@@ -44,6 +44,8 @@ public class ExceptionMessageConst {
 
     public static final String FOLLOW_EXIST
             = "이미 팔로우중입니다.";
+    public static final String FOLLOW_NOT_FOUND
+            = "팔로우 정보가 없습니다.";
     public static final String STORY_NOT_FOUND_ID
             = "ID와 일치하는 스토리가 없습니다";
 

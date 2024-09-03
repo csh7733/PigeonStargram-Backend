@@ -22,6 +22,7 @@ public class CacheConstants {
 
     public static final String FOLLOWER_IDS = "followerIds";
     public static final String FOLLOWING_IDS = "followingIds";
+    public static final String NOTIFICATION_ENABLED_IDS = "notificationEnabledIds";
 
     public static final String UNREAD_CHAT_COUNT = "unreadChatCount";
     public static final String LAST_MESSAGE = "lastMessage";
