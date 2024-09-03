@@ -103,6 +103,7 @@ public class ReplyCrudService {
     @CacheEvict(value = REPLY,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).REPLY_ID + '_' + #replyId")
     public void deleteById(Long replyId) {
+        // 프록시 문제로 캐시 수동획득으로 수정 필요
         Long commentId = findById(replyId).getComment().getId();
         repository.deleteById(replyId);
 

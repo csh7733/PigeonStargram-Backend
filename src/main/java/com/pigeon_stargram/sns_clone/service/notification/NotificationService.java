@@ -36,6 +36,8 @@ public class NotificationService {
         Long senderId = dto.getSenderId();
         User sender = userService.findById(senderId);
 
+
+
         List<Notification> notifications = convertDtoToNotifications(dto, senderId, sender);
 
         List<Notification> saveNotifications = notificationRepository.saveAll(notifications);

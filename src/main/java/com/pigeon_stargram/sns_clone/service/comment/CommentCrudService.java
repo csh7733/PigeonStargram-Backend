@@ -99,6 +99,7 @@ public class CommentCrudService {
     @CacheEvict(value = COMMENT,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).COMMENT_ID + '_' + #commentId")
     public void deleteById(Long commentId) {
+        // 프록시 문제로 캐시 수동획득으로 수정 필요
         Long postId = findById(commentId).getPost().getId();
         repository.deleteById(commentId);
 
@@ -106,14 +107,14 @@ public class CommentCrudService {
                 cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
         if (redisService.hasKey(allCommentIds)) {
             log.info("comment 삭제후 postId에 대한 모든 commentId 캐시 삭제 postId = {}", postId);
-            redisService.removeFromSet(allCommentIds, postId);
+            redisService.removeFromSet(allCommentIds, commentId);
         }
 
         String recentCommentIds =
                 cacheKeyGenerator(RECENT_COMMENT_IDS, POST_ID, postId.toString());
         if (redisService.hasKey(recentCommentIds)) {
             log.info("comment 삭제후 postId에 대한 최근 commentId 캐시 삭제 postId = {}", postId);
-            redisService.removeFromSet(recentCommentIds, postId);
+            redisService.removeFromSet(recentCommentIds, commentId);
         }
 
         String allReplyIds =

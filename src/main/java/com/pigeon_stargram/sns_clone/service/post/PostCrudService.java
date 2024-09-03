@@ -131,6 +131,7 @@ public class PostCrudService {
     @CacheEvict(value = POST,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).POST_ID + '_' + #postId")
     public void deleteById(Long postId) {
+        // 프록시 문제로 캐시 수동획득으로 수정 필요
         Long postUserId = findById(postId).getUser().getId();
         repository.deleteById(postId);
 
