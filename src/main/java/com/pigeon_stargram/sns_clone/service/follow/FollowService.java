@@ -15,7 +15,6 @@ import com.pigeon_stargram.sns_clone.exception.follow.FollowExistException;
 import com.pigeon_stargram.sns_clone.repository.follow.FollowRepository;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
-import com.pigeon_stargram.sns_clone.service.user.UserBuilder;
 import com.pigeon_stargram.sns_clone.service.story.StoryService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +50,7 @@ public class FollowService {
         Long senderId = dto.getSenderId();
         Long recipientId = dto.getRecipientId();
 
-        if (followCrudService.findFollowers(recipientId).contains(senderId)) {
+        if (followCrudService.findFollowerIds(recipientId).contains(senderId)) {
             throw new FollowExistException("이미 팔로우 중입니다.");
         }
 
@@ -75,18 +74,18 @@ public class FollowService {
     }
 
     public List<ResponseFollowerDto> findFollowings(Long userId) {
-        return followRepository.findBySenderId(userId).stream()
-                .map(Follow::getRecipient)
+        return followCrudService.findFollowingIds(userId).stream()
+                .map(userService::findById)
                 .map(recipient -> new ResponseFollowerDto(recipient, 1))
                 .collect(Collectors.toList());
     }
 
     public List<ResponseFollowerDto> findFollowers(FindFollowersDto dto) {
         Set<Long> targetUserFollowerIdSet =
-                followCrudService.findFollowers(dto.getUserId())
+                followCrudService.findFollowerIds(dto.getUserId())
                         .stream().collect(Collectors.toSet());
         Set<Long> loginUserFollowingIdSet =
-                followCrudService.findFollowings(dto.getLoginUserId())
+                followCrudService.findFollowingIds(dto.getLoginUserId())
                         .stream().collect(Collectors.toSet());
 
         // 타겟유저를 팔로우 하는 사람 중, 내가 팔로우중인 사람
@@ -96,10 +95,10 @@ public class FollowService {
 
     public List<ResponseFollowerDto> findFollowings(FindFollowingsDto dto) {
         Set<Long> targetUserFollowingIdSet =
-                followCrudService.findFollowings(dto.getUserId())
+                followCrudService.findFollowingIds(dto.getUserId())
                         .stream().collect(Collectors.toSet());
         Set<Long> loginUserFollowingIdSet =
-                followCrudService.findFollowings(dto.getLoginUserId())
+                followCrudService.findFollowingIds(dto.getLoginUserId())
                         .stream().collect(Collectors.toSet());
 
         return getResponseFollowerDtos(loginUserFollowingIdSet, targetUserFollowingIdSet);
@@ -132,7 +131,7 @@ public class FollowService {
     }
 
     public Boolean isFollowing(Long sourceId, Long targetId) {
-        return followCrudService.findFollowers(targetId)
+        return followCrudService.findFollowerIds(targetId)
                 .contains(sourceId);
     }
 
@@ -185,11 +184,11 @@ public class FollowService {
     }
 
     public Long countFollowings(Long userId) {
-        return (long) followCrudService.findFollowings(userId).size();
+        return (long) followCrudService.findFollowingIds(userId).size();
     }
 
     public Long countFollowers(Long userId) {
-        return (long) followCrudService.findFollowers(userId).size();
+        return (long) followCrudService.findFollowerIds(userId).size();
     }
 
     public void toggleNotificationEnabled(ToggleNotificationEnabledDto dto) {

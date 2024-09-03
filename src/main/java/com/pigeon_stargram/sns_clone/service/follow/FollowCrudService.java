@@ -2,7 +2,6 @@ package com.pigeon_stargram.sns_clone.service.follow;
 
 import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst;
 import com.pigeon_stargram.sns_clone.exception.follow.FollowNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.follow.FollowRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
@@ -29,11 +27,11 @@ public class FollowCrudService {
 
     private final FollowRepository repository;
 
-    public List<Long> findFollowers(Long userId) {
+    public List<Long> findFollowerIds(Long userId) {
         String cacheKey = cacheKeyGenerator(FOLLOWER_IDS, USER_ID, userId.toString());
 
         if (redisService.hasKey(cacheKey)) {
-            log.info("findFollowers(userId = {}) 캐시 히트", userId);
+            log.info("findFollowerIds(userId = {}) 캐시 히트", userId);
 
             return redisService.getSet(cacheKey).stream()
                     .filter(replyId -> !replyId.equals(0))
@@ -41,7 +39,7 @@ public class FollowCrudService {
                     .collect(Collectors.toList());
         }
 
-        log.info("findFollowers(userId = {}) 캐시 미스", userId);
+        log.info("findFollowerIds(userId = {}) 캐시 미스", userId);
 
         List<Long> followerIds = repository.findByRecipientId(userId).stream()
                 .map(Follow::getSender)
@@ -51,11 +49,11 @@ public class FollowCrudService {
         return cacheListToSetAndReturn(followerIds, cacheKey);
     }
 
-    public List<Long> findFollowings(Long userId) {
+    public List<Long> findFollowingIds(Long userId) {
         String cacheKey = cacheKeyGenerator(FOLLOWING_IDS, USER_ID, userId.toString());
 
         if (redisService.hasKey(cacheKey)) {
-            log.info("findFollowings(userId = {}) 캐시 히트", userId);
+            log.info("findFollowingIds(userId = {}) 캐시 히트", userId);
 
             return redisService.getSet(cacheKey).stream()
                     .filter(replyId -> !replyId.equals(0))
@@ -63,10 +61,11 @@ public class FollowCrudService {
                     .collect(Collectors.toList());
         }
 
-        log.info("findFollowings(userId = {}) 캐시 미스", userId);
+        log.info("findFollowingIds(userId = {}) 캐시 미스", userId);
+
 
         List<Long> followingIds = repository.findBySenderId(userId).stream()
-                .map(Follow::getRecipient)
+                .map(Follow::getRecipient)// user 가 캐시되면 userId로 가져오도록 변경예정 - FollowService의 findFollowings에서 캐시로 사용하기 위해
                 .map(User::getId)
                 .collect(Collectors.toList());
 
