@@ -130,9 +130,8 @@ public class FollowService {
     }
 
     public Boolean isFollowing(Long sourceId, Long targetId) {
-        return followRepository.findByRecipientId(targetId)
-                .stream()
-                .anyMatch(follow -> follow.getSender().getId().equals(sourceId));
+        return followCrudService.findFollowers(targetId)
+                .contains(sourceId);
     }
 
     private Boolean checkMutualFollow(Long user1Id, Long user2Id) {
