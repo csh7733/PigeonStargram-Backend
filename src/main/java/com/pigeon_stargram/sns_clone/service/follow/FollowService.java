@@ -185,11 +185,11 @@ public class FollowService {
     }
 
     public Long countFollowings(Long userId) {
-        return followRepository.countBySenderId(userId);
+        return (long) followCrudService.findFollowings(userId).size();
     }
 
     public Long countFollowers(Long userId) {
-        return followRepository.countByRecipientId(userId);
+        return (long) followCrudService.findFollowers(userId).size();
     }
 
     public void toggleNotificationEnabled(ToggleNotificationEnabledDto dto) {
