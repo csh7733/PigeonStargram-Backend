@@ -1,5 +1,8 @@
 package com.pigeon_stargram.sns_clone.worker;
 
+import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
+import com.pigeon_stargram.sns_clone.domain.notification.NotificationV2;
+import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotificationBatchDto;
 import com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst;
 import com.pigeon_stargram.sns_clone.exception.notification.UnsupportedTypeException;
@@ -10,6 +13,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
 import static com.pigeon_stargram.sns_clone.worker.WorkerConstants.*;
 
@@ -19,12 +25,26 @@ import static com.pigeon_stargram.sns_clone.worker.WorkerConstants.*;
 @Component
 public class RedisNotificationWorker implements NotificationWorker {
 
+//    private final
     private final RedisService redisService;
 
     @Transactional
     @Scheduled(fixedRate = 100)
     @Override
     public void work() {
+        Object batch = redisService.popTask(NOTIFICATION_QUEUE_KEY);
+        if (!batch.getClass().isInstance(NotificationBatchDto.class)) {
+            throw new UnsupportedTypeException(UNSUPPORTED_TYPE + batch.getClass());
+        }
+
+        NotificationBatchDto dto = (NotificationBatchDto) batch;
+        NotificationContent content = buildNotificationContent(dto);
+
+        List<NotificationV2> notifications = dto.getBatchRecipients().stream()
+                .map(recipient -> buildNotification(recipient, dto, content))
+                .collect(Collectors.toList());
+
+
 
     }
 
@@ -36,4 +56,25 @@ public class RedisNotificationWorker implements NotificationWorker {
             throw new UnsupportedTypeException(UNSUPPORTED_TYPE + notification.getClass());
         }
     }
+
+    private static NotificationV2 buildNotification(User recipient,
+                                                    NotificationBatchDto dto,
+                                                    NotificationContent content) {
+        return NotificationV2.builder()
+                .sender(dto.getSender())
+                .recipient(recipient)
+                .content(content)
+                .isRead(false)
+                .build();
+    }
+
+    private static NotificationContent buildNotificationContent(NotificationBatchDto dto) {
+        return NotificationContent.builder()
+                .type(dto.getType())
+                .message(dto.getMessage())
+                .sourceId(dto.getSourceId())
+                .sourceId2(dto.getSourceId2())
+                .build();
+    }
+
 }
