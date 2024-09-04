@@ -69,6 +69,7 @@ public class CreateCommentDto implements NotificationConvertable {
                 .type(NotificationType.MY_POST_COMMENT)
                 .message(generateMessage())
                 .sourceId(postUserId)
+                .sourceId2(postId)
                 .build();
     }
 
