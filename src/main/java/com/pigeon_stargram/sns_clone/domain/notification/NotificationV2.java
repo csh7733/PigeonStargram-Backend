@@ -1,6 +1,7 @@
 package com.pigeon_stargram.sns_clone.domain.notification;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,11 +19,7 @@ public class NotificationV2 {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "sender_id")
-    private User sender;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recipient_id")
     private User recipient;
 

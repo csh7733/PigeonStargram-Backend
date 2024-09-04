@@ -12,6 +12,7 @@ import com.pigeon_stargram.sns_clone.service.user.UserService;
 import com.pigeon_stargram.sns_clone.worker.NotificationWorker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,7 @@ public class NotificationService {
 
     private final UserService userService;
     private final NotificationRepository notificationRepository;
+    @Qualifier("redisNotificationWorker")
     private final NotificationWorker notificationWorker;
 
     /**
@@ -109,6 +111,7 @@ public class NotificationService {
     }
 
     public void notifyTaggedUsers(NotificationConvertable dto) {
+
         if(!dto.getRecipientIds().isEmpty()) send(dto);
     }
 }

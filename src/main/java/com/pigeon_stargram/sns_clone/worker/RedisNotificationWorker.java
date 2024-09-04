@@ -41,7 +41,7 @@ public class RedisNotificationWorker implements NotificationWorker {
         NotificationContent content = buildNotificationContent(dto);
 
         List<NotificationV2> notifications = dto.getBatchRecipients().stream()
-                .map(recipient -> buildNotification(recipient, dto, content))
+                .map(recipient -> buildNotification(recipient, content))
                 .collect(Collectors.toList());
 
 
@@ -58,10 +58,8 @@ public class RedisNotificationWorker implements NotificationWorker {
     }
 
     private static NotificationV2 buildNotification(User recipient,
-                                                    NotificationBatchDto dto,
                                                     NotificationContent content) {
         return NotificationV2.builder()
-                .sender(dto.getSender())
                 .recipient(recipient)
                 .content(content)
                 .isRead(false)
@@ -70,6 +68,8 @@ public class RedisNotificationWorker implements NotificationWorker {
 
     private static NotificationContent buildNotificationContent(NotificationBatchDto dto) {
         return NotificationContent.builder()
+                .sender(dto.getSender())
+                .senderId(dto.getSender().getId())
                 .type(dto.getType())
                 .message(dto.getMessage())
                 .sourceId(dto.getSourceId())
