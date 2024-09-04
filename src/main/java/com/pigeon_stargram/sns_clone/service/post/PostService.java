@@ -3,18 +3,17 @@ package com.pigeon_stargram.sns_clone.service.post;
 import com.pigeon_stargram.sns_clone.domain.post.Image;
 import com.pigeon_stargram.sns_clone.domain.post.Post;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-
-
 import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseCommentDto;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyPostTaggedDto;
 import com.pigeon_stargram.sns_clone.dto.post.internal.CreatePostDto;
 import com.pigeon_stargram.sns_clone.dto.post.internal.EditPostDto;
 import com.pigeon_stargram.sns_clone.dto.post.internal.LikePostDto;
 import com.pigeon_stargram.sns_clone.dto.post.internal.PostContentDto;
-import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.PostLikeDto;
+import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.repository.post.ImageRepository;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
+import com.pigeon_stargram.sns_clone.service.follow.FollowCrudService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
@@ -44,6 +43,7 @@ public class PostService {
     private final PostLikeCrudService postLikeCrudService;
     private final CommentService commentService;
     private final FollowService followService;
+    private final FollowCrudService followCrudService;
     private final NotificationService notificationService;
 
     private final ImageRepository imageRepository;
@@ -83,7 +83,7 @@ public class PostService {
         // 캐시 히트된 경우 역직렬화된 데이터를 images로 복사
         List<Image> images = post.getImages();
         List<Image> imagesForSerialization = post.getImagesForSerialization();
-        if(images.isEmpty() && !imagesForSerialization.isEmpty()){
+        if (images.isEmpty() && !imagesForSerialization.isEmpty()) {
             images.addAll(imagesForSerialization);
         }
 
@@ -97,6 +97,10 @@ public class PostService {
 
     public Long createPost(CreatePostDto dto) {
         User loginUser = userService.findById(dto.getLoginUserId());
+
+        List<Long> notificationEnabledIds =
+                followCrudService.findNotificationEnabledIds(loginUser.getId());
+        dto.setNotificationRecipientIds(notificationEnabledIds);
 
         Post post = buildPost(dto, loginUser);
         Post save = postCrudService.save(post);
@@ -123,7 +127,7 @@ public class PostService {
             redisService.putValueInHash(UPLOADING_POSTS_HASH, dto.getFieldKey(), save.getId());
 
             //이미지 업로드가 끝나지 않았을 경우
-            if(!fileUploadWorker.isUploadComplete(dto.getFieldKey())) {
+            if (!fileUploadWorker.isUploadComplete(dto.getFieldKey())) {
                 // 업로드 중인 게시물 ID를 Set에 추가
                 redisService.addToSet(UPLOADING_POSTS_SET, save.getId());
             }
@@ -131,7 +135,9 @@ public class PostService {
         postCrudService.updateImage(save);
 
         // 팔로우중인 유저에게 알림
-        notifyFollowers(dto);
+        if (!notificationEnabledIds.isEmpty()) {
+            notifyFollowers(dto);
+        }
         // 태그된 유저에게 알림
         notifyTaggedUsers(dto, loginUser);
 

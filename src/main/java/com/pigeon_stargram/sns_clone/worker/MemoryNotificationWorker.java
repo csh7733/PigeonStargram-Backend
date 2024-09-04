@@ -1,6 +1,7 @@
 package com.pigeon_stargram.sns_clone.worker;
 
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
+import com.pigeon_stargram.sns_clone.exception.notification.UnsupportedTypeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -11,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Queue;
+
+import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.UNSUPPORTED_TYPE;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -36,6 +39,8 @@ public class MemoryNotificationWorker implements NotificationWorker {
     public void enqueue(Object notification) {
         if (notification.getClass().isInstance(ResponseNotificationDto.class)) {
             queue.add((ResponseNotificationDto) notification);
+        } else {
+            throw new UnsupportedTypeException(UNSUPPORTED_TYPE + notification.getClass());
         }
     }
 }

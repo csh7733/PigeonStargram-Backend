@@ -35,7 +35,7 @@ public class NotificationService {
     /**
      * TODO : ID생성방식 변화시키기 (지연쓰기를 위해서)
      */
-    public List<Notification> send(NotificationConvertable dto) {
+    public void send(NotificationConvertable dto) {
         Long senderId = dto.getSenderId();
         User sender = userService.findById(senderId);
 
@@ -43,32 +43,30 @@ public class NotificationService {
         int iterationMax = getIterationMax(recipientIds);
         for (int i = 0; i < iterationMax; i++) {
 
-            int leftIndex = i * batchSize;
+            int leftIndex = i * BATCH_SIZE;
             int rightIndex = (i == iterationMax - 1) ?
-                    recipientIds.size() : (i + 1) * batchSize;
+                    recipientIds.size() : (i + 1) * BATCH_SIZE;
+            log.info("left={}, right={}", leftIndex, rightIndex);
 
-            List<Long> subList = recipientIds.subList(leftIndex, rightIndex);
-            List<Long> batchIds = new ArrayList<>(subList);
-            List<User> batchRecipients = batchIds.stream()
-                    .map(userService::findById)
-                    .collect(Collectors.toList());
+            List<User> batchRecipients = getBatchRecipients(recipientIds, leftIndex, rightIndex);
 
             NotificationBatchDto notificationBatchDto =
                     dto.toNotificationBatchDto(sender, batchRecipients);
 
+            insertIntoMessageQueue(notificationBatchDto);
         }
+    }
 
-        List<Notification> notifications = convertDtoToNotifications(dto, senderId, sender);
-
-        List<Notification> saveNotifications = notificationRepository.saveAll(notifications);
-
-        insertIntoMessageQueue(notifications);
-
-        return saveNotifications;
+    private List<User> getBatchRecipients(List<Long> recipientIds, int leftIndex, int rightIndex) {
+        List<Long> subList = recipientIds.subList(leftIndex, rightIndex);
+        List<Long> batchIds = new ArrayList<>(subList);
+        return batchIds.stream()
+                .map(userService::findById)
+                .collect(Collectors.toList());
     }
 
     private static int getIterationMax(List<Long> recipientIds) {
-        return (recipientIds.size() - 1) / batchSize + 1;
+        return (recipientIds.size() - 1) / BATCH_SIZE + 1;
     }
 
     private void insertIntoMessageQueue(List<Notification> notifications) {
@@ -78,9 +76,7 @@ public class NotificationService {
     }
 
     private void insertIntoMessageQueue(NotificationBatchDto dto) {
-        notifications.stream()
-                .map(NotificationBuilder::buildResponseNotificationDto)
-                .forEach(notificationWorker::enqueue);
+        notificationWorker.enqueue(dto);
     }
 
     private List<Notification> convertDtoToNotifications(NotificationConvertable dto, Long senderId, User sender) {
