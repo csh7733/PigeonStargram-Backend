@@ -1,5 +1,6 @@
 package com.pigeon_stargram.sns_clone.worker;
 
+import com.pigeon_stargram.sns_clone.constant.RedisQueueConstants;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationV2;
 import com.pigeon_stargram.sns_clone.domain.user.User;
@@ -23,6 +24,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.pigeon_stargram.sns_clone.constant.RedisQueueConstants.*;
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
 import static com.pigeon_stargram.sns_clone.service.notification.NotificationBuilder.*;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.*;

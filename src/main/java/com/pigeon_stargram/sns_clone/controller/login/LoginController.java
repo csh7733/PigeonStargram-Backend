@@ -35,9 +35,10 @@ public class LoginController {
     }
 
     @PostMapping("/register")
-    public void register(@RequestBody RequestRegisterDto request){
+    public void register(@NewUserEmail String email,
+                         @RequestBody RequestRegisterDto request){
 
-        loginService.register(request);
+        loginService.register(email,request);
     }
 
     @PostMapping("/login")

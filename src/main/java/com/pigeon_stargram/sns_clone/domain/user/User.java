@@ -1,7 +1,7 @@
 package com.pigeon_stargram.sns_clone.domain.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.pigeon_stargram.sns_clone.domain.BaseTimeEntity;
+import com.pigeon_stargram.sns_clone.domain.UserBaseTimeEntity;
 import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import jakarta.persistence.*;
@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @Table(name = "user_entity")
 @Entity
-public class User extends BaseTimeEntity {
+public class User extends UserBaseTimeEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,6 +38,7 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Role role = Role.USER;
 
+    @JsonIgnore
     private String password;
 
     @JsonIgnore

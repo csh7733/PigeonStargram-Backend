@@ -25,6 +25,9 @@ public class ExceptionMessageConst {
     public static final String EMAIL_NOT_SENT
             = "이메일을 보내지 못했습니다";
 
+    public static final String EMAIL_MISMATCH
+            = "제공된 이메일이 요청에 포함된 이메일과 일치하지 않습니다.";
+
     public static final String TOKEN_NOT_FOUND
             = "존재하지 않는 토큰입니다.";
     public static final String TOKEN_EXPIRED
