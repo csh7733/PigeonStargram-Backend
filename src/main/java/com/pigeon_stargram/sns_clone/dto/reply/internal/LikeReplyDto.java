@@ -1,6 +1,7 @@
 package com.pigeon_stargram.sns_clone.dto.reply.internal;
 
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
+import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
 import com.pigeon_stargram.sns_clone.domain.user.User;
@@ -39,12 +40,21 @@ public class LikeReplyDto implements NotificationConvertable {
     }
 
     @Override
-    public NotificationBatchDto toNotificationBatchDto(Long senderId, List<Long> batchRecipientIds) {
+    public NotificationBatchDto toNotificationBatchDto(Long senderId,
+                                                       List<Long> batchRecipientIds,
+                                                       Long contentId) {
         return NotificationBatchDto.builder()
-                .batchRecipientIds(batchRecipientIds)
                 .senderId(senderId)
+                .batchRecipientIds(batchRecipientIds)
+                .contentId(contentId)
+                .build();
+    }
+
+    @Override
+    public NotificationContent toNotificationContent() {
+        return NotificationContent.builder()
+                .senderId(loginUserId)
                 .type(NotificationType.MY_REPLY_LIKE)
-                .isRead(false)
                 .message(generateMessage())
                 .sourceId(postUserId)
                 .sourceId2(postId)
@@ -66,8 +76,4 @@ public class LikeReplyDto implements NotificationConvertable {
         return loginUserName + "님이 내 답글을 좋아합니다.";
     }
 
-    @Override
-    public String generateRedirectUrl(User sender, User recipient) {
-        return "";
-    }
 }

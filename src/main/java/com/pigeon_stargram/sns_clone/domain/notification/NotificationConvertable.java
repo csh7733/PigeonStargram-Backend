@@ -10,10 +10,11 @@ public interface NotificationConvertable {
     Notification toNotification(User sender,
                                 User recipient);
     NotificationBatchDto toNotificationBatchDto(Long senderId,
-                                                List<Long> batchRecipientIds);
+                                                List<Long> batchRecipientIds,
+                                                Long contentId);
+    NotificationContent toNotificationContent();
     Long getSenderId();
     List<Long> getRecipientIds();
     String generateMessage();
-    String generateRedirectUrl(User sender,
-                               User recipient);
+
 }

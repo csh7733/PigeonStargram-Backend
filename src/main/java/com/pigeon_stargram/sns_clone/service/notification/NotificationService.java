@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone.service.notification;
 
 
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
+import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotificationBatchDto;
@@ -14,13 +15,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
-import static com.pigeon_stargram.sns_clone.worker.WorkerConstants.*;
+import static com.pigeon_stargram.sns_clone.constant.WorkerConstants.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -29,7 +33,10 @@ import static com.pigeon_stargram.sns_clone.worker.WorkerConstants.*;
 public class NotificationService {
 
     private final UserService userService;
+    private final NotificationCrudService notificationCrudService;
+
     private final NotificationRepository notificationRepository;
+
     private final NotificationWorker notificationWorker;
 
     /**
@@ -38,22 +45,32 @@ public class NotificationService {
     public void send(NotificationConvertable dto) {
         Long senderId = dto.getSenderId();
 
-        List<Long> recipientIds = dto.getRecipientIds();
-        int iterationMax = getIterationMax(recipientIds);
-        for (int i = 0; i < iterationMax; i++) {
+        NotificationContent content = dto.toNotificationContent();
+        NotificationContent saveContent = notificationCrudService.saveContent(content);
 
-            int leftIndex = i * BATCH_SIZE;
-            int rightIndex = (i == iterationMax - 1) ?
-                    recipientIds.size() : (i + 1) * BATCH_SIZE;
-            log.info("left={}, right={}", leftIndex, rightIndex);
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                List<Long> recipientIds = dto.getRecipientIds();
+                int iterationMax = getIterationMax(recipientIds);
+                for (int i = 0; i < iterationMax; i++) {
 
-            List<Long> batchRecipientIds = getBatchRecipientIds(recipientIds, leftIndex, rightIndex);
+                    int leftIndex = i * BATCH_SIZE;
+                    int rightIndex = (i == iterationMax - 1) ?
+                            recipientIds.size() : (i + 1) * BATCH_SIZE;
+                    log.info("left={}, right={}", leftIndex, rightIndex);
 
-            NotificationBatchDto notificationBatchDto =
-                    dto.toNotificationBatchDto(senderId, batchRecipientIds);
+                    List<Long> batchRecipientIds = getBatchRecipientIds(recipientIds, leftIndex, rightIndex).stream()
+                            .filter(recipientId -> !senderId.equals(recipientId))
+                            .collect(Collectors.toList());
 
-            insertIntoMessageQueue(notificationBatchDto);
-        }
+                    NotificationBatchDto notificationBatchDto =
+                            dto.toNotificationBatchDto(senderId, batchRecipientIds, saveContent.getId());
+
+                    insertIntoMessageQueue(notificationBatchDto);
+                }
+            }
+        });
     }
 
     private List<Long> getBatchRecipientIds(List<Long> recipientIds,

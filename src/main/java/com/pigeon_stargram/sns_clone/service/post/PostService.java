@@ -173,5 +173,6 @@ public class PostService {
         User loginUser = userService.findById(dto.getLoginUserId());
         dto.setLoginUserName(loginUser.getName());
         postLikeCrudService.toggleLike(dto.getLoginUserId(), dto.getPostId());
+        notificationService.send(dto);
     }
 }

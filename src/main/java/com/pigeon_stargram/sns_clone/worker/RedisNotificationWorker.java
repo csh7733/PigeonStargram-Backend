@@ -6,10 +6,11 @@ import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotificationBatchDto;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
 import com.pigeon_stargram.sns_clone.exception.redis.UnsupportedTypeException;
+import com.pigeon_stargram.sns_clone.repository.notification.NotificationContentRepository;
+import com.pigeon_stargram.sns_clone.service.notification.NotificationBuilder;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationCrudService;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
-import com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
@@ -23,8 +24,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
+import static com.pigeon_stargram.sns_clone.service.notification.NotificationBuilder.*;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.*;
-import static com.pigeon_stargram.sns_clone.worker.WorkerConstants.*;
+import static com.pigeon_stargram.sns_clone.constant.WorkerConstants.*;
 
 
 @Primary
@@ -39,6 +41,8 @@ public class RedisNotificationWorker implements NotificationWorker {
 
     private final SimpMessagingTemplate messagingTemplate;
 
+    private final NotificationContentRepository notificationContentRepository;
+
     @Transactional
     @Scheduled(fixedRate = 100)
     @Override
@@ -52,24 +56,28 @@ public class RedisNotificationWorker implements NotificationWorker {
         }
 
         NotificationBatchDto dto = (NotificationBatchDto) batch;
-        NotificationContent content = buildNotificationContent(dto);
-        User sender = userService.findById(content.getSenderId());
 
-        notificationCrudService.saveContent(content);
+        log.info("contentId={}", dto.getContentId());
+
+
+        NotificationContent content = notificationContentRepository.findById(dto.getContentId()).get();
+
+
+        User sender = userService.findById(content.getSenderId());
 
         List<NotificationV2> notifications = dto.getBatchRecipientIds().stream()
                 .map(recipientId -> buildNotification(recipientId, content))
                 .collect(Collectors.toList());
 
         notifications.forEach(notification -> {
-            ResponseNotificationDto message = buildMessage(notification, sender);
+            ResponseNotificationDto message = saveNotificationAndbuildMessage(notification, sender);
             sendMessage(message);
         });
 
     }
 
-
-    private ResponseNotificationDto buildMessage(NotificationV2 notification, User sender) {
+    private ResponseNotificationDto saveNotificationAndbuildMessage(NotificationV2 notification,
+                                                                    User sender) {
         NotificationV2 save = notificationCrudService.save(notification);
         NotificationContent saveContent = save.getContent();
         ResponseNotificationDto message =
@@ -81,42 +89,6 @@ public class RedisNotificationWorker implements NotificationWorker {
         String destination = "/topic/notification/" + message.getTargetUserId();
         messagingTemplate.convertAndSend(destination, message);
         log.info("notification sent = {}", message);
-    }
-
-    private static ResponseNotificationDto buildResponseNotificationDto(NotificationV2 save,
-                                                                        User sender,
-                                                                        NotificationContent saveContent) {
-        return ResponseNotificationDto.builder()
-                .id(save.getId())
-                .name(sender.getName())
-                .avatar(sender.getAvatar())
-                .content(save.getContent().getMessage())
-                .isRead(save.getIsRead())
-                .time(formatTime(save.getCreatedDate()))
-                .targetUserId(save.getRecipientId())
-                .type(saveContent.getType())
-                .sourceId(saveContent.getSourceId())
-                .sourceId2(saveContent.getSourceId2())
-                .build();
-    }
-
-    private static NotificationV2 buildNotification(Long recipientId,
-                                                    NotificationContent content) {
-        return NotificationV2.builder()
-                .recipientId(recipientId)
-                .content(content)
-                .isRead(false)
-                .build();
-    }
-
-    private static NotificationContent buildNotificationContent(NotificationBatchDto dto) {
-        return NotificationContent.builder()
-                .senderId(dto.getSenderId())
-                .type(dto.getType())
-                .message(dto.getMessage())
-                .sourceId(dto.getSourceId())
-                .sourceId2(dto.getSourceId2())
-                .build();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.pigeon_stargram.sns_clone.dto.comment.internal;
 
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
+import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
 import com.pigeon_stargram.sns_clone.domain.user.User;
@@ -10,6 +11,8 @@ import lombok.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import static com.pigeon_stargram.sns_clone.domain.notification.NotificationType.FOLLOW;
 
 @Getter
 @Builder
@@ -50,15 +53,22 @@ public class CreateCommentDto implements NotificationConvertable {
 
     @Override
     public NotificationBatchDto toNotificationBatchDto(Long senderId,
-                                                       List<Long> batchRecipientIds) {
+                                                       List<Long> batchRecipientIds,
+                                                       Long contentId) {
         return NotificationBatchDto.builder()
+                .senderId(senderId)
+                .batchRecipientIds(batchRecipientIds)
+                .contentId(contentId)
+                .build();
+    }
+
+    @Override
+    public NotificationContent toNotificationContent() {
+        return NotificationContent.builder()
+                .senderId(loginUserId)
                 .type(NotificationType.MY_POST_COMMENT)
                 .message(generateMessage())
-                .isRead(false)
-                .batchRecipientIds(batchRecipientIds)
-                .senderId(senderId)
                 .sourceId(postUserId)
-                .sourceId2(postId)
                 .build();
     }
 
@@ -78,9 +88,5 @@ public class CreateCommentDto implements NotificationConvertable {
         return loginUserName + "님이 댓글을 남겼습니다.";
     }
 
-    @Override
-    public String generateRedirectUrl(User sender, User recipient) {
-        return "";  //todo
-    }
 }
 

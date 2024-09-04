@@ -1,6 +1,7 @@
 package com.pigeon_stargram.sns_clone.dto.notification.internal;
 
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
+import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
 import com.pigeon_stargram.sns_clone.domain.user.User;
@@ -35,12 +36,20 @@ public class NotifyPostTaggedDto implements NotificationConvertable {
 
     @Override
     public NotificationBatchDto toNotificationBatchDto(Long senderId,
-                                                       List<Long> batchRecipientIds) {
+                                                       List<Long> batchRecipientIds,
+                                                       Long contentId) {
         return NotificationBatchDto.builder()
-                .batchRecipientIds(batchRecipientIds)
                 .senderId(senderId)
+                .batchRecipientIds(batchRecipientIds)
+                .contentId(contentId)
+                .build();
+    }
+
+    @Override
+    public NotificationContent toNotificationContent() {
+        return NotificationContent.builder()
+                .senderId(userId)
                 .type(NotificationType.POST_TAG)
-                .isRead(false)
                 .message(generateMessage())
                 .sourceId(userId)
                 .build();
@@ -62,8 +71,4 @@ public class NotifyPostTaggedDto implements NotificationConvertable {
                 userName +"님의 프로필로 가서 확인하세요!";
     }
 
-    @Override
-    public String generateRedirectUrl(User sender, User recipient) {
-        return "";
-    }
 }

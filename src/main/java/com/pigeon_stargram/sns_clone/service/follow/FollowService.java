@@ -1,5 +1,6 @@
 package com.pigeon_stargram.sns_clone.service.follow;
 
+import com.pigeon_stargram.sns_clone.constant.FollowConstants;
 import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.Follow.internal.AddFollowDto;
@@ -29,6 +30,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.pigeon_stargram.sns_clone.constant.FollowConstants.*;
 import static com.pigeon_stargram.sns_clone.service.follow.FollowBuilder.*;
 import static com.pigeon_stargram.sns_clone.service.user.UserBuilder.*;
 
@@ -112,11 +114,13 @@ public class FollowService {
 
         // 타겟유저에 대한 팔로우 유저 중, 로그인 유저가 팔로우중인 사람
         intersection.retainAll(targetUserFollowingIdSet);
-        List<ResponseFollowerDto> followIntersection = convertUserIdSetToFollowerDtoList(intersection, 1);
+        List<ResponseFollowerDto> followIntersection =
+                convertUserIdSetToFollowerDtoList(intersection, FOLLOWING);
 
         // 타겟유저에 대한 팔로우 유저 중, 로그인 유저가 팔로우 하지 않은 사람
         disjoint.removeAll(intersection);
-        List<ResponseFollowerDto> followDisjoint = convertUserIdSetToFollowerDtoList(disjoint, 2);
+        List<ResponseFollowerDto> followDisjoint =
+                convertUserIdSetToFollowerDtoList(disjoint, NOT_FOLLOWING);
 
         return Stream.concat(followIntersection.stream(), followDisjoint.stream())
                 .collect(Collectors.toList());
@@ -141,40 +145,33 @@ public class FollowService {
     }
 
     public List<Long> findFollows(Long userId) {
-        return followRepository.findByRecipientId(userId).stream()
-                .filter(Follow::getIsNotificationEnabled)
-                .map(follow -> follow.getSender().getId())
-                .collect(Collectors.toList());
+        return followCrudService.findNotificationEnabledIds(userId);
     }
 
 
     public List<ResponseUserChatDto> findPartnersForChat(Long currentUserId) {
-        List<User> followers = followRepository.findByRecipientId(currentUserId).stream()
-                .map(Follow::getSender)
-                .collect(Collectors.toList());
+        List<Long> followerIds = followCrudService.findFollowerIds(currentUserId);
+        List<Long> followingIds = followCrudService.findFollowingIds(currentUserId);
 
-        List<User> following = followRepository.findBySenderId(currentUserId).stream()
-                .map(Follow::getRecipient)
-                .collect(Collectors.toList());
-
-        return Stream.concat(followers.stream(), following.stream())
+        return Stream.concat(followerIds.stream(), followingIds.stream())
                 .distinct()
-                .map(user -> {
-                    Integer unreadChatCount = chatService.getUnreadChatCount(currentUserId, user.getId());
-                    LastMessageDto lastMessage = chatService.getLastMessage(currentUserId, user.getId());
+                .map(userId -> {
+                    Integer unreadChatCount = chatService.getUnreadChatCount(currentUserId, userId);
+                    LastMessageDto lastMessage = chatService.getLastMessage(currentUserId, userId);
 
                     Integer state;
-                    boolean isFollowing = following.contains(user);
-                    boolean isFollowedBy = followers.contains(user);
+                    boolean isFollowing = followingIds.contains(userId);
+                    boolean isFollowedBy = followerIds.contains(userId);
 
                     if (isFollowing && isFollowedBy) {
-                        state = 2;
+                        state = BOTH_FOLLOWING;
                     } else if (isFollowing) {
-                        state = 1;
+                        state = FOLLOWING_ONLY;
                     } else {
-                        state = 0;
+                        state = FOLLOWED_ONLY;
                     }
 
+                    User user = userService.findById(userId);
                     return buildResponseUserChatDto(
                             user, unreadChatCount, lastMessage, state);
                 })
@@ -215,7 +212,7 @@ public class FollowService {
         boolean currentUserHasRecentStory = storyService.hasRecentStory(userId);
         if (currentUserHasRecentStory) {
             boolean currentUserHasUnreadStories = storyService.hasUnreadStories(userId, userId);
-            ResponseFollowerDto currentUserDto = new ResponseFollowerDto(userService.findById(userId), 1);
+            ResponseFollowerDto currentUserDto = new ResponseFollowerDto(userService.findById(userId), FOLLOWING);
             currentUserDto.setHasUnreadStories(currentUserHasUnreadStories);
             followingsWithRecentStories.add(currentUserDto);
         }

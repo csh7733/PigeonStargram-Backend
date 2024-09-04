@@ -1,6 +1,7 @@
 package com.pigeon_stargram.sns_clone.dto.comment.internal;
 
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
+import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
 import com.pigeon_stargram.sns_clone.domain.user.User;
@@ -40,13 +41,21 @@ public class LikeCommentDto implements NotificationConvertable {
 
     @Override
     public NotificationBatchDto toNotificationBatchDto(Long senderId,
-                                                       List<Long> batchRecipientIds) {
+                                                       List<Long> batchRecipientIds,
+                                                       Long contentId) {
         return NotificationBatchDto.builder()
-                .type(NotificationType.MY_COMMENT_LIKE)
-                .message(generateMessage())
-                .isRead(false)
                 .senderId(senderId)
                 .batchRecipientIds(batchRecipientIds)
+                .contentId(contentId)
+                .build();
+    }
+
+    @Override
+    public NotificationContent toNotificationContent() {
+        return NotificationContent.builder()
+                .senderId(loginUserId)
+                .type(NotificationType.MY_COMMENT_LIKE)
+                .message(generateMessage())
                 .sourceId(postUserId)
                 .sourceId2(postId)
                 .build();
@@ -66,9 +75,5 @@ public class LikeCommentDto implements NotificationConvertable {
     public String generateMessage() {
         return loginUserName + "님이 내 댓글을 좋아합니다.";
 
-    }
-    @Override
-    public String generateRedirectUrl(User sender, User recipient) {
-        return "";
     }
 }

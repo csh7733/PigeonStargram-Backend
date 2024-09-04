@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone.dto.Follow.internal;
 
 import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
+import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
 import com.pigeon_stargram.sns_clone.domain.user.User;
@@ -53,36 +54,33 @@ public class AddFollowDto implements NotificationConvertable {
 
     @Override
     public NotificationBatchDto toNotificationBatchDto(Long senderId,
-                                                       List<Long> batchRecipientIds) {
+                                                       List<Long> batchRecipientIds,
+                                                       Long contentId) {
         return NotificationBatchDto.builder()
                 .senderId(senderId)
                 .batchRecipientIds(batchRecipientIds)
-                .isRead(false)
+                .contentId(contentId)
+                .build();
+    }
+
+    @Override
+    public NotificationContent toNotificationContent() {
+        return NotificationContent.builder()
+                .senderId(senderId)
                 .type(FOLLOW)
                 .message(generateMessage())
                 .sourceId(senderId)
                 .build();
     }
+
     @Override
     public List<Long> getRecipientIds() {
         return Arrays.asList(recipientId);
     }
 
-    private boolean isFollowBack(User sender, User recipient) {
-        return recipient.getFollowings().stream()
-                .map(Follow::getRecipient)
-                .toList()
-                .contains(sender);
-    }
-
     @Override
     public String generateMessage() {
         return senderName + "님이 나를 팔로우 했습니다.";
-    }
-
-    @Override
-    public String generateRedirectUrl(User sender, User recipient) {
-        return "";  //todo
     }
 
 }

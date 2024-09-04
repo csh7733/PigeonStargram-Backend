@@ -1,6 +1,10 @@
 package com.pigeon_stargram.sns_clone.service.notification;
 
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
+import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
+import com.pigeon_stargram.sns_clone.domain.notification.NotificationV2;
+import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.notification.internal.NotificationBatchDto;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
 
 import java.time.LocalDateTime;
@@ -28,6 +32,32 @@ public class NotificationBuilder {
                 .targetUserId(notification.getRecipient().getId())
                 .sourceId(notification.getSourceId())
                 .sourceId2(notification.getSourceId2())
+                .build();
+    }
+
+    public static ResponseNotificationDto buildResponseNotificationDto(NotificationV2 save,
+                                                                        User sender,
+                                                                        NotificationContent saveContent) {
+        return ResponseNotificationDto.builder()
+                .id(save.getId())
+                .name(sender.getName())
+                .avatar(sender.getAvatar())
+                .content(saveContent.getMessage())
+                .isRead(save.getIsRead())
+                .time(formatTime(save.getCreatedDate()))
+                .targetUserId(save.getRecipientId())
+                .type(saveContent.getType())
+                .sourceId(saveContent.getSourceId())
+                .sourceId2(saveContent.getSourceId2())
+                .build();
+    }
+
+    public static NotificationV2 buildNotification(Long recipientId,
+                                                    NotificationContent content) {
+        return NotificationV2.builder()
+                .recipientId(recipientId)
+                .content(content)
+                .isRead(false)
                 .build();
     }
 }

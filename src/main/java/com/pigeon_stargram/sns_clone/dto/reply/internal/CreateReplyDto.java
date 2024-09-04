@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone.dto.reply.internal;
 
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
+import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
 import com.pigeon_stargram.sns_clone.domain.user.User;
@@ -42,12 +43,21 @@ public class CreateReplyDto implements NotificationConvertable {
     }
 
     @Override
-    public NotificationBatchDto toNotificationBatchDto(Long senderId, List<Long> batchRecipientIds) {
+    public NotificationBatchDto toNotificationBatchDto(Long senderId,
+                                                       List<Long> batchRecipientIds,
+                                                       Long contentId) {
         return NotificationBatchDto.builder()
-                .batchRecipientIds(batchRecipientIds)
                 .senderId(senderId)
+                .batchRecipientIds(batchRecipientIds)
+                .contentId(contentId)
+                .build();
+    }
+
+    @Override
+    public NotificationContent toNotificationContent() {
+        return NotificationContent.builder()
+                .senderId(loginUserId)
                 .type(NotificationType.MY_COMMENT_REPLY)
-                .isRead(false)
                 .message(generateMessage())
                 .sourceId(postUserId)
                 .sourceId2(postId)
@@ -69,8 +79,4 @@ public class CreateReplyDto implements NotificationConvertable {
         return loginUserName + "님이 답글을 남겼습니다.";
     }
 
-    @Override
-    public String generateRedirectUrl(User sender, User recipient) {
-        return "";
-    }
 }

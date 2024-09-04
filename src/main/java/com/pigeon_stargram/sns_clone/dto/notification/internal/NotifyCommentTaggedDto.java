@@ -1,6 +1,7 @@
 package com.pigeon_stargram.sns_clone.dto.notification.internal;
 
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
+import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
 import com.pigeon_stargram.sns_clone.domain.user.User;
@@ -37,12 +38,20 @@ public class NotifyCommentTaggedDto implements NotificationConvertable {
 
     @Override
     public NotificationBatchDto toNotificationBatchDto(Long senderId,
-                                                       List<Long> recipientIds) {
+                                                       List<Long> recipientIds,
+                                                       Long contentId) {
         return NotificationBatchDto.builder()
-                .batchRecipientIds(recipientIds)
                 .senderId(senderId)
+                .batchRecipientIds(recipientIds)
+                .contentId(contentId)
+                .build();
+    }
+
+    @Override
+    public NotificationContent toNotificationContent() {
+        return NotificationContent.builder()
+                .senderId(userId)
                 .type(NotificationType.COMMENT_TAG)
-                .isRead(false)
                 .message(generateMessage())
                 .sourceId(postUserId)
                 .sourceId2(postId)
@@ -64,8 +73,4 @@ public class NotifyCommentTaggedDto implements NotificationConvertable {
         return userName + "님이 댓글에서 당신을 언급했습니다.";
     }
 
-    @Override
-    public String generateRedirectUrl(User sender, User recipient) {
-        return "";
-    }
 }
