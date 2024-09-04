@@ -13,9 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 public class NotificationBatchDto {
 
-    // Notification의 형식과 최대한 비슷하게 하기 위해 userId 대신 User을 사용
-    private User sender;
-    private List<User> batchRecipients;
+    private Long senderId;
+    private List<Long> batchRecipientIds;
 
     private NotificationType type;
     private String message;

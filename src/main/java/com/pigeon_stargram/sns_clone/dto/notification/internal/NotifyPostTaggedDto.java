@@ -21,28 +21,27 @@ public class NotifyPostTaggedDto implements NotificationConvertable {
     private List<Long> notificationRecipientIds;
 
     @Override
-    public Notification toNotification(User sender, User recipient) {
+    public Notification toNotification(User sender,
+                                       User recipient) {
         return Notification.builder()
                 .recipient(recipient)
                 .sender(sender)
                 .type(NotificationType.POST_TAG)
                 .isRead(false)
-                .message(generateMessage(sender, recipient))
+                .message(generateMessage())
                 .sourceId(userId)
                 .build();
     }
 
     @Override
-    public NotificationBatchDto toNotificationBatchDto(User sender,
-                                                       List<User> batchRecipients) {
-        User recipient = batchRecipients.getFirst();
-
+    public NotificationBatchDto toNotificationBatchDto(Long senderId,
+                                                       List<Long> batchRecipientIds) {
         return NotificationBatchDto.builder()
-                .batchRecipients(batchRecipients)
-                .sender(sender)
+                .batchRecipientIds(batchRecipientIds)
+                .senderId(senderId)
                 .type(NotificationType.POST_TAG)
                 .isRead(false)
-                .message(generateMessage(sender, recipient))
+                .message(generateMessage())
                 .sourceId(userId)
                 .build();
     }
@@ -58,7 +57,7 @@ public class NotifyPostTaggedDto implements NotificationConvertable {
     }
 
     @Override
-    public String generateMessage(User sender, User recipient) {
+    public String generateMessage() {
         return userName + "님이 새 글에서 당신을 언급했습니다. 지금 " +
                 userName +"님의 프로필로 가서 확인하세요!";
     }

@@ -12,15 +12,24 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.pigeon_stargram.sns_clone.domain.notification.NotificationType.*;
+
 @Slf4j
 @ToString
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddFollowDto implements NotificationConvertable {
     private Long senderId;
+    private String senderName;
     private Long recipientId;
+
+    public AddFollowDto(Long senderId, Long recipientId) {
+        this.senderId = senderId;
+        this.recipientId = recipientId;
+    }
 
     public Follow toEntity(User sender, User recipient){
         return Follow.builder()
@@ -36,36 +45,27 @@ public class AddFollowDto implements NotificationConvertable {
                 .sender(sender)
                 .recipient(recipient)
                 .isRead(false)
-                .type(getNotificationType(sender, recipient))
-                .message(generateMessage(sender, recipient))
+                .type(FOLLOW)
+                .message(generateMessage())
                 .sourceId(senderId)
                 .build();
     }
 
     @Override
-    public NotificationBatchDto toNotificationBatchDto(User sender,
-                                                       List<User> batchRecipients) {
-        User recipient = batchRecipients.getFirst();
-
+    public NotificationBatchDto toNotificationBatchDto(Long senderId,
+                                                       List<Long> batchRecipientIds) {
         return NotificationBatchDto.builder()
-                .sender(sender)
-                .batchRecipients(batchRecipients)
+                .senderId(senderId)
+                .batchRecipientIds(batchRecipientIds)
                 .isRead(false)
-                .type(getNotificationType(sender, recipient))
-                .message(generateMessage(sender, recipient))
+                .type(FOLLOW)
+                .message(generateMessage())
                 .sourceId(senderId)
                 .build();
     }
-
     @Override
     public List<Long> getRecipientIds() {
         return Arrays.asList(recipientId);
-    }
-
-    public NotificationType getNotificationType(User sender, User recipient) {
-        return isFollowBack(sender, recipient)
-                ? NotificationType.FOLLOW_BACK
-                : NotificationType.FOLLOW;
     }
 
     private boolean isFollowBack(User sender, User recipient) {
@@ -76,11 +76,8 @@ public class AddFollowDto implements NotificationConvertable {
     }
 
     @Override
-    public String generateMessage(User sender, User recipient) {
-        return sender.getName() +
-                (isFollowBack(sender, recipient)
-                ? "님이 나를 맞팔로우 했습니다."
-                : "님이 나를 팔로우 했습니다.");
+    public String generateMessage() {
+        return senderName + "님이 나를 팔로우 했습니다.";
     }
 
     @Override

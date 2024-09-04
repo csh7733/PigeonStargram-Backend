@@ -19,6 +19,7 @@ import java.util.List;
 public class LikeReplyDto implements NotificationConvertable {
 
     private Long loginUserId;
+    private String loginUserName;
     private Long replyId;
     private Long postUserId;
     private Long writerId;
@@ -31,23 +32,20 @@ public class LikeReplyDto implements NotificationConvertable {
                 .sender(sender)
                 .type(NotificationType.MY_REPLY_LIKE)
                 .isRead(false)
-                .message(generateMessage(sender, recipient))
+                .message(generateMessage())
                 .sourceId(postUserId)
                 .sourceId2(postId)
                 .build();
     }
 
     @Override
-    public NotificationBatchDto toNotificationBatchDto(User sender,
-                                                       List<User> batchRecipients) {
-        User recipient = batchRecipients.getFirst();
-
+    public NotificationBatchDto toNotificationBatchDto(Long senderId, List<Long> batchRecipientIds) {
         return NotificationBatchDto.builder()
-                .batchRecipients(batchRecipients)
-                .sender(sender)
+                .batchRecipientIds(batchRecipientIds)
+                .senderId(senderId)
                 .type(NotificationType.MY_REPLY_LIKE)
                 .isRead(false)
-                .message(generateMessage(sender, recipient))
+                .message(generateMessage())
                 .sourceId(postUserId)
                 .sourceId2(postId)
                 .build();
@@ -64,8 +62,8 @@ public class LikeReplyDto implements NotificationConvertable {
     }
 
     @Override
-    public String generateMessage(User sender, User recipient) {
-        return sender.getName() + "님이 내 답글을 좋아합니다.";
+    public String generateMessage() {
+        return loginUserName + "님이 내 답글을 좋아합니다.";
     }
 
     @Override

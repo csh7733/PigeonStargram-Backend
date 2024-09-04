@@ -7,10 +7,13 @@ import java.util.List;
 
 public interface NotificationConvertable {
 
-    Notification toNotification(User sender, User recipient);
-    NotificationBatchDto toNotificationBatchDto(User sender, List<User> batchRecipients);
+    Notification toNotification(User sender,
+                                User recipient);
+    NotificationBatchDto toNotificationBatchDto(Long senderId,
+                                                List<Long> batchRecipientIds);
     Long getSenderId();
     List<Long> getRecipientIds();
-    String generateMessage(User sender, User recipient);
-    String generateRedirectUrl(User sender, User recipient);
+    String generateMessage();
+    String generateRedirectUrl(User sender,
+                               User recipient);
 }

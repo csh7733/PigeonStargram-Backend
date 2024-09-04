@@ -20,6 +20,7 @@ import java.util.List;
 public class CreateReplyDto implements NotificationConvertable {
 
     private Long loginUserId;
+    private String loginUserName;
     private Long commentUserId;
     private Long commentId;
     private String content;
@@ -34,23 +35,20 @@ public class CreateReplyDto implements NotificationConvertable {
                 .sender(sender)
                 .type(NotificationType.MY_COMMENT_REPLY)
                 .isRead(false)
-                .message(generateMessage(sender, recipient))
+                .message(generateMessage())
                 .sourceId(postUserId)
                 .sourceId2(postId)
                 .build();
     }
 
     @Override
-    public NotificationBatchDto toNotificationBatchDto(User sender,
-                                                       List<User> batchRecipients) {
-        User recipient = batchRecipients.getFirst();
-
+    public NotificationBatchDto toNotificationBatchDto(Long senderId, List<Long> batchRecipientIds) {
         return NotificationBatchDto.builder()
-                .batchRecipients(batchRecipients)
-                .sender(sender)
+                .batchRecipientIds(batchRecipientIds)
+                .senderId(senderId)
                 .type(NotificationType.MY_COMMENT_REPLY)
                 .isRead(false)
-                .message(generateMessage(sender, recipient))
+                .message(generateMessage())
                 .sourceId(postUserId)
                 .sourceId2(postId)
                 .build();
@@ -67,8 +65,8 @@ public class CreateReplyDto implements NotificationConvertable {
     }
 
     @Override
-    public String generateMessage(User sender, User recipient) {
-        return sender.getName() + "님이 답글을 남겼습니다.";
+    public String generateMessage() {
+        return loginUserName + "님이 답글을 남겼습니다.";
     }
 
     @Override

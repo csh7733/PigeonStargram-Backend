@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.exception.notification;
+package com.pigeon_stargram.sns_clone.exception.redis;
 
 public class UnsupportedTypeException extends RuntimeException{
 

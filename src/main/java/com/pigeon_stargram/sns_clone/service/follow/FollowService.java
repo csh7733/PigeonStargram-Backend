@@ -61,6 +61,7 @@ public class FollowService {
         Follow follow = buildFollow(sender, recipient);
         Follow save = followCrudService.save(follow);
 
+        dto.setSenderName(sender.getName());
         notificationService.send(dto);
 
         return save;

@@ -18,13 +18,14 @@ import java.util.List;
 public class LikePostDto implements NotificationConvertable {
 
     private Long loginUserId;
+    private String loginUserName;
     private Long postId;
     private Long writerId;
 
     @Override
     public Notification toNotification(User sender, User recipient) {
         return Notification.builder()
-                .message(generateMessage(sender, recipient))
+                .message(generateMessage())
                 .isRead(false)
                 .sender(sender)
                 .recipient(recipient)
@@ -35,15 +36,12 @@ public class LikePostDto implements NotificationConvertable {
     }
 
     @Override
-    public NotificationBatchDto toNotificationBatchDto(User sender,
-                                                       List<User> batchRecipients) {
-        User recipient = batchRecipients.getFirst();
-
+    public NotificationBatchDto toNotificationBatchDto(Long senderId, List<Long> batchRecipientIds) {
         return NotificationBatchDto.builder()
-                .message(generateMessage(sender, recipient))
+                .message(generateMessage())
                 .isRead(false)
-                .sender(sender)
-                .batchRecipients(batchRecipients)
+                .senderId(senderId)
+                .batchRecipientIds(batchRecipientIds)
                 .type(NotificationType.MY_POST_LIKE)
                 .sourceId(writerId)
                 .sourceId2(postId)
@@ -61,8 +59,8 @@ public class LikePostDto implements NotificationConvertable {
     }
 
     @Override
-    public String generateMessage(User sender, User recipient) {
-        return sender.getName() + "님이 내 글을 좋아합니다.";
+    public String generateMessage() {
+        return loginUserName + "님이 내 글을 좋아합니다.";
     }
 
     @Override

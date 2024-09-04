@@ -65,6 +65,7 @@ public class ReplyService {
         Reply reply = buildReply(dto, loginUser, comment);
         Reply save = replyCrudService.save(reply);
 
+        dto.setLoginUserName(loginUser.getName());
         notificationService.send(dto);
 
         notifyTaggedUsers(dto, loginUser);
@@ -83,6 +84,9 @@ public class ReplyService {
     }
 
     public void likeReply(LikeReplyDto dto) {
+        // todo 좋아요 추가시 알림
+        User loginUser = userService.findById(dto.getLoginUserId());
+        dto.setLoginUserName(loginUser.getName());
         replyLikeCrudService.toggleLike(dto.getLoginUserId(), dto.getReplyId());
     }
 

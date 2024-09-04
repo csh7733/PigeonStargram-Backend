@@ -70,6 +70,7 @@ public class CommentService {
         Comment comment = buildComment(dto, loginUser, post);
         Comment save = commentCrudService.save(comment);
 
+        dto.setLoginUserName(loginUser.getName());
         notificationService.send(dto);
 
         notifyTaggedUsers(dto, loginUser);
@@ -103,6 +104,10 @@ public class CommentService {
     }
 
     public void likeComment(LikeCommentDto dto) {
+        // todo 좋아요 추가시 알림
+        User loginUser = userService.findById(dto.getLoginUserId());
+        dto.setLoginUserName(loginUser.getName());
         commentLikeCrudService.toggleLike(dto.getLoginUserId(), dto.getCommentId());
+
     }
 }

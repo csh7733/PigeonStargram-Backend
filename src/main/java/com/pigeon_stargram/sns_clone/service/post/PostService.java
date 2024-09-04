@@ -136,6 +136,7 @@ public class PostService {
 
         // 팔로우중인 유저에게 알림
         if (!notificationEnabledIds.isEmpty()) {
+            dto.setLoginUserName(loginUser.getName());
             notifyFollowers(dto);
         }
         // 태그된 유저에게 알림
@@ -168,7 +169,9 @@ public class PostService {
     }
 
     public void likePost(LikePostDto dto) {
-
+        // todo 좋아요 추가시 알림
+        User loginUser = userService.findById(dto.getLoginUserId());
+        dto.setLoginUserName(loginUser.getName());
         postLikeCrudService.toggleLike(dto.getLoginUserId(), dto.getPostId());
     }
 }

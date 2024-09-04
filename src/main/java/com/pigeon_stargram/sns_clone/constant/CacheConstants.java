@@ -7,6 +7,7 @@ public class CacheConstants {
     public static final String COMMENT = "comment";
     public static final String REPLY = "reply";
     public static final String STORY = "STORY";
+    public static final String NOTIFICATION_CONTENT = "notificationContent";
 
     public static final String ALL_POST_IDS = "allPostIds";
     public static final String ALL_COMMENT_IDS = "allCommentIds";
@@ -24,6 +25,8 @@ public class CacheConstants {
     public static final String FOLLOWING_IDS = "followingIds";
     public static final String NOTIFICATION_ENABLED_IDS = "notificationEnabledIds";
 
+    public static final String NOTIFICATION_CONTENT_IDS = "notificationContentIds";
+
     public static final String UNREAD_CHAT_COUNT = "unreadChatCount";
     public static final String LAST_MESSAGE = "lastMessage";
     public static final String STORY_VIEWS = "storyViews";
@@ -38,5 +41,6 @@ public class CacheConstants {
     public static final String COMMENT_ID = "commentId";
     public static final String REPLY_ID = "replyId";
     public static final String STORY_ID = "storyId";
+    public static final String NOTIFICATION_CONTENT_ID = "notificationContentId";
 
 }

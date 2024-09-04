@@ -12,7 +12,6 @@ import com.pigeon_stargram.sns_clone.service.user.UserService;
 import com.pigeon_stargram.sns_clone.worker.NotificationWorker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +30,6 @@ public class NotificationService {
 
     private final UserService userService;
     private final NotificationRepository notificationRepository;
-    @Qualifier("redisNotificationWorker")
     private final NotificationWorker notificationWorker;
 
     /**
@@ -39,7 +37,6 @@ public class NotificationService {
      */
     public void send(NotificationConvertable dto) {
         Long senderId = dto.getSenderId();
-        User sender = userService.findById(senderId);
 
         List<Long> recipientIds = dto.getRecipientIds();
         int iterationMax = getIterationMax(recipientIds);
@@ -50,21 +47,21 @@ public class NotificationService {
                     recipientIds.size() : (i + 1) * BATCH_SIZE;
             log.info("left={}, right={}", leftIndex, rightIndex);
 
-            List<User> batchRecipients = getBatchRecipients(recipientIds, leftIndex, rightIndex);
+            List<Long> batchRecipientIds = getBatchRecipientIds(recipientIds, leftIndex, rightIndex);
 
             NotificationBatchDto notificationBatchDto =
-                    dto.toNotificationBatchDto(sender, batchRecipients);
+                    dto.toNotificationBatchDto(senderId, batchRecipientIds);
 
             insertIntoMessageQueue(notificationBatchDto);
         }
     }
 
-    private List<User> getBatchRecipients(List<Long> recipientIds, int leftIndex, int rightIndex) {
+    private List<Long> getBatchRecipientIds(List<Long> recipientIds,
+                                            int leftIndex,
+                                            int rightIndex) {
         List<Long> subList = recipientIds.subList(leftIndex, rightIndex);
         List<Long> batchIds = new ArrayList<>(subList);
-        return batchIds.stream()
-                .map(userService::findById)
-                .collect(Collectors.toList());
+        return batchIds;
     }
 
     private static int getIterationMax(List<Long> recipientIds) {

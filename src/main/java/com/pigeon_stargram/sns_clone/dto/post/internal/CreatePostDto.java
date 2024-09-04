@@ -18,6 +18,7 @@ import java.util.List;
 public class CreatePostDto implements NotificationConvertable {
 
     private Long loginUserId;
+    private String loginUserName;
     private String content;
     private List<Long> notificationRecipientIds;
     private List<String> imageUrls;
@@ -43,22 +44,19 @@ public class CreatePostDto implements NotificationConvertable {
                 .sender(sender)
                 .type(NotificationType.FOLLOWING_POST)
                 .isRead(false)
-                .message(generateMessage(sender, recipient))
+                .message(generateMessage())
                 .sourceId(loginUserId)
                 .build();
     }
 
     @Override
-    public NotificationBatchDto toNotificationBatchDto(User sender,
-                                                       List<User> batchRecipients) {
-        User recipient = batchRecipients.getFirst();
-
+    public NotificationBatchDto toNotificationBatchDto(Long senderId, List<Long> batchRecipientIds) {
         return NotificationBatchDto.builder()
-                .batchRecipients(batchRecipients)
-                .sender(sender)
+                .batchRecipientIds(batchRecipientIds)
+                .senderId(senderId)
                 .type(NotificationType.FOLLOWING_POST)
                 .isRead(false)
-                .message(generateMessage(sender, recipient))
+                .message(generateMessage())
                 .sourceId(loginUserId)
                 .build();
     }
@@ -74,9 +72,9 @@ public class CreatePostDto implements NotificationConvertable {
     }
 
     @Override
-    public String generateMessage(User sender, User recipient) {
-        return sender.getName() + "님이 새 글을 등록했습니다. 지금 " +
-                sender.getName() +"님의 프로필로 가서 확인하세요!";
+    public String generateMessage() {
+        return loginUserName + "님이 새 글을 등록했습니다. 지금 " +
+                loginUserName +"님의 프로필로 가서 확인하세요!";
     }
 
     @Override

@@ -29,23 +29,21 @@ public class NotifyCommentTaggedDto implements NotificationConvertable {
                 .sender(sender)
                 .type(NotificationType.COMMENT_TAG)
                 .isRead(false)
-                .message(generateMessage(sender, recipient))
+                .message(generateMessage())
                 .sourceId(postUserId)
                 .sourceId2(postId)
                 .build();
     }
 
     @Override
-    public NotificationBatchDto toNotificationBatchDto(User sender,
-                                                       List<User> batchRecipients) {
-        User recipient = batchRecipients.getFirst();
-
+    public NotificationBatchDto toNotificationBatchDto(Long senderId,
+                                                       List<Long> recipientIds) {
         return NotificationBatchDto.builder()
-                .batchRecipients(batchRecipients)
-                .sender(sender)
+                .batchRecipientIds(recipientIds)
+                .senderId(senderId)
                 .type(NotificationType.COMMENT_TAG)
                 .isRead(false)
-                .message(generateMessage(sender, recipient))
+                .message(generateMessage())
                 .sourceId(postUserId)
                 .sourceId2(postId)
                 .build();
@@ -62,7 +60,7 @@ public class NotifyCommentTaggedDto implements NotificationConvertable {
     }
 
     @Override
-    public String generateMessage(User sender, User recipient) {
+    public String generateMessage() {
         return userName + "님이 댓글에서 당신을 언급했습니다.";
     }
 

@@ -19,6 +19,7 @@ import java.util.List;
 public class CreateCommentDto implements NotificationConvertable {
 
     private Long loginUserId;
+    private String loginUserName;
     private Long postId;
     private Long postUserId;
     private String context;
@@ -34,10 +35,11 @@ public class CreateCommentDto implements NotificationConvertable {
     }
 
     @Override
-    public Notification toNotification(User sender, User recipient) {
+    public Notification toNotification(User sender,
+                                       User recipient) {
         return Notification.builder()
                 .type(NotificationType.MY_POST_COMMENT)
-                .message(generateMessage(sender, recipient))
+                .message(generateMessage())
                 .isRead(false)
                 .recipient(recipient)
                 .sender(sender)
@@ -47,20 +49,19 @@ public class CreateCommentDto implements NotificationConvertable {
     }
 
     @Override
-    public NotificationBatchDto toNotificationBatchDto(User sender,
-                                                       List<User> batchRecipients) {
-        User recipient = batchRecipients.getFirst();
-
+    public NotificationBatchDto toNotificationBatchDto(Long senderId,
+                                                       List<Long> batchRecipientIds) {
         return NotificationBatchDto.builder()
                 .type(NotificationType.MY_POST_COMMENT)
-                .message(generateMessage(sender, recipient))
+                .message(generateMessage())
                 .isRead(false)
-                .batchRecipients(batchRecipients)
-                .sender(sender)
+                .batchRecipientIds(batchRecipientIds)
+                .senderId(senderId)
                 .sourceId(postUserId)
                 .sourceId2(postId)
                 .build();
     }
+
 
     @Override
     public Long getSenderId() {
@@ -73,8 +74,8 @@ public class CreateCommentDto implements NotificationConvertable {
     }
 
     @Override
-    public String generateMessage(User sender, User recipient) {
-        return sender.getName() + "님이 댓글을 남겼습니다.";
+    public String generateMessage() {
+        return loginUserName + "님이 댓글을 남겼습니다.";
     }
 
     @Override
