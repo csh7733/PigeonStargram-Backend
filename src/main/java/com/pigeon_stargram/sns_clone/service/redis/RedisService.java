@@ -1,10 +1,12 @@
 package com.pigeon_stargram.sns_clone.service.redis;
 
+import com.pigeon_stargram.sns_clone.dto.redis.ScoreWithValue;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
@@ -306,6 +308,51 @@ public class RedisService {
                 .map(clazz::cast)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Redis의 Sorted Set에서 모든 값과 그에 대한 스코어를 가져와 지정된 타입으로 반환합니다.
+     *
+     * @param setKey Sorted Set의 키
+     * @param clazz  반환할 값의 타입
+     * @param <T>    반환할 타입
+     * @return Sorted Set의 값과 스코어를 함께 List로 반환
+     */
+    public <T> List<ScoreWithValue<T>> getAllFromSortedSetWithScores(String setKey, Class<T> clazz) {
+        // Sorted Set에서 모든 값을 점수와 함께 가져옴 (0부터 -1까지는 모든 범위)
+        Set<ZSetOperations.TypedTuple<Object>> rawResults = redisTemplate.opsForZSet().rangeWithScores(setKey, 0, -1);
+
+        // 결과가 없으면 빈 리스트 반환
+        if (rawResults == null) {
+            return Collections.emptyList();
+        }
+
+        // 값을 지정된 타입으로 변환하여 리스트로 반환 (값과 스코어를 함께 반환)
+        return rawResults.stream()
+                .map(tuple -> {
+                    Object value = tuple.getValue();
+                    Double score = tuple.getScore();
+
+                    // Long 타입을 원할 때, Redis에서 Integer로 반환될 수 있기 때문에 변환 과정이 필요
+                    if (clazz == Long.class && value instanceof Integer) {
+                        value = ((Integer) value).longValue();  // Integer를 Long으로 변환
+                    }
+
+                    // String을 Long으로 변환하는 로직
+                    if (clazz == Long.class && value instanceof String) {
+                        value = Long.parseLong((String) value);  // String을 Long으로 변환
+                    }
+
+                    // 값을 지정된 타입으로 캐스팅하여 반환
+                    return new ScoreWithValue<>(
+                            clazz.cast(value),   // 변환된 값
+                            score                // 스코어
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+
+
 
 
 
