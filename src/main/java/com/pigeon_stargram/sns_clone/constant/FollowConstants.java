@@ -10,4 +10,6 @@ public class FollowConstants {
     // 팔로우유저 목록에서 사용하는 상수
     public static final Integer FOLLOWING = 1;
     public static final Integer NOT_FOLLOWING = 2;
+
+    public static final Integer FAMOUS_USER_THRESHOLD = 3;
 }

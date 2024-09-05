@@ -220,5 +220,11 @@ public class FollowService {
         return followingsWithRecentStories;
     }
 
+    // 유명 사용자 여부를 판별하는 메서드
+    public Boolean isFamousUser(Long userId) {
+        Long followerCount = countFollowers(userId);
+        return followerCount >= FAMOUS_USER_THRESHOLD;
+    }
+
 
 }
