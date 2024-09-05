@@ -11,5 +11,5 @@ public class FollowConstants {
     public static final Integer FOLLOWING = 1;
     public static final Integer NOT_FOLLOWING = 2;
 
-    public static final Integer FAMOUS_USER_THRESHOLD = 3;
+    public static final Integer FAMOUS_USER_THRESHOLD = 5;
 }

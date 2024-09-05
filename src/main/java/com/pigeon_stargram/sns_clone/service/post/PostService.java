@@ -29,9 +29,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
 import static com.pigeon_stargram.sns_clone.constant.RedisPostConstants.UPLOADING_POSTS_HASH;
 import static com.pigeon_stargram.sns_clone.constant.RedisPostConstants.UPLOADING_POSTS_SET;
 import static com.pigeon_stargram.sns_clone.service.post.PostBuilder.*;
+import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentTimeMillis;
+import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -141,6 +144,21 @@ public class PostService {
         }
         // 태그된 유저에게 알림
         notifyTaggedUsers(dto, loginUser);
+
+        // 팔로워 타임라인에 게시물 추가
+        if (!followService.isFamousUser(loginUser.getId())) {
+            // 팔로워 목록 가져오기
+            List<Long> followerIds = followService.getFollowerIds(loginUser.getId());
+
+            // 현재 시간을 타임스탬프로 사용
+            Double currentTime = getCurrentTimeMillis();
+
+            // 각 팔로워의 타임라인에 게시물 추가
+            followerIds.forEach(followerId -> {
+                String timelineKey = cacheKeyGenerator(TIMELINE, USER_ID, followerId.toString());
+                redisService.addToSortedSet(timelineKey, currentTime, save.getId());
+            });
+        }
 
         return save.getId();
     }

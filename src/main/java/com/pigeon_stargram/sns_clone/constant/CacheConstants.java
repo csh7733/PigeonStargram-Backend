@@ -35,6 +35,7 @@ public class CacheConstants {
     public static final String SEARCH_TERM_SCORES = "searchTermScores";
     public static final String USER_CACHE_KEY = "userCacheKey";
     public static final String USER_NAME_TO_ID_MAPPING_CACHE_KEY = "userNameToIdMapping";
+    public static final String TIMELINE = "timeline";
 
 
     // key

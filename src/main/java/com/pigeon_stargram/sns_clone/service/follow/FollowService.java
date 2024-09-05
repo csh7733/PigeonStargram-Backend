@@ -83,6 +83,10 @@ public class FollowService {
                 .collect(Collectors.toList());
     }
 
+    public List<Long> getFollowerIds(Long userId) {
+        return followCrudService.findFollowerIds(userId);
+    }
+
     public List<ResponseFollowerDto> findFollowers(FindFollowersDto dto) {
         Set<Long> targetUserFollowerIdSet =
                 followCrudService.findFollowerIds(dto.getUserId())
