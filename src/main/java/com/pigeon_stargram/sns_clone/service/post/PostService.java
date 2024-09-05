@@ -169,10 +169,17 @@ public class PostService {
     }
 
     public void likePost(LikePostDto dto) {
-        // todo 좋아요 추가시 알림
-        User loginUser = userService.findById(dto.getLoginUserId());
+        Long loginUserId = dto.getLoginUserId();
+        Long postId = dto.getPostId();
+
+        User loginUser = userService.findById(loginUserId);
         dto.setLoginUserName(loginUser.getName());
-        postLikeCrudService.toggleLike(dto.getLoginUserId(), dto.getPostId());
-        notificationService.send(dto);
+        postLikeCrudService.toggleLike(loginUserId, postId);
+
+        // 좋아요수가 증가할때 알림 보내기
+        List<Long> postLikeUserIds = postLikeCrudService.getPostLikeUserIds(postId);
+        if (postLikeUserIds.contains(loginUserId)) {
+            notificationService.send(dto);
+        }
     }
 }

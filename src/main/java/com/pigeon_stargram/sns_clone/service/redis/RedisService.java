@@ -102,11 +102,22 @@ public class RedisService {
 
     /**
      * Set의 모든 값들을 Set으로 가져옵니다.
-     * @param setKey
+     * @param setKey Set의 키
      * @return 키에 해당하는 Set
      */
     public Set<Object> getSet(String setKey) {
         return redisTemplate.opsForSet().members(setKey);
+    }
+
+    /**
+     * Set의 모든 값들을 Long 타입 리스트로 변환하여 가져옵니다.
+     * @param setKey Set의 키
+     * @return 키에 해당하는 Set을 Long 타입 리스트로 변환한 결과
+     */
+    public List<Long> getSetAsLongList(String setKey) {
+        return getSet(setKey).stream()
+                .map(object -> Long.valueOf((Integer) object))
+                .collect(Collectors.toList());
     }
 
     /**

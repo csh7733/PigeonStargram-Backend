@@ -45,9 +45,8 @@ public class ReplyCrudService {
         if (redisService.hasKey(cacheKey)) {
             log.info("findReplyIdsByUserId = {} 캐시 히트", commentId);
 
-            return redisService.getSet(cacheKey).stream()
-                    .filter(replyId -> !replyId.equals(0))
-                    .map(replyId -> Long.valueOf((Integer) replyId))
+            return redisService.getSetAsLongList(cacheKey).stream()
+                    .filter(replyId -> !replyId.equals(0L))
                     .collect(Collectors.toList());
         }
 

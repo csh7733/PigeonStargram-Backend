@@ -47,9 +47,8 @@ public class PostCrudService {
         if (redisService.hasKey(cacheKey)) {
             log.info("findPostIdsByUserId = {} 캐시 히트", userId);
 
-            return redisService.getSet(cacheKey).stream()
-                    .filter(postId -> !postId.equals(0))
-                    .map(postId -> Long.valueOf((Integer) postId))
+            return redisService.getSetAsLongList(cacheKey).stream()
+                    .filter(postId -> !postId.equals(0L))
                     .collect(Collectors.toList());
         }
 
@@ -73,9 +72,8 @@ public class PostCrudService {
         if (redisService.hasKey(cacheKey)) {
             log.info("findPostIdsByUserIdAncCreatedDateAfter = {} 캐시 히트", userId);
 
-            return redisService.getSet(cacheKey).stream()
-                    .filter(postId -> !postId.equals(0))
-                    .map(postId -> Long.valueOf((Integer) postId))
+            return redisService.getSetAsLongList(cacheKey).stream()
+                    .filter(postId -> !postId.equals(0L))
                     .collect(Collectors.toList());
         }
 

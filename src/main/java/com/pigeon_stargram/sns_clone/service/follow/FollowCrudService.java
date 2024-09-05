@@ -33,9 +33,8 @@ public class FollowCrudService {
         if (redisService.hasKey(cacheKey)) {
             log.info("findFollowerIds(userId = {}) 캐시 히트", userId);
 
-            return redisService.getSet(cacheKey).stream()
-                    .filter(replyId -> !replyId.equals(0))
-                    .map(replyId -> Long.valueOf((Integer) replyId))
+            return redisService.getSetAsLongList(cacheKey).stream()
+                    .filter(replyId -> !replyId.equals(0L))
                     .collect(Collectors.toList());
         }
 
@@ -55,9 +54,8 @@ public class FollowCrudService {
         if (redisService.hasKey(cacheKey)) {
             log.info("findFollowingIds(userId = {}) 캐시 히트", userId);
 
-            return redisService.getSet(cacheKey).stream()
-                    .filter(replyId -> !replyId.equals(0))
-                    .map(replyId -> Long.valueOf((Integer) replyId))
+            return redisService.getSetAsLongList(cacheKey).stream()
+                    .filter(replyId -> !replyId.equals(0L))
                     .collect(Collectors.toList());
         }
 
@@ -78,9 +76,8 @@ public class FollowCrudService {
         if (redisService.hasKey(cacheKey)) {
             log.info("findNotificationEnabledIds(userId = {}) 캐시 히트", userId);
 
-            return redisService.getSet(cacheKey).stream()
-                    .filter(replyId -> !replyId.equals(0))
-                    .map(replyId -> Long.valueOf((Integer) replyId))
+            return redisService.getSetAsLongList(cacheKey).stream()
+                    .filter(replyId -> !replyId.equals(0L))
                     .collect(Collectors.toList());
         }
 

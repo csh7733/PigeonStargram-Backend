@@ -42,9 +42,8 @@ public class CommentCrudService {
         if (redisService.hasKey(cacheKey)) {
             log.info("findCommentIdsByPostId = {} 캐시 히트", postId);
 
-            return redisService.getSet(cacheKey).stream()
-                    .filter(commentId -> !commentId.equals(0))
-                    .map(commentId -> Long.valueOf((Integer) commentId))
+            return redisService.getSetAsLongList(cacheKey).stream()
+                    .filter(commentId -> !commentId.equals(0L))
                     .collect(Collectors.toList());
         }
 

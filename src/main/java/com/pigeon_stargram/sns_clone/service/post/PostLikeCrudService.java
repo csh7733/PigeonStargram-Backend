@@ -8,14 +8,15 @@ import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.pigeon_stargram.sns_clone.constant.CacheConstants.POST_ID;
-import static com.pigeon_stargram.sns_clone.constant.CacheConstants.POST_LIKE_USER_IDS;
+import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
 import static com.pigeon_stargram.sns_clone.service.post.PostBuilder.buildPostLike;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 
@@ -119,5 +120,28 @@ public class PostLikeCrudService {
         redisService.addAllToSet(cacheKey, postLikeUserIds);
 
         return postLikeUserIds.size() - 1;
+    }
+
+    public List<Long> getPostLikeUserIds(Long postId) {
+        // 수동 캐시
+        String cacheKey = cacheKeyGenerator(POST_LIKE_USER_IDS, POST_ID, postId.toString());
+
+        if (redisService.hasKey(cacheKey)) {
+            log.info("getPostLikeUserIds {} 캐시 히트", postId);
+            return redisService.getSetAsLongList(cacheKey);
+        }
+        log.info("getPostLikeUserIds {} 캐시 미스", postId);
+
+        // DB 조회후 레디스에 캐시
+        List<Long> postLikeUserIds = repository.findByPostId(postId).stream()
+                .map(PostLike::getUser)
+                .map(User::getId)
+                .collect(Collectors.toList());
+        postLikeUserIds.add(0L);
+
+        redisService.addAllToSet(cacheKey, postLikeUserIds);
+
+        postLikeUserIds.remove(0L);
+        return postLikeUserIds;
     }
 }
