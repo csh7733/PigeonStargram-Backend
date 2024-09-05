@@ -162,7 +162,6 @@ public class PostService {
         postCrudService.edit(dto.getPostId(), dto.getContent());
     }
 
-
     public void deletePost(Long postId) {
         commentService.deleteAllCommentsAndReplyByPostId(postId);
         postCrudService.deleteById(postId);

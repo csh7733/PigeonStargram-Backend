@@ -104,10 +104,21 @@ public class CommentService {
     }
 
     public void likeComment(LikeCommentDto dto) {
-        // todo 좋아요 추가시 알림
-        User loginUser = userService.findById(dto.getLoginUserId());
-        dto.setLoginUserName(loginUser.getName());
-        commentLikeCrudService.toggleLike(dto.getLoginUserId(), dto.getCommentId());
+        Long loginUserId = dto.getLoginUserId();
+        Long commentId = dto.getCommentId();
 
+        User loginUser = userService.findById(loginUserId);
+        dto.setLoginUserName(loginUser.getName());
+
+        Comment comment = commentCrudService.findById(commentId);
+        dto.setWriterId(comment.getUser().getId());
+
+        commentLikeCrudService.toggleLike(loginUserId, commentId);
+
+        // 좋아요수가 증가할때 알림 보내기
+        List<Long> commentLikeUserIds = commentLikeCrudService.getCommentLikeUserIds(commentId);
+        if (commentLikeUserIds.contains(loginUserId)) {
+            notificationService.send(dto);
+        }
     }
 }

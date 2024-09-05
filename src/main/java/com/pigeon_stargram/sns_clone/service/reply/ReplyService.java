@@ -84,10 +84,22 @@ public class ReplyService {
     }
 
     public void likeReply(LikeReplyDto dto) {
-        // todo 좋아요 추가시 알림
-        User loginUser = userService.findById(dto.getLoginUserId());
+        Long loginUserId = dto.getLoginUserId();
+        Long replyId = dto.getReplyId();
+
+        User loginUser = userService.findById(loginUserId);
         dto.setLoginUserName(loginUser.getName());
-        replyLikeCrudService.toggleLike(dto.getLoginUserId(), dto.getReplyId());
+
+        Reply reply = replyCrudService.findById(replyId);
+        dto.setWriterId(reply.getUser().getId());
+
+        replyLikeCrudService.toggleLike(loginUserId, replyId);
+
+        // 좋아요수가 증가할때 알림 보내기
+        List<Long> replyLikeUserIds = replyLikeCrudService.getReplyLikeUserIds(replyId);
+        if (replyLikeUserIds.contains(loginUserId)) {
+            notificationService.send(dto);
+        }
     }
 
     public void deleteAllReplyByCommentId(Long commentId) {
