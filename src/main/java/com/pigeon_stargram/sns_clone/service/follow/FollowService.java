@@ -27,6 +27,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -230,5 +231,14 @@ public class FollowService {
         return followerCount >= FAMOUS_USER_THRESHOLD;
     }
 
+    public List<Long> findFollowingsWhoFollowTarget(Long sourceId, Long targetId) {
+        // sourceId의 팔로잉 목록을 가져옴
+        List<Long> followingIds = followCrudService.findFollowingIds(sourceId);
+
+        // 팔로잉 중에서 targetId를 팔로우하는 사람들을 필터링
+        return followingIds.stream()
+                .filter(followingId -> isFollowing(followingId, targetId))  // 해당 사용자가 targetId를 팔로우하는지 확인
+                .collect(Collectors.toList());
+    }
 
 }
