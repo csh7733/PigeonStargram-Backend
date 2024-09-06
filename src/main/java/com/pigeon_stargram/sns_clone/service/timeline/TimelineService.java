@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.TIMELINE;
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.USER_ID;
+import static com.pigeon_stargram.sns_clone.constant.RedisPostConstants.UPLOADING_POSTS_SET;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.*;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 
@@ -77,6 +78,7 @@ public class TimelineService {
                     return isWithinOneDay;
                 })
                 .map(ScoreWithValue::getValue)
+                .filter(postId -> !redisService.isMemberOfSet(UPLOADING_POSTS_SET, postId))
                 .collect(Collectors.toList());
 
         // 필터링된 게시물 ID들로 실제 게시물 데이터를 가져오기

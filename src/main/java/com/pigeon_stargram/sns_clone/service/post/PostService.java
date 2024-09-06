@@ -67,11 +67,33 @@ public class PostService {
     public List<ResponsePostDto> getRecentPostsByUser(Long userId) {
         LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
 
-        return postCrudService.findPostIdsByUserIdAndCreatedDateAfter(userId, oneDayAgo).stream()
-                .filter(postId -> !redisService.isMemberOfSet(UPLOADING_POSTS_SET, postId))
+        // 캐시된 게시물 ID를 가져오고, 유효하지 않은 게시물(24시간 지난)을 필터링 후 캐시에서 제거
+        List<Long> postIds = postCrudService.findPostIdsByUserIdAndCreatedDateAfter(userId, oneDayAgo).stream()
+                .filter(postId -> !redisService.isMemberOfSet(UPLOADING_POSTS_SET, postId))  // 업로드 중인 게시물 제외
+                .filter(postId -> {
+                    // 게시물 조회
+                    Post post = postCrudService.findById(postId);
+
+                    // 게시물이 24시간 내에 작성되었는지 확인
+                    boolean isRecent = post.getCreatedDate().isAfter(oneDayAgo);
+
+                    // 24시간 지난 게시물은 Redis 캐시에서 제거
+                    if (!isRecent) {
+                        String cacheKey = cacheKeyGenerator(RECENT_POST_IDS, USER_ID, userId.toString());
+                        redisService.removeFromSet(cacheKey, postId);
+                    }
+
+                    // 유효한 게시물만 남김
+                    return isRecent;
+                })
+                .collect(Collectors.toList());
+
+        // 유효한 게시물로 ResponsePostDto 변환 후 반환
+        return postIds.stream()
                 .map(this::getCombinedPost)
                 .collect(Collectors.toList());
     }
+
 
     public ResponsePostDto getCombinedPost(Long postId) {
         PostContentDto contentDto = getPostContent(postId);
