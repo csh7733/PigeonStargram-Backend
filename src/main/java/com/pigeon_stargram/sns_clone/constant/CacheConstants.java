@@ -7,6 +7,7 @@ public class CacheConstants {
     public static final String COMMENT = "comment";
     public static final String REPLY = "reply";
     public static final String STORY = "STORY";
+    public static final String NOTIFICATION = "notification";
     public static final String NOTIFICATION_CONTENT = "notificationContent";
 
     public static final String ALL_POST_IDS = "allPostIds";
@@ -43,6 +44,7 @@ public class CacheConstants {
     public static final String COMMENT_ID = "commentId";
     public static final String REPLY_ID = "replyId";
     public static final String STORY_ID = "storyId";
+    public static final String NOTIFICATION_ID = "notificationId";
     public static final String NOTIFICATION_CONTENT_ID = "notificationContentId";
 
 }

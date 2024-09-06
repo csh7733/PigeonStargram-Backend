@@ -137,7 +137,7 @@ public class CommentLikeCrudService {
 
         if (redisService.hasKey(cacheKey)) {
             log.info("getCommentLikeUserIds {} 캐시 히트", commentId);
-            return redisService.getSetAsLongList(cacheKey);
+            return redisService.getSetAsLongListExcludeDummy(cacheKey);
         }
         log.info("getCommentLikeUserIds {} 캐시 미스", commentId);
 
@@ -146,11 +146,7 @@ public class CommentLikeCrudService {
                 .map(CommentLike::getUser)
                 .map(User::getId)
                 .collect(Collectors.toList());
-        commentLikeUserIds.add(0L);
 
-        redisService.addAllToSet(cacheKey, commentLikeUserIds);
-
-        commentLikeUserIds.remove(0L);
-        return commentLikeUserIds;
+        return redisService.cacheListToSetWithDummy(commentLikeUserIds, cacheKey);
     }
 }

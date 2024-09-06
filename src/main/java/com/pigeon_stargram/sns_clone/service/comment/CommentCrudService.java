@@ -42,9 +42,7 @@ public class CommentCrudService {
         if (redisService.hasKey(cacheKey)) {
             log.info("findCommentIdsByPostId = {} 캐시 히트", postId);
 
-            return redisService.getSetAsLongList(cacheKey).stream()
-                    .filter(commentId -> !commentId.equals(0L))
-                    .collect(Collectors.toList());
+            return redisService.getSetAsLongListExcludeDummy(cacheKey);
         }
 
         log.info("findCommentIdsByPostId = {} 캐시 미스", postId);
@@ -52,11 +50,7 @@ public class CommentCrudService {
                 .map(Comment::getId)
                 .collect(Collectors.toList());
 
-        commentIds.add(0L);
-        redisService.addAllToSet(cacheKey, commentIds);
-
-        commentIds.remove(0L);
-        return commentIds;
+        return redisService.cacheListToSetWithDummy(commentIds, cacheKey);
     }
 
     @CachePut(value = COMMENT,

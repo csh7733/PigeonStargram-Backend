@@ -134,7 +134,7 @@ public class ReplyLikeCrudService {
 
         if (redisService.hasKey(cacheKey)) {
             log.info("getReplyLikeUserIds {} 캐시 히트", replyId);
-            return redisService.getSetAsLongList(cacheKey);
+            return redisService.getSetAsLongListExcludeDummy(cacheKey);
         }
         log.info("getReplyLikeUserIds {} 캐시 미스", replyId);
 
@@ -143,11 +143,7 @@ public class ReplyLikeCrudService {
                 .map(ReplyLike::getUser)
                 .map(User::getId)
                 .collect(Collectors.toList());
-        replyLikeUserIds.add(0L);
 
-        redisService.addAllToSet(cacheKey, replyLikeUserIds);
-
-        replyLikeUserIds.remove(0L);
-        return replyLikeUserIds;
+        return redisService.cacheListToSetWithDummy(replyLikeUserIds, cacheKey);
     }
 }

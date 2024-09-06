@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Service;
@@ -117,6 +116,17 @@ public class RedisService {
     public List<Long> getSetAsLongList(String setKey) {
         return getSet(setKey).stream()
                 .map(object -> Long.valueOf((Integer) object))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Set의 모든 값들을 Long 타입 리스트로 변환하고 더미 데이터를 제거하여 가져옵니다.
+     * @param setKey Set의 키
+     * @return 키에 해당하는 Set을 Long 타입 리스트로 변환하고 더미데이터 0L을 제거한 결과
+     */
+    public List<Long> getSetAsLongListExcludeDummy(String setKey) {
+        return getSetAsLongList(setKey).stream()
+                .filter(value -> !value.equals(0L))
                 .collect(Collectors.toList());
     }
 
@@ -392,6 +402,19 @@ public class RedisService {
         return redisTemplate.opsForZSet().incrementScore(setKey, value, delta);
     }
 
+    /**
+     * List<Long>에 더미데이터를 추가하여 Redis의 Set에 캐시하고 원본 List를 반환합니다.
+     * @param list 캐시할 데이터의 List
+     * @param cacheKey 캐시 Set의 Key
+     * @return 원본 List
+     */
+    public List<Long> cacheListToSetWithDummy(List<Long> list,
+                                               String cacheKey) {
+        list.add(0L);
+        addAllToSet(cacheKey, list);
 
+        list.remove(0L);
+        return list;
+    }
 
 }

@@ -95,7 +95,7 @@ public class StoryService {
 
     public List<ResponseUserInfoDto> getUserInfosWhoViewedStory(Long storyId) {
         String redisSetKey = cacheKeyGenerator(STORY_VIEWS, STORY_ID, storyId.toString());
-        List<Long> userIdsWhoViewed = redisService.getSetAsLongList(redisSetKey);
+        List<Long> userIdsWhoViewed = redisService.getSetAsLongListExcludeDummy(redisSetKey);
 
         return userIdsWhoViewed.stream()
                 .collect(Collectors.collectingAndThen(Collectors.toList(), userIdList ->
@@ -146,11 +146,11 @@ public class StoryService {
         removeExpiredStoriesFromSet(userStorySetKey);
 
         // 유효한 storyId들을 반환
-        return redisService.getSetAsLongList(userStorySetKey);
+        return redisService.getSetAsLongListExcludeDummy(userStorySetKey);
     }
 
     private void removeExpiredStoriesFromSet(String userStorySetKey) {
-        List<Long> storyIds = redisService.getSetAsLongList(userStorySetKey);
+        List<Long> storyIds = redisService.getSetAsLongListExcludeDummy(userStorySetKey);
 
         for (Long storyId : storyIds) {
             Story story = storyCrudService.findById(storyId);

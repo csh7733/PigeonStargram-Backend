@@ -4,6 +4,7 @@ package com.pigeon_stargram.sns_clone.service.notification;
 import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
+import com.pigeon_stargram.sns_clone.domain.notification.NotificationV2;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotificationBatchDto;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
@@ -16,15 +17,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
-import static com.pigeon_stargram.sns_clone.constant.WorkerConstants.*;
+import static com.pigeon_stargram.sns_clone.constant.WorkerConstants.BATCH_SIZE;
+import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.NOTIFICATION_NOT_FOUND_ID;
+import static com.pigeon_stargram.sns_clone.service.notification.NotificationBuilder.buildResponseNotificationDto;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -38,6 +40,10 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
 
     private final NotificationWorker notificationWorker;
+
+    private static int getIterationMax(List<Long> recipientIds) {
+        return (recipientIds.size() - 1) / BATCH_SIZE + 1;
+    }
 
     /**
      * TODO : ID생성방식 변화시키기 (지연쓰기를 위해서)
@@ -81,10 +87,6 @@ public class NotificationService {
         return batchIds;
     }
 
-    private static int getIterationMax(List<Long> recipientIds) {
-        return (recipientIds.size() - 1) / BATCH_SIZE + 1;
-    }
-
     private void insertIntoMessageQueue(List<Notification> notifications) {
         notifications.stream()
                 .map(NotificationBuilder::buildResponseNotificationDto)
@@ -104,10 +106,17 @@ public class NotificationService {
     }
 
     public List<ResponseNotificationDto> findUnreadNotifications(Long userId) {
-        return notificationRepository.findAllByRecipientId(userId).stream()
-                .filter(notification -> !notification.getIsRead())
-                .map(NotificationBuilder::buildResponseNotificationDto)
-                .collect(Collectors.toList());
+        Stream<NotificationV2> notificationStream = notificationCrudService.findNotificationIdsByRecipientId(userId).stream()
+                .peek(notificationId -> log.info("notificationId={}", notificationId))
+                .map(notificationCrudService::findById);
+
+
+        return notificationStream.map(notification -> {
+            NotificationContent content = notificationCrudService.findContentById(notification.getContent().getId());
+            User sender = userService.findById(content.getSenderId());
+
+            return buildResponseNotificationDto(notification, sender, content);
+        }).collect(Collectors.toList());
     }
 
     public void readNotification(Long notificationId) {
@@ -126,6 +135,6 @@ public class NotificationService {
 
     public void notifyTaggedUsers(NotificationConvertable dto) {
 
-        if(!dto.getRecipientIds().isEmpty()) send(dto);
+        if (!dto.getRecipientIds().isEmpty()) send(dto);
     }
 }

@@ -128,7 +128,7 @@ public class PostLikeCrudService {
 
         if (redisService.hasKey(cacheKey)) {
             log.info("getPostLikeUserIds {} 캐시 히트", postId);
-            return redisService.getSetAsLongList(cacheKey);
+            return redisService.getSetAsLongListExcludeDummy(cacheKey);
         }
         log.info("getPostLikeUserIds {} 캐시 미스", postId);
 
@@ -137,11 +137,7 @@ public class PostLikeCrudService {
                 .map(PostLike::getUser)
                 .map(User::getId)
                 .collect(Collectors.toList());
-        postLikeUserIds.add(0L);
 
-        redisService.addAllToSet(cacheKey, postLikeUserIds);
-
-        postLikeUserIds.remove(0L);
-        return postLikeUserIds;
+        return redisService.cacheListToSetWithDummy(postLikeUserIds, cacheKey);
     }
 }

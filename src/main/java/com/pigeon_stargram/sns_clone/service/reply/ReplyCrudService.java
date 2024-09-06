@@ -45,9 +45,7 @@ public class ReplyCrudService {
         if (redisService.hasKey(cacheKey)) {
             log.info("findReplyIdsByUserId = {} 캐시 히트", commentId);
 
-            return redisService.getSetAsLongList(cacheKey).stream()
-                    .filter(replyId -> !replyId.equals(0L))
-                    .collect(Collectors.toList());
+            return redisService.getSetAsLongListExcludeDummy(cacheKey);
         }
 
         log.info("findReplyIdsByUserId = {} 캐시 미스", commentId);
@@ -56,11 +54,7 @@ public class ReplyCrudService {
                 .map(Reply::getId)
                 .collect(Collectors.toList());
 
-        replyIds.add(0L);
-        redisService.addAllToSet(cacheKey, replyIds);
-
-        replyIds.remove(0L);
-        return replyIds;
+        return redisService.cacheListToSetWithDummy(replyIds, cacheKey);
     }
 
     @CachePut(value = REPLY,
