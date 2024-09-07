@@ -57,6 +57,9 @@ public class RedisNotificationWorker implements NotificationWorker {
 
                 // 가져온 작업이 유효하다면 메일을 전송
                 log.info("알림 작업을 가져왔습니다. 수신자: {}", batch.getBatchRecipientIds());
+                if (batch.getBatchRecipientIds().isEmpty()) {
+                    log.info("senderId={}, contentId={}", batch.getSenderId(), batch.getContentId());
+                }
                 work(batch);
             } catch (QueryTimeoutException e) {
                 // Lettuce 클라이언트는 기본적으로 1분후에 타임아웃 시킴
