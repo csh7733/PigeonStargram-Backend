@@ -12,6 +12,7 @@ import com.pigeon_stargram.sns_clone.service.notification.NotificationBuilder;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationCrudService;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
@@ -22,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.RedisQueueConstants.*;
@@ -40,13 +43,20 @@ public class RedisNotificationWorker implements NotificationWorker {
     private final RedisService redisService;
     private final NotificationCrudService notificationCrudService;
     private final UserService userService;
+    private final ExecutorService executorService = Executors.newFixedThreadPool(3);
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    private final NotificationContentRepository notificationContentRepository;
+    @PostConstruct
+    @Override
+    public void startWorkers() {
+        log.info("알림 전송 워커를 {}개의 스레드로 시작합니다.", 3);
+        for (int i = 0; i < 3; i++) {
+            executorService.submit(this::work);
+        }
+    }
 
     @Transactional
-    @Scheduled(fixedRate = 100)
     @Override
     public void work() {
 
@@ -61,9 +71,7 @@ public class RedisNotificationWorker implements NotificationWorker {
 
         log.info("contentId={}", dto.getContentId());
 
-
-        NotificationContent content = notificationContentRepository.findById(dto.getContentId()).get();
-
+        NotificationContent content = notificationCrudService.findContentById(dto.getContentId());
 
         User sender = userService.findById(content.getSenderId());
 

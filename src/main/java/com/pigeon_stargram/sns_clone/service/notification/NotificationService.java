@@ -22,7 +22,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.pigeon_stargram.sns_clone.constant.WorkerConstants.BATCH_SIZE;
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.NOTIFICATION_NOT_FOUND_ID;
@@ -106,31 +105,30 @@ public class NotificationService {
     }
 
     public List<ResponseNotificationDto> findUnreadNotifications(Long userId) {
-        Stream<NotificationV2> notificationStream = notificationCrudService.findNotificationIdsByRecipientId(userId).stream()
-                .peek(notificationId -> log.info("notificationId={}", notificationId))
-                .map(notificationCrudService::findById);
+        List<NotificationV2> notifications = notificationCrudService.findNotificationByRecipientId(userId);
 
+        return notifications.stream()
+                .filter(notification -> !notification.getIsRead())
+                .map(notification -> {
+                    NotificationContent content =
+                            notificationCrudService.findContentById(notification.getContent().getId());
+                    User sender = userService.findById(content.getSenderId());
 
-        return notificationStream.map(notification -> {
-            NotificationContent content = notificationCrudService.findContentById(notification.getContent().getId());
-            User sender = userService.findById(content.getSenderId());
-
-            return buildResponseNotificationDto(notification, sender, content);
-        }).collect(Collectors.toList());
+                    return buildResponseNotificationDto(notification, sender, content);
+                })
+                .collect(Collectors.toList());
     }
 
     public void readNotification(Long notificationId) {
-        Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new NotificationNotFoundException(NOTIFICATION_NOT_FOUND_ID));
+        NotificationV2 notification = notificationCrudService.findById(notificationId);
         notification.setRead(true);
     }
 
     public void readNotifications(Long userId) {
-        List<Notification> notifications = notificationRepository.findAllByRecipientId(userId);
+        List<NotificationV2> notifications =
+                notificationCrudService.findNotificationByRecipientId(userId);
 
-        notifications.forEach(notification -> {
-            notification.setRead(true);
-        });
+        notifications.forEach(notification -> notification.setRead(true));
     }
 
     public void notifyTaggedUsers(NotificationConvertable dto) {

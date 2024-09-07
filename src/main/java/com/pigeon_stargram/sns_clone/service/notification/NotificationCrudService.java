@@ -2,14 +2,12 @@ package com.pigeon_stargram.sns_clone.service.notification;
 
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationV2;
-import com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst;
 import com.pigeon_stargram.sns_clone.exception.notification.NotificationNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.notification.NotificationContentRepository;
 import com.pigeon_stargram.sns_clone.repository.notification.NotificationV2Repository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.apache.bcel.ExceptionConstants;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -34,28 +32,10 @@ public class NotificationCrudService {
     private final NotificationContentRepository contentRepository;
     private final NotificationContentRepository notificationContentRepository;
 
-    public List<Long> findNotificationIdsByRecipientId(Long recipientId) {
-        String cacheKey =
-                cacheKeyGenerator(NOTIFICATION_CONTENT_IDS, USER_ID, recipientId.toString());
-        if (redisService.hasKey(cacheKey)) {
-            log.info("findByRecipientId 캐시 히트 recipientId = {}", recipientId);
-
-            return redisService.getSetAsLongListExcludeDummy(cacheKey);
-        }
-
-        log.info("findByRecipientId 캐시 미스 recipientId = {}", recipientId);
-
-        List<NotificationV2> notifications = notificationRepository.findByRecipientId(recipientId);
-
-        List<Long> notificationIds = notifications.stream()
-                .map(NotificationV2::getId)
-                .collect(Collectors.toList());
-
-        return redisService.cacheListToSetWithDummy(notificationIds, cacheKey);
+    public List<NotificationV2> findNotificationByRecipientId(Long recipientId) {
+        return notificationRepository.findByRecipientId(recipientId);
     }
 
-    @Cacheable(value = NOTIFICATION,
-            key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).NOTIFICATION_ID + '_' + #notificationId")
     public NotificationV2 findById(Long notificationId) {
         return notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new NotificationNotFoundException(NOTIFICATION_NOT_FOUND_ID));

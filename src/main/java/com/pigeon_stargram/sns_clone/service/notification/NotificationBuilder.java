@@ -35,17 +35,17 @@ public class NotificationBuilder {
                 .build();
     }
 
-    public static ResponseNotificationDto buildResponseNotificationDto(NotificationV2 save,
+    public static ResponseNotificationDto buildResponseNotificationDto(NotificationV2 notification,
                                                                         User sender,
                                                                         NotificationContent saveContent) {
         return ResponseNotificationDto.builder()
-                .id(save.getId())
+                .id(notification.getId())
                 .name(sender.getName())
                 .avatar(sender.getAvatar())
                 .content(saveContent.getMessage())
-                .isRead(save.getIsRead())
-                .time(formatTime(save.getCreatedDate()))
-                .targetUserId(save.getRecipientId())
+                .isRead(notification.getIsRead())
+                .time(formatTime(notification.getCreatedDate()))
+                .targetUserId(notification.getRecipientId())
                 .type(saveContent.getType())
                 .sourceId(saveContent.getSourceId())
                 .sourceId2(saveContent.getSourceId2())

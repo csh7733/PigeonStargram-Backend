@@ -2,7 +2,10 @@ package com.pigeon_stargram.sns_clone.controller.notification;
 
 import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
+import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
+import com.pigeon_stargram.sns_clone.domain.notification.NotificationV2;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
+import com.pigeon_stargram.sns_clone.repository.notification.NotificationContentRepository;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +20,7 @@ import java.util.List;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final NotificationContentRepository contentRepository;
 
     // 로그인유저에 대한 알림 조회
     @GetMapping("")

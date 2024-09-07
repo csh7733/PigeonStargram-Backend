@@ -7,7 +7,7 @@ import com.pigeon_stargram.sns_clone.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
-@ToString(exclude = {"sender", "recipient"})
+@ToString(exclude = {"content"})
 @EqualsAndHashCode
 @Getter
 @NoArgsConstructor

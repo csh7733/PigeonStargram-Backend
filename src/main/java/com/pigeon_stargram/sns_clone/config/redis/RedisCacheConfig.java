@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pigeon_stargram.sns_clone.domain.post.Post;
 import org.springframework.cache.annotation.EnableCaching;
@@ -30,6 +31,8 @@ public class RedisCacheConfig {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        // Hibernate 클래스의 직렬화 옵션 설정
+        mapper.registerModule(new Hibernate6Module());
         // 타입 클래스 설정
         mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
 

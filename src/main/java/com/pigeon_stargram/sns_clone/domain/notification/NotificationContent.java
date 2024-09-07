@@ -6,6 +6,7 @@ import com.pigeon_stargram.sns_clone.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+@ToString
 @EqualsAndHashCode
 @Getter
 @NoArgsConstructor

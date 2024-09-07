@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.UNSUPPORTED_TYPE;
 
@@ -20,12 +22,21 @@ import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.UNSU
 @Component
 public class MemoryNotificationWorker implements NotificationWorker {
 
+    private final ExecutorService executorService = Executors.newFixedThreadPool(3);
+
     private final Queue<ResponseNotificationDto> queue = new LinkedList<>();
     private final SimpMessagingTemplate messagingTemplate;
 
     @Override
+    public void startWorkers() {
+        log.info("알림 전송 워커를 {}개의 스레드로 시작합니다.", 3);
+        for (int i = 0; i < 3; i++) {
+            executorService.submit(this::work);
+        }
+    }
+
     @Transactional
-    @Scheduled(fixedRate = 100)
+    @Override
     public void work() {
         Optional.ofNullable(queue.poll())
                 .ifPresent(notification -> {
