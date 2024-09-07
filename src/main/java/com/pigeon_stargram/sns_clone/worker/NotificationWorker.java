@@ -4,7 +4,7 @@ import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
 
 public interface NotificationWorker {
-    void startWorkers();
-    void work();
+    void acceptTask();
+    void work(Object task);
     void enqueue(Object notification);
 }

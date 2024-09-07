@@ -1,23 +1,21 @@
 package com.pigeon_stargram.sns_clone.worker;
 
-import com.pigeon_stargram.sns_clone.constant.RedisQueueConstants;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationV2;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotificationBatchDto;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
 import com.pigeon_stargram.sns_clone.exception.redis.UnsupportedTypeException;
-import com.pigeon_stargram.sns_clone.repository.notification.NotificationContentRepository;
-import com.pigeon_stargram.sns_clone.service.notification.NotificationBuilder;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationCrudService;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
+import io.lettuce.core.RedisConnectionException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.QueryTimeoutException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,11 +25,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-import static com.pigeon_stargram.sns_clone.constant.RedisQueueConstants.*;
-import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
-import static com.pigeon_stargram.sns_clone.service.notification.NotificationBuilder.*;
-import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.*;
-import static com.pigeon_stargram.sns_clone.constant.WorkerConstants.*;
+import static com.pigeon_stargram.sns_clone.constant.RedisQueueConstants.NOTIFICATION_QUEUE_KEY;
+import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.UNSUPPORTED_TYPE;
+import static com.pigeon_stargram.sns_clone.service.notification.NotificationBuilder.buildNotification;
+import static com.pigeon_stargram.sns_clone.service.notification.NotificationBuilder.buildResponseNotificationDto;
 
 
 @Primary
@@ -48,30 +45,51 @@ public class RedisNotificationWorker implements NotificationWorker {
     private final SimpMessagingTemplate messagingTemplate;
 
     @PostConstruct
-    @Override
     public void startWorkers() {
         log.info("알림 전송 워커를 {}개의 스레드로 시작합니다.", 3);
         for (int i = 0; i < 3; i++) {
-            executorService.submit(this::work);
+            executorService.submit(this::acceptTask);
         }
     }
 
+    @Override
+    public void acceptTask() {
+        while (true) {
+            try {
+                log.info("Redis 큐에서 알림 전송 작업을 대기 중입니다...");
+                // Redis 작업큐에서 Blocking Pop 방식으로 가져옴
+                Object batch = redisService.popTask(NOTIFICATION_QUEUE_KEY, Duration.ofSeconds(5));
+                if (batch == null) {
+                    throw new QueryTimeoutException("");
+                } else if (!(batch instanceof NotificationBatchDto)) {
+                    throw new UnsupportedTypeException(UNSUPPORTED_TYPE + batch.getClass());
+                }
+                NotificationBatchDto task = (NotificationBatchDto) batch;
+
+                // 가져온 작업이 유효하다면 메일을 전송
+                log.info("알림 작업을 가져왔습니다. 수신자: {}", task.getBatchRecipientIds());
+                work(task);
+            } catch (QueryTimeoutException e) {
+                // Lettuce 클라이언트는 기본적으로 1분후에 타임아웃 시킴
+                // 서버의 안전성을 위해 작업큐에 task가 없다면
+                // 1분(기본값)후에 연결을 재시도한 후 다시 블로킹
+                log.info("[NOTIFICATION BLOCKING POP 재설정] NOTIFICATION 작업큐에 1분동안 작업이없어서 다시 연결합니다");
+            } catch (RedisConnectionException e) {
+                log.error("Redis 서버와의 연결이 끊어졌습니다. 다시 연결 시도 중...", e);
+            } catch (Exception e) {
+                log.error("메일 전송 작업 처리 중 예외가 발생했습니다.", e);
+            }
+        }
+    }
+
+
     @Transactional
     @Override
-    public void work() {
+    public void work(Object task) {
+        NotificationBatchDto dto = (NotificationBatchDto) task;
 
-        Object batch = redisService.popTask(NOTIFICATION_QUEUE_KEY, Duration.ofSeconds(5));
-        if(batch == null) {
-            return;
-        } else if (!(batch instanceof NotificationBatchDto)) {
-            throw new UnsupportedTypeException(UNSUPPORTED_TYPE + batch.getClass());
-        }
-
-        NotificationBatchDto dto = (NotificationBatchDto) batch;
-
-        log.info("contentId={}", dto.getContentId());
-
-        NotificationContent content = notificationCrudService.findContentById(dto.getContentId());
+        NotificationContent content =
+                notificationCrudService.findContentById(dto.getContentId());
 
         User sender = userService.findById(content.getSenderId());
 
@@ -80,7 +98,8 @@ public class RedisNotificationWorker implements NotificationWorker {
                 .collect(Collectors.toList());
 
         notifications.forEach(notification -> {
-            ResponseNotificationDto message = saveNotificationAndbuildMessage(notification, sender);
+            ResponseNotificationDto message =
+                    saveNotificationAndbuildMessage(notification, sender);
             sendMessage(message);
         });
 
