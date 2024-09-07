@@ -1,7 +1,6 @@
 package com.pigeon_stargram.sns_clone.service.comment;
 
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
-import com.pigeon_stargram.sns_clone.domain.comment.CommentLike;
 import com.pigeon_stargram.sns_clone.domain.post.Post;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.CommentContentDto;
@@ -71,7 +70,7 @@ public class CommentService {
         Comment save = commentCrudService.save(comment);
 
         dto.setLoginUserName(loginUser.getName());
-        notificationService.send(dto);
+        notificationService.sendToSplitWorker(dto);
 
         notifyTaggedUsers(dto, loginUser);
 
@@ -118,7 +117,7 @@ public class CommentService {
         // 좋아요수가 증가할때 알림 보내기
         List<Long> commentLikeUserIds = commentLikeCrudService.getCommentLikeUserIds(commentId);
         if (commentLikeUserIds.contains(loginUserId)) {
-            notificationService.send(dto);
+            notificationService.sendToSplitWorker(dto);
         }
     }
 }

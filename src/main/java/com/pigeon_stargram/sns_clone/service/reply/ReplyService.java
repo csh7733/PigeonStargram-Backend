@@ -2,7 +2,6 @@ package com.pigeon_stargram.sns_clone.service.reply;
 
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.reply.Reply;
-import com.pigeon_stargram.sns_clone.domain.reply.ReplyLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyReplyTaggedDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.CreateReplyDto;
@@ -66,7 +65,7 @@ public class ReplyService {
         Reply save = replyCrudService.save(reply);
 
         dto.setLoginUserName(loginUser.getName());
-        notificationService.send(dto);
+        notificationService.sendToSplitWorker(dto);
 
         notifyTaggedUsers(dto, loginUser);
 
@@ -98,7 +97,7 @@ public class ReplyService {
         // 좋아요수가 증가할때 알림 보내기
         List<Long> replyLikeUserIds = replyLikeCrudService.getReplyLikeUserIds(replyId);
         if (replyLikeUserIds.contains(loginUserId)) {
-            notificationService.send(dto);
+            notificationService.sendToSplitWorker(dto);
         }
     }
 

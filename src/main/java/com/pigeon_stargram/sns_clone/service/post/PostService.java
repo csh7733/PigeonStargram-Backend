@@ -149,7 +149,7 @@ public class PostService {
         List<Long> notificationRecipientIds = followService.findFollows(dto.getLoginUserId());
         dto.setNotificationRecipientIds(notificationRecipientIds);
 
-        notificationService.send(dto);
+        notificationService.sendToSplitWorker(dto);
     }
 
     private void notifyTaggedUsers(CreatePostDto dto, User loginUser) {
@@ -178,7 +178,7 @@ public class PostService {
         // 좋아요수가 증가할때 알림 보내기
         List<Long> postLikeUserIds = postLikeCrudService.getPostLikeUserIds(postId);
         if (postLikeUserIds.contains(loginUserId)) {
-            notificationService.send(dto);
+            notificationService.sendToSplitWorker(dto);
         }
     }
 }

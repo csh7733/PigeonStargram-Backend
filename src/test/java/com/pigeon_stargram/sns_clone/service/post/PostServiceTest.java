@@ -221,7 +221,7 @@ class PostServiceTest {
         List<Long> recipientIds = List.of(1L, 2L, 3L);
         when(followService.findFollows(anyLong()))
                 .thenReturn(recipientIds);
-        when(notificationService.send(createPostDto))
+        when(notificationService.sendToSplitWorker(createPostDto))
                 .thenReturn(List.of());
         when(postRepository.save(any(Post.class))).thenReturn(post);
 
@@ -299,6 +299,6 @@ class PostServiceTest {
 
         //then
         verify(postLikeRepository, times(1)).save(any(PostLike.class));
-        verify(notificationService, times(1)).send(likePostDto);
+        verify(notificationService, times(1)).sendToSplitWorker(likePostDto);
     }
 }

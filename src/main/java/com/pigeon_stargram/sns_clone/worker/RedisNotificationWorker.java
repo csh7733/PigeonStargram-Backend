@@ -10,7 +10,6 @@ import com.pigeon_stargram.sns_clone.service.notification.NotificationCrudServic
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import io.lettuce.core.RedisConnectionException;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
@@ -21,11 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-import static com.pigeon_stargram.sns_clone.constant.RedisQueueConstants.NOTIFICATION_QUEUE_KEY;
+import static com.pigeon_stargram.sns_clone.constant.RedisQueueConstants.NOTIFICATION_QUEUE;
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.UNSUPPORTED_TYPE;
 import static com.pigeon_stargram.sns_clone.service.notification.NotificationBuilder.buildNotification;
 import static com.pigeon_stargram.sns_clone.service.notification.NotificationBuilder.buildResponseNotificationDto;
@@ -50,17 +47,17 @@ public class RedisNotificationWorker implements NotificationWorker {
             try {
                 log.info("Redis 큐에서 알림 전송 작업을 대기 중입니다...");
                 // Redis 작업큐에서 Blocking Pop 방식으로 가져옴
-                Object batch = redisService.popTask(NOTIFICATION_QUEUE_KEY, Duration.ofSeconds(5));
-                if (batch == null) {
+                Object task = redisService.popTask(NOTIFICATION_QUEUE);
+                if (task == null) {
                     throw new QueryTimeoutException("");
-                } else if (!(batch instanceof NotificationBatchDto)) {
-                    throw new UnsupportedTypeException(UNSUPPORTED_TYPE + batch.getClass());
+                } else if (!(task instanceof NotificationBatchDto)) {
+                    throw new UnsupportedTypeException(UNSUPPORTED_TYPE + task.getClass());
                 }
-                NotificationBatchDto task = (NotificationBatchDto) batch;
+                NotificationBatchDto batch = (NotificationBatchDto) task;
 
                 // 가져온 작업이 유효하다면 메일을 전송
-                log.info("알림 작업을 가져왔습니다. 수신자: {}", task.getBatchRecipientIds());
-                work(task);
+                log.info("알림 작업을 가져왔습니다. 수신자: {}", batch.getBatchRecipientIds());
+                work(batch);
             } catch (QueryTimeoutException e) {
                 // Lettuce 클라이언트는 기본적으로 1분후에 타임아웃 시킴
                 // 서버의 안전성을 위해 작업큐에 task가 없다면
@@ -78,14 +75,14 @@ public class RedisNotificationWorker implements NotificationWorker {
     @Transactional
     @Override
     public void work(Object task) {
-        NotificationBatchDto dto = (NotificationBatchDto) task;
+        NotificationBatchDto batch = (NotificationBatchDto) task;
 
         NotificationContent content =
-                notificationCrudService.findContentById(dto.getContentId());
+                notificationCrudService.findContentById(batch.getContentId());
 
         User sender = userService.findById(content.getSenderId());
 
-        List<NotificationV2> notifications = dto.getBatchRecipientIds().stream()
+        List<NotificationV2> notifications = batch.getBatchRecipientIds().stream()
                 .map(recipientId -> buildNotification(recipientId, content))
                 .collect(Collectors.toList());
 
@@ -113,11 +110,11 @@ public class RedisNotificationWorker implements NotificationWorker {
     }
 
     @Override
-    public void enqueue(Object notification) {
-        if (notification instanceof NotificationBatchDto) {
-            redisService.pushTask(NOTIFICATION_QUEUE_KEY, notification);
+    public void enqueue(Object task) {
+        if (task instanceof NotificationBatchDto) {
+            redisService.pushTask(NOTIFICATION_QUEUE, task);
         } else {
-            throw new UnsupportedTypeException(UNSUPPORTED_TYPE + notification.getClass());
+            throw new UnsupportedTypeException(UNSUPPORTED_TYPE + task.getClass());
         }
     }
 }
