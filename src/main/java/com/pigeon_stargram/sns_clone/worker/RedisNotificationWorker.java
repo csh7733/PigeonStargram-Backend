@@ -40,17 +40,9 @@ public class RedisNotificationWorker implements NotificationWorker {
     private final RedisService redisService;
     private final NotificationCrudService notificationCrudService;
     private final UserService userService;
-    private final ExecutorService executorService = Executors.newFixedThreadPool(3);
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    @PostConstruct
-    public void startWorkers() {
-        log.info("알림 전송 워커를 {}개의 스레드로 시작합니다.", 3);
-        for (int i = 0; i < 3; i++) {
-            executorService.submit(this::acceptTask);
-        }
-    }
 
     @Override
     public void acceptTask() {

@@ -36,8 +36,6 @@ public class NotificationService {
     private final UserService userService;
     private final NotificationCrudService notificationCrudService;
 
-    private final NotificationRepository notificationRepository;
-
     private final NotificationWorker notificationWorker;
 
     private static int getIterationMax(List<Long> recipientIds) {
@@ -53,6 +51,7 @@ public class NotificationService {
         NotificationContent content = dto.toNotificationContent();
         NotificationContent saveContent = notificationCrudService.saveContent(content);
 
+        // content를 저장하는 트랜잭션과 batchDto 를 꺼내 사용하는 worker에서의 트랜잭션이 달라서
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
