@@ -217,7 +217,7 @@ public class PostService {
         postCrudService.deleteById(postId);
     }
 
-    public void likePost(LikePostDto dto) {
+    public Boolean likePost(LikePostDto dto) {
         Long loginUserId = dto.getLoginUserId();
         Long postId = dto.getPostId();
 
@@ -229,6 +229,8 @@ public class PostService {
         List<Long> postLikeUserIds = postLikeCrudService.getPostLikeUserIds(postId);
         if (postLikeUserIds.contains(loginUserId)) {
             notificationService.sendToSplitWorker(dto);
+            return true;
         }
+        return false;
     }
 }

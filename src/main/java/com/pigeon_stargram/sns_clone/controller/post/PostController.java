@@ -71,11 +71,12 @@ public class PostController {
     }
 
     @PostMapping("/like")
-    public void likePost(@LoginUser SessionUser loginUser,
+    public Boolean likePost(@LoginUser SessionUser loginUser,
                          @RequestBody RequestLikePostDto request) {
 
         LikePostDto likePostDto = buildLikePostDto(request, loginUser);
-        postService.likePost(likePostDto);
+
+        return postService.likePost(likePostDto);
     }
 
 }
