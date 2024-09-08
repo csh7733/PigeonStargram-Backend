@@ -612,4 +612,13 @@ public class RedisService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 특정 형식에 맞는 Redis의 Key들을 가져옵니다.
+     * @param patten 검색하고자하는 Key의 패턴
+     * @return 해당되는 Key의 List
+     */
+    public List<String> findKeyByPattern(String patten) {
+        return new ArrayList<>(Objects.requireNonNull(redisTemplate.keys(patten)));
+    }
+
 }
