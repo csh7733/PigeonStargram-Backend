@@ -468,7 +468,9 @@ public class RedisService {
      * @param end   끝나는 순위
      * @return 키에 해당하는 Sorted Set을 List로 변환한 결과
      */
-    public List<Long> getSortedSetRangeByRankAsList(String key, Integer start, Integer end) {
+    public List<Long> getSortedSetRangeByRankAsList(String key,
+                                                    Integer start,
+                                                    Integer end) {
         return getSortedSetRangeByRank(key, start, end).stream()
                 .map(object -> Long.valueOf((Integer) object))
                 .collect(Collectors.toList());
@@ -515,7 +517,7 @@ public class RedisService {
     }
 
     public Long countSortedSetAfterValue(String key, Long value) {
-        Double score = redisTemplate.opsForZSet().score(key, value);
+        Double score = value.equals(0L) ? Double.MAX_VALUE : redisTemplate.opsForZSet().score(key, value);
 
         return redisTemplate.opsForZSet().count(key, Double.MIN_VALUE, score) - 1;
     }

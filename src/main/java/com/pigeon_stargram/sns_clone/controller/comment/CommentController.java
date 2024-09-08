@@ -9,7 +9,6 @@ import com.pigeon_stargram.sns_clone.dto.comment.request.*;
 import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseGetCommentDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
-import com.pigeon_stargram.sns_clone.service.comment.CommentCrudService;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.post.PostService;
 import com.pigeon_stargram.sns_clone.service.timeline.TimelineService;
@@ -33,7 +32,13 @@ public class CommentController {
 
     @GetMapping
     public ResponseGetCommentDto getComment(@LoginUser SessionUser loginUser,
-                                            @RequestBody RequestGetCommentDto request) {
+                                            @RequestParam Long postId,
+                                            @RequestParam Long lastCommentId) {
+
+        RequestGetCommentDto request = RequestGetCommentDto.builder()
+                .postId(postId)
+                .lastCommentId(lastCommentId)
+                .build();
 
         return commentService.getPartialComment(request);
     }
@@ -77,7 +82,7 @@ public class CommentController {
 
     @PostMapping("/like")
     public Boolean likeComment(@LoginUser SessionUser loginUser,
-                                             @RequestBody RequestLikeCommentDto request) {
+                               @RequestBody RequestLikeCommentDto request) {
         LikeCommentDto likeCommentDto = buildLikeCommentDto(request, loginUser);
 
         return commentService.likeComment(likeCommentDto);
