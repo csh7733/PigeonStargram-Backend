@@ -82,7 +82,7 @@ public class ReplyService {
         replyCrudService.edit(dto.getReplyId(), dto.getContent());
     }
 
-    public void likeReply(LikeReplyDto dto) {
+    public Boolean likeReply(LikeReplyDto dto) {
         Long loginUserId = dto.getLoginUserId();
         Long replyId = dto.getReplyId();
 
@@ -98,7 +98,9 @@ public class ReplyService {
         List<Long> replyLikeUserIds = replyLikeCrudService.getReplyLikeUserIds(replyId);
         if (replyLikeUserIds.contains(loginUserId)) {
             notificationService.sendToSplitWorker(dto);
+            return true;
         }
+        return false;
     }
 
     public void deleteAllReplyByCommentId(Long commentId) {

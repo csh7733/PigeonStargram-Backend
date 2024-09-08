@@ -82,16 +82,11 @@ public class ReplyController {
     }
 
     @PostMapping("/like")
-    public List<ResponsePostDto> likeReply(@LoginUser SessionUser loginUser,
+    public Boolean likeReply(@LoginUser SessionUser loginUser,
                                            @RequestBody RequestLikeReplyDto request) {
-        Long userId = loginUser.getId();
-        Long postUserId = request.getPostUserId();
-        String context = request.getContext();
-
         LikeReplyDto likeReplyDto = buildLikeReplyDto(request, loginUser);
-        replyService.likeReply(likeReplyDto);
 
-        return getPostsBasedOnContext(context, userId, postUserId);
+        return replyService.likeReply(likeReplyDto);
     }
 
     private List<ResponsePostDto> getPostsBasedOnContext(String context, Long userId, Long postUserId) {
