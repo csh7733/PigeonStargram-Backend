@@ -6,6 +6,7 @@ import com.pigeon_stargram.sns_clone.dto.comment.internal.CreateCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.EditCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.LikeCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.request.*;
+import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseGetCommentDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.service.comment.CommentCrudService;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
@@ -29,15 +30,11 @@ public class CommentController {
     private final TimelineService timelineService;
     private final CommentService commentService;
 
-    private final CommentCrudService commentCrudService;
-
     @GetMapping
-    public List<Long> getComment(@LoginUser SessionUser loginUser,
-                                 @RequestBody RequestGetCommentDto request) {
-        Long postId = request.getPostId();
-        Integer commentPage = request.getCommentPage();
+    public ResponseGetCommentDto getComment(@LoginUser SessionUser loginUser,
+                                            @RequestBody RequestGetCommentDto request) {
 
-        return commentCrudService.findCommentIdByPostIdByPage(postId, commentPage);
+        return commentService.getPartialComment(request);
     }
 
     @PostMapping

@@ -90,22 +90,25 @@ public class PostBuilder {
 
     public static ResponsePostDto buildResponsePostDto(PostContentDto contentDto,
                                                        PostLikeDto likeDto,
-                                                       List<ResponseCommentDto> commentDtos) {
+                                                       List<ResponseCommentDto> commentDtos,
+                                                       Boolean isMoreComments) {
         return ResponsePostDto.builder()
                 .id(contentDto.getId())
                 .profile(contentDto.getProfile())
-                .data(buildPostDataDto(contentDto, likeDto, commentDtos))
+                .data(buildPostDataDto(contentDto, likeDto, commentDtos, isMoreComments))
                 .build();
     }
 
     public static PostDataDto buildPostDataDto(PostContentDto contentDto,
                                                PostLikeDto likeDto,
-                                               List<ResponseCommentDto> commentDtos) {
+                                               List<ResponseCommentDto> commentDtos,
+                                               Boolean isMoreComments) {
         return PostDataDto.builder()
                 .content(contentDto.getContent())
                 .images(contentDto.getImages())
                 .likes(likeDto)
                 .comments(commentDtos)
+                .isMoreComments(isMoreComments)
                 .build();
     }
 

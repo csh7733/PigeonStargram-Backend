@@ -18,5 +18,5 @@ public class PostDataDto {
     private List<ImageDto> images;
     private PostLikeDto likes;
     private List<ResponseCommentDto> comments;
-
+    private Boolean isMoreComments;
 }

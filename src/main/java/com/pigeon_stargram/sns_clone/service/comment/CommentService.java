@@ -10,6 +10,7 @@ import com.pigeon_stargram.sns_clone.dto.comment.internal.LikeCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.request.RequestGetCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.CommentLikeDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseCommentDto;
+import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseGetCommentDto;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyCommentTaggedDto;
 import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
@@ -38,8 +39,23 @@ public class CommentService {
     private final NotificationService notificationService;
     private final CommentLikeCrudService commentLikeCrudService;
 
-    public List<ResponseCommentDto> getCommentResponseByPostId(Long postId) {
-        List<Long> commentIds = commentCrudService.findCommentIdByPostId(postId);
+    public ResponseGetCommentDto getPartialComment(RequestGetCommentDto dto) {
+        Long postId = dto.getPostId();
+        Long lastCommentId = dto.getLastCommentId();
+
+        List<ResponseCommentDto> comments =
+                getCommentResponseByPostIdAndLastCommentId(postId, lastCommentId);
+        Boolean isCommentEnd = commentCrudService.getIsMoreComment(postId, lastCommentId);
+
+        return ResponseGetCommentDto.builder()
+                .comments(comments)
+                .isMoreComments(isCommentEnd)
+                .build();
+    }
+
+    public List<ResponseCommentDto> getCommentResponseByPostIdAndLastCommentId(Long postId,
+                                                                               Long commentId) {
+        List<Long> commentIds = commentCrudService.findCommentIdByPostIdAndCommentId(postId, commentId);
         return commentIds.stream()
                 .sorted(Comparator.reverseOrder())
                 .map(this::getCombinedComment)
@@ -60,10 +76,6 @@ public class CommentService {
         Comment comment = commentCrudService.findById(commentId);
         return buildCommentContentDto(comment);
     }
-
-//    public List<ResponseCommentDto> getCommentResponseByPostIdAndCommentPage(RequestGetCommentDto dto) {
-//
-//    }
 
     public Comment createComment(CreateCommentDto dto) {
         User loginUser = userService.findById(dto.getLoginUserId());

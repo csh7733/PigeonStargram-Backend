@@ -3,6 +3,7 @@ package com.pigeon_stargram.sns_clone.service.post;
 import com.pigeon_stargram.sns_clone.domain.post.Image;
 import com.pigeon_stargram.sns_clone.domain.post.Post;
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.dto.comment.request.RequestGetCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseCommentDto;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyPostTaggedDto;
 import com.pigeon_stargram.sns_clone.dto.post.internal.CreatePostDto;
@@ -12,6 +13,7 @@ import com.pigeon_stargram.sns_clone.dto.post.internal.PostContentDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.PostLikeDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.repository.post.ImageRepository;
+import com.pigeon_stargram.sns_clone.service.comment.CommentCrudService;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowCrudService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
@@ -51,6 +53,7 @@ public class PostService {
 
     private final RedisService redisService;
     private final FileUploadWorker fileUploadWorker;
+    private final CommentCrudService commentCrudService;
 
     public List<ResponsePostDto> getPostsByUserId(Long userId) {
         return postCrudService.findPostIdByUserId(userId).stream()
@@ -71,10 +74,18 @@ public class PostService {
     }
 
     public ResponsePostDto getCombinedPost(Long postId) {
+        List<Long> commentIds = commentCrudService.findCommentIdByPostId(postId);
+        Long lastCommentId = commentIds.isEmpty() ? 0L : commentIds.getFirst();
+
         PostContentDto contentDto = getPostContent(postId);
         PostLikeDto likeDto = getPostsLike(postId);
-        List<ResponseCommentDto> commentDtos = commentService.getCommentResponseByPostId(postId);
-        return buildResponsePostDto(contentDto, likeDto, commentDtos);
+
+        List<ResponseCommentDto> commentDtos = commentService
+                .getCommentResponseByPostIdAndLastCommentId(postId, lastCommentId);
+
+        Boolean isMoreComments = commentCrudService.getIsMoreComment(postId, lastCommentId);
+
+        return buildResponsePostDto(contentDto, likeDto, commentDtos, isMoreComments);
     }
 
     public PostContentDto getPostContent(Long postId) {
