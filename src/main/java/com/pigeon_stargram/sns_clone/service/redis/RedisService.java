@@ -16,7 +16,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.pigeon_stargram.sns_clone.constant.PageConstants.*;
+import static com.pigeon_stargram.sns_clone.constant.PageConstants.COMMENT_FETCH_NUM;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -517,9 +517,16 @@ public class RedisService {
     }
 
     public Long countSortedSetAfterValue(String key, Long value) {
-        Double score = value.equals(0L) ? Double.MAX_VALUE : redisTemplate.opsForZSet().score(key, value);
+        if (value.equals(0L)) {
+            // 더미데이터를 제외한 count
+            return redisTemplate.opsForZSet()
+                    .count(key, Double.MIN_VALUE, Double.MAX_VALUE) - 1;
+        }
 
-        return redisTemplate.opsForZSet().count(key, Double.MIN_VALUE, score) - 1;
+        Double score = redisTemplate.opsForZSet().score(key, value);
+
+        // 더미데이터와 value를 제외한 count
+        return redisTemplate.opsForZSet().count(key, Double.MIN_VALUE, score) - 2;
     }
 
     /**
@@ -576,7 +583,7 @@ public class RedisService {
     /**
      * Sorted Set에 List전체 값을 추가합니다.
      *
-     * @param key Sorted Set의 키
+     * @param key  Sorted Set의 키
      * @param list 추가할 List
      */
     public void addAllToSortedSet(String key,
@@ -593,7 +600,7 @@ public class RedisService {
      * @return 원본 List
      */
     public List<Object> cacheListToSortedSetWithDummy(List<ZSetOperations.TypedTuple<Object>> list,
-                                                                                 String cacheKey) {
+                                                      String cacheKey) {
         ZSetOperations.TypedTuple<Object> dummy = new DefaultTypedTuple<>(0L, 0D);
 
         list.add(dummy);

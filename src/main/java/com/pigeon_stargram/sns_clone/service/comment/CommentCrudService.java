@@ -167,7 +167,7 @@ public class CommentCrudService {
 
     private Boolean isMoreComment(Long lastCommentId, String cacheKey) {
         Long count = redisService.countSortedSetAfterValue(cacheKey, lastCommentId);
-        if(count < COMMENT_FETCH_NUM){
+        if(count <= COMMENT_FETCH_NUM){
             return false;
         } else {
             return true;
