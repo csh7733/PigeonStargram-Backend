@@ -57,19 +57,19 @@ public class ReplyService {
         return buildReplyLikeDto(false, count);
     }
 
-    public Reply createReply(CreateReplyDto dto) {
+    public ResponseReplyDto createReply(CreateReplyDto dto) {
         User loginUser = userService.findById(dto.getLoginUserId());
         Comment comment = commentCrudService.findById(dto.getCommentId());
 
         Reply reply = buildReply(dto, loginUser, comment);
-        Reply save = replyCrudService.save(reply);
+        replyCrudService.save(reply);
 
         dto.setLoginUserName(loginUser.getName());
         notificationService.sendToSplitWorker(dto);
 
         notifyTaggedUsers(dto, loginUser);
 
-        return save;
+        return getCombinedReply(reply.getId());
     }
 
     private void notifyTaggedUsers(CreateReplyDto dto, User loginUser) {
