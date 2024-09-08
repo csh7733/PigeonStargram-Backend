@@ -76,16 +76,11 @@ public class CommentController {
     }
 
     @PostMapping("/like")
-    public List<ResponsePostDto> likeComment(@LoginUser SessionUser loginUser,
+    public Boolean likeComment(@LoginUser SessionUser loginUser,
                                              @RequestBody RequestLikeCommentDto request) {
-        Long loginUserId = loginUser.getId();
-        Long postUserId = request.getPostUserId();
-        String context = request.getContext();
-
         LikeCommentDto likeCommentDto = buildLikeCommentDto(request, loginUser);
-        commentService.likeComment(likeCommentDto);
 
-        return getPostsBasedOnContext(context, loginUserId, postUserId);
+        return commentService.likeComment(likeCommentDto);
     }
 
     private List<ResponsePostDto> getPostsBasedOnContext(String context, Long userId, Long postUserId) {

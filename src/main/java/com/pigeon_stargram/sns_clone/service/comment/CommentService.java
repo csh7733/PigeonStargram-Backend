@@ -128,7 +128,7 @@ public class CommentService {
         return buildCommentLikeDto(false, count);
     }
 
-    public void likeComment(LikeCommentDto dto) {
+    public Boolean likeComment(LikeCommentDto dto) {
         Long loginUserId = dto.getLoginUserId();
         Long commentId = dto.getCommentId();
 
@@ -144,6 +144,8 @@ public class CommentService {
         List<Long> commentLikeUserIds = commentLikeCrudService.getCommentLikeUserIds(commentId);
         if (commentLikeUserIds.contains(loginUserId)) {
             notificationService.sendToSplitWorker(dto);
+            return true;
         }
+        return false;
     }
 }
