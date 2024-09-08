@@ -10,5 +10,5 @@ import lombok.*;
 public class RequestGetCommentDto {
 
     private Long postId;
-    private Integer commentPage;
+    private Long lastCommentId;
 }

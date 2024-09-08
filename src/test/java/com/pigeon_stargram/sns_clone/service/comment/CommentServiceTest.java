@@ -122,7 +122,7 @@ class CommentServiceTest {
         doReturn(new ResponseCommentDto()).when(commentService).getCombinedComment(3L);
 
         // When
-        List<ResponseCommentDto> result = commentService.getCommentResponseByPostId(1L);
+        List<ResponseCommentDto> result = commentService.getCommentResponseByPostIdAndLastCommentId(1L);
 
         // Then
         assertThat(result.size()).isEqualTo(3);

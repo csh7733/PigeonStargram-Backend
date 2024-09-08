@@ -16,6 +16,8 @@ import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.pigeon_stargram.sns_clone.constant.PageConstants.*;
+
 @Slf4j
 @RequiredArgsConstructor
 @Transactional
@@ -469,6 +471,29 @@ public class RedisService {
         return getSortedSetRangeByRankAsList(key, start, end).stream()
                 .filter(value -> !value.equals(0L))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Sorted Set의 값들중 특정 value이후의 몇개를 더미데이터를 제거하여 List로 가져옵니다.
+     *
+     * @param key   Sorted Set의 키
+     * @param value 기준 value
+     * @return 키에 해당하는 Sorted Set을 List로 변환하고 더미데이터를 제거한 결과
+     */
+    public List<Long> getSortedSetAfterValueAsList(String key, Long value) {
+        Double score = redisTemplate.opsForZSet().score(key, value);
+
+        return redisTemplate.opsForZSet()
+                .reverseRangeByScore(key, Double.MIN_VALUE, score, 0, COMMENT_FETCH_NUM).stream()
+                .map(returnValue -> Long.valueOf((Integer) returnValue))
+                .filter(returnValue -> !returnValue.equals(0L))
+                .collect(Collectors.toList());
+    }
+
+    public Long countSortedSetAfterValue(String key, Long value) {
+        Double score = redisTemplate.opsForZSet().score(key, value);
+
+        return redisTemplate.opsForZSet().count(key, Double.MIN_VALUE, score) - 1;
     }
 
     /**

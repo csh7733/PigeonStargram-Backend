@@ -34,6 +34,7 @@ public class PostController {
 
     @GetMapping
     public List<ResponsePostDto> getPosts(@RequestParam Long userId) {
+
         return postService.getPostsByUserId(userId);
     }
 
@@ -42,7 +43,6 @@ public class PostController {
                             @ModelAttribute RequestCreatePostDto request,
                             @RequestPart(value = "images", required = false)
                                 List<MultipartFile> imagesFile) {
-        Long userId = loginUser.getId();
 
         FileUploadResultDto result = fileService.saveFiles(imagesFile);
 
@@ -55,46 +55,27 @@ public class PostController {
     }
 
     @PatchMapping("/{postId}")
-    public List<ResponsePostDto> editPost(@LoginUser SessionUser loginUser,
-                                          @PathVariable Long postId,
-                                          @RequestBody RequestEditPostDto request) {
-        Long loginUserId = loginUser.getId();
+    public void editPost(@LoginUser SessionUser loginUser,
+                         @PathVariable Long postId,
+                         @RequestBody RequestEditPostDto request) {
 
         EditPostDto editPostDto = buildEditPostDto(request, postId);
         postService.editPost(editPostDto);
-
-        return postService.getPostsByUserId(loginUserId);
     }
 
     @DeleteMapping("/{postId}")
-    public List<ResponsePostDto> deletePost(@LoginUser SessionUser loginUser,
-                                            @PathVariable Long postId) {
-        Long loginUserId = loginUser.getId();
+    public void deletePost(@LoginUser SessionUser loginUser,
+                           @PathVariable Long postId) {
 
         postService.deletePost(postId);
-
-        return postService.getPostsByUserId(loginUserId);
     }
 
     @PostMapping("/like")
-    public List<ResponsePostDto> likePost(@LoginUser SessionUser loginUser,
-                                          @RequestBody RequestLikePostDto request) {
-        Long userId = loginUser.getId();
-        Long postUserId = request.getPostUserId();
-        String context = request.getContext();
+    public void likePost(@LoginUser SessionUser loginUser,
+                         @RequestBody RequestLikePostDto request) {
 
         LikePostDto likePostDto = buildLikePostDto(request, loginUser);
         postService.likePost(likePostDto);
-
-        return getPostsBasedOnContext(context, userId, postUserId);
-    }
-
-    private List<ResponsePostDto> getPostsBasedOnContext(String context, Long userId, Long postUserId) {
-        if ("timeline".equals(context)) {
-            return timelineService.getFollowingUsersRecentPosts(userId);
-        } else {
-            return postService.getPostsByUserId(postUserId);
-        }
     }
 
 }

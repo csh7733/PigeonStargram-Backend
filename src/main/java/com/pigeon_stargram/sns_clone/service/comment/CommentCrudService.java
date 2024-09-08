@@ -15,12 +15,12 @@ import org.springframework.data.redis.core.DefaultTypedTuple;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
+import static com.pigeon_stargram.sns_clone.constant.PageConstants.*;
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.COMMENT_NOT_FOUND_ID;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.*;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
@@ -48,42 +48,50 @@ public class CommentCrudService {
         if (redisService.hasKey(cacheKey)) {
             log.info("findCommentIdsByPostId = {} 캐시 히트", postId);
 
-            return redisService.getSetAsLongListExcludeDummy(cacheKey);
+            return redisService.getRangeByScore(cacheKey, Double.MIN_VALUE, Double.MAX_VALUE).stream()
+                    .map(value -> Long.valueOf((Integer) value))
+                    .sorted(Comparator.reverseOrder())
+                    .collect(Collectors.toList());
         }
 
         log.info("findCommentIdsByPostId = {} 캐시 미스", postId);
-        List<Long> commentIds = repository.findByPostId(postId).stream()
-                .map(Comment::getId)
-                .collect(Collectors.toList());
 
-        return redisService.cacheListToSetWithDummy(commentIds, cacheKey);
-    }
-
-    public List<Long> findCommentIdByPostIdByPage(Long postId,
-                                                  Integer page) {
-        String cacheKey = cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
-        Integer start = 10 * (page - 1);
-        Integer end = 10 * page - 1;
-
-        if (redisService.hasKey(cacheKey)) {
-            log.info("findCommentIdByPostIdByPage = {}, page = {} 캐시 히트", postId, page);
-
-            return redisService.getSortedSetRangeByRankAsListExcludeDummy(cacheKey, start, end);
-        }
-
-        log.info("findCommentIdByPostIdByPage = {}, page = {} 캐시 미스", postId, page);
         List<ZSetOperations.TypedTuple<Object>> commentIdTypedTuples = repository.findByPostId(postId).stream()
                 .map(comment -> {
                     Double score = convertToScore(comment.getCreatedDate());
-                    Long commentId = comment.getId();
-                    return new DefaultTypedTuple<Object>(commentId, score);
+                    return new DefaultTypedTuple<Object>(comment.getId(), score);
                 })
                 .collect(Collectors.toList());
 
-        return redisService.cacheListToSortedSetWithDummy(commentIdTypedTuples, cacheKey).stream()
-                .map(value -> (Long) value)
+        redisService.cacheListToSortedSetWithDummy(commentIdTypedTuples, cacheKey);
+
+        return redisService.getRangeByScore(cacheKey, Double.MIN_VALUE, Double.MAX_VALUE).stream()
+                .map(value -> Long.valueOf((Integer) value))
                 .sorted(Comparator.reverseOrder())
                 .collect(Collectors.toList());
+    }
+
+    public List<Long> findCommentIdByPostIdAndCommentId(Long postId,
+                                                        Long commentId) {
+        String cacheKey = cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
+
+        if (redisService.hasKey(cacheKey)) {
+            log.info("findCommentIdByPostIdByPage = {}, commentId = {} 캐시 히트", postId, commentId);
+
+            return redisService.getSortedSetAfterValueAsList(cacheKey, commentId);
+        }
+
+        log.info("findCommentIdByPostIdByPage = {}, commentId = {} 캐시 미스", postId, commentId);
+        List<ZSetOperations.TypedTuple<Object>> commentIdTypedTuples = repository.findByPostId(postId).stream()
+                .map(comment -> {
+                    Double score = convertToScore(comment.getCreatedDate());
+                    return new DefaultTypedTuple<Object>(comment.getId(), score);
+                })
+                .collect(Collectors.toList());
+
+        redisService.cacheListToSortedSetWithDummy(commentIdTypedTuples, cacheKey);
+
+        return redisService.getSortedSetAfterValueAsList(cacheKey, commentId);
     }
 
     @CachePut(value = COMMENT,
@@ -92,19 +100,14 @@ public class CommentCrudService {
         Comment save = repository.save(comment);
 
         Long postId = comment.getPost().getId();
+        Long commentId = comment.getId();
+        Double score = convertToScore(comment.getCreatedDate());
 
         String allCommentIds =
                 cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
         if (redisService.hasKey(allCommentIds)) {
             log.info("comment 저장후 postId에 대한 모든 commentId 캐시 저장 commentId = {}", postId);
-            redisService.addToSet(allCommentIds, comment.getId());
-        }
-
-        String recentCommentIds =
-                cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
-        if (redisService.hasKey(recentCommentIds)) {
-            log.info("comment 저장후 postId에 대한 최근 commentId 캐시 저장 commentId = {}", postId);
-            redisService.addToSet(recentCommentIds, comment.getId());
+            redisService.addToSortedSet(allCommentIds, score, commentId);
         }
 
         return save;
@@ -155,6 +158,38 @@ public class CommentCrudService {
         if (redisService.hasKey(commentLikeUserIds)) {
             log.info("comment 삭제후 commentId에 대한 commentLikeUserIds 캐시 삭제 commentId = {}", commentId);
             redisService.removeSet(commentLikeUserIds);
+        }
+    }
+
+    public Boolean getIsMoreComment(Long postId,
+                                    Long lastCommentId) {
+        String cacheKey = cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
+
+        if (redisService.hasKey(cacheKey)) {
+            log.info("getIsMoreComment = {}, lastCommentId = {} 캐시 히트", postId, lastCommentId);
+
+            return isMoreComment(lastCommentId, cacheKey);
+        }
+
+        log.info("getIsMoreComment = {}, lastCommentId = {} 캐시 미스", postId, lastCommentId);
+        List<ZSetOperations.TypedTuple<Object>> commentIdTypedTuples = repository.findByPostId(postId).stream()
+                .map(comment -> {
+                    Double score = convertToScore(comment.getCreatedDate());
+                    return new DefaultTypedTuple<Object>(comment.getId(), score);
+                })
+                .collect(Collectors.toList());
+
+        redisService.cacheListToSortedSetWithDummy(commentIdTypedTuples, cacheKey);
+
+        return isMoreComment(lastCommentId, cacheKey);
+    }
+
+    private Boolean isMoreComment(Long lastCommentId, String cacheKey) {
+        Long count = redisService.countSortedSetAfterValue(cacheKey, lastCommentId);
+        if(count < COMMENT_FETCH_NUM){
+            return false;
+        } else {
+            return true;
         }
     }
 

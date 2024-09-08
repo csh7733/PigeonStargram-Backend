@@ -32,7 +32,9 @@ public class RedisCacheConfig {
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         // Hibernate 클래스의 직렬화 옵션 설정
-        mapper.registerModule(new Hibernate6Module());
+        Hibernate6Module hibernate6Module = new Hibernate6Module();
+        hibernate6Module.configure(Hibernate6Module.Feature.USE_TRANSIENT_ANNOTATION, false);
+        mapper.registerModule(hibernate6Module);
         // 타입 클래스 설정
         mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
 
