@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
@@ -76,7 +75,7 @@ public class SearchService {
         // DB에서 가져온 검색 기록을 Redis에 저장
         // 검색기록 TTL은 3일로 설정
         for (SearchHistory searchHistory : searchHistories) {
-            redisService.addToSortedSet(cacheKey, getTimeMillis(searchHistory.getModifiedDate()), searchHistory.getSearchQuery(),3 * Day);
+            redisService.addToSortedSet(cacheKey, getTimeMillis(searchHistory.getModifiedDate()), searchHistory.getSearchQuery(),3 * ONE_DAY_TTL);
         }
 
         // DB에서 가져온 검색 기록을 Response DTO로 변환하여 반환
@@ -130,7 +129,7 @@ public class SearchService {
 
         // Redis에 검색 기록 추가 (Sorted Set에 추가)
         // 검색기록 TTL은 3일로 설정
-        redisService.addToSortedSet(searchKey, currentTimestamp, searchQuery, 3 * Day);
+        redisService.addToSortedSet(searchKey, currentTimestamp, searchQuery, 3 * ONE_DAY_TTL);
 
         // DB에 검색 기록 저장 (write-through 방식)
         SearchHistory searchHistory =

@@ -3,7 +3,6 @@ package com.pigeon_stargram.sns_clone.service.post;
 import com.pigeon_stargram.sns_clone.domain.post.Image;
 import com.pigeon_stargram.sns_clone.domain.post.Post;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.comment.request.RequestGetCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseCommentDto;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyPostTaggedDto;
 import com.pigeon_stargram.sns_clone.dto.post.internal.CreatePostDto;
@@ -159,12 +158,12 @@ public class PostService {
             // UPLOADING_POSTS_HASH는 현재 이미지가 업로드 중인 게시물 정보를 저장하는 Redis Key
             // FieldKey : 게시물 ID를 위한 게시물 생성전 발급된 UUID , value : 게시물의 실제 ID
             log.info("Redis에서 업로드 기록 추가 - {}", dto.getFieldKey());
-            redisService.putValueInHash(UPLOADING_POSTS_HASH, dto.getFieldKey(), save.getId());
+            redisService.putValueInHash(UPLOADING_POSTS_HASH, dto.getFieldKey(), save.getId(),5 * ONE_MINUTE_TTL);
 
             //이미지 업로드가 끝나지 않았을 경우
             if (!fileUploadWorker.isUploadComplete(dto.getFieldKey())) {
                 // 업로드 중인 게시물 ID를 Set에 추가
-                redisService.addToSet(UPLOADING_POSTS_SET, save.getId());
+                redisService.addToSet(UPLOADING_POSTS_SET, save.getId(), 5 * ONE_MINUTE_TTL);
             }
         }
         postCrudService.updateImage(save);
@@ -188,7 +187,7 @@ public class PostService {
             // 각 팔로워의 타임라인에 게시물 추가
             followerIds.forEach(followerId -> {
                 String timelineKey = cacheKeyGenerator(TIMELINE, USER_ID, followerId.toString());
-                redisService.addToSortedSet(timelineKey, currentTime, save.getId());
+                redisService.addToSortedSet(timelineKey, currentTime, save.getId(), ONE_DAY_TTL);
             });
         }
 

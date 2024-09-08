@@ -56,7 +56,7 @@ public class PostCrudService {
                 .map(Post::getId)
                 .collect(Collectors.toList());
 
-        return redisService.cacheListToSetWithDummy(postIds, cacheKey);
+        return redisService.cacheListToSetWithDummy(postIds, cacheKey, ONE_DAY_TTL);
     }
 
     public List<Long> findPostIdsByUserIdAndCreatedDateAfter(Long userId,
@@ -75,7 +75,7 @@ public class PostCrudService {
                         .map(Post::getId)
                         .collect(Collectors.toList());
 
-        return redisService.cacheListToSetWithDummy(postIds, cacheKey);
+        return redisService.cacheListToSetWithDummy(postIds, cacheKey, ONE_DAY_TTL);
     }
 
     @CachePut(value = POST,
@@ -89,14 +89,14 @@ public class PostCrudService {
                 cacheKeyGenerator(ALL_POST_IDS, USER_ID, userId.toString());
         if (redisService.hasKey(allPostIds)) {
             log.info("post 저장후 userId에 대한 모든 postId 캐시 저장 userId = {}", userId);
-            redisService.addToSet(allPostIds, post.getId());
+            redisService.addToSet(allPostIds, post.getId(), ONE_DAY_TTL);
         }
 
         String recentPostIds =
                 cacheKeyGenerator(RECENT_POST_IDS, USER_ID, userId.toString());
         if (redisService.hasKey(recentPostIds)) {
             log.info("post 저장후 userId에 대한 최근 postId 캐시 저장 userId = {}", userId);
-            redisService.addToSet(recentPostIds, post.getId());
+            redisService.addToSet(recentPostIds, post.getId(), ONE_DAY_TTL);
         }
 
         return save;

@@ -8,8 +8,6 @@ import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,7 +50,7 @@ public class PostLikeCrudService {
                 // 임시 write through
                 repository.delete(buildPostLike(user, post));
             } else {
-                redisService.addToSet(cacheKey, userId);
+                redisService.addToSet(cacheKey, userId, ONE_DAY_TTL);
 
                 // 임시 write through
                 repository.save(buildPostLike(user, post));
@@ -79,7 +77,7 @@ public class PostLikeCrudService {
             userIds.add(userId);
         }
 
-        redisService.addAllToSet(cacheKey, userIds);
+        redisService.addAllToSet(cacheKey, userIds, ONE_DAY_TTL);
 
         // 임시 write through
         postLikes.stream()
@@ -117,7 +115,7 @@ public class PostLikeCrudService {
                 .collect(Collectors.toList());
         postLikeUserIds.add(0L);
 
-        redisService.addAllToSet(cacheKey, postLikeUserIds);
+        redisService.addAllToSet(cacheKey, postLikeUserIds, ONE_DAY_TTL);
 
         return postLikeUserIds.size() - 1;
     }
@@ -138,6 +136,6 @@ public class PostLikeCrudService {
                 .map(User::getId)
                 .collect(Collectors.toList());
 
-        return redisService.cacheListToSetWithDummy(postLikeUserIds, cacheKey);
+        return redisService.cacheListToSetWithDummy(postLikeUserIds, cacheKey, ONE_DAY_TTL);
     }
 }

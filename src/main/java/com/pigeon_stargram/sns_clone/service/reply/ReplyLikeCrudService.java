@@ -15,8 +15,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
-import static com.pigeon_stargram.sns_clone.constant.CacheConstants.COMMENT_ID;
-import static com.pigeon_stargram.sns_clone.service.comment.CommentBuilder.buildCommentLike;
 import static com.pigeon_stargram.sns_clone.service.reply.ReplyBuilder.*;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 
@@ -52,7 +50,7 @@ public class ReplyLikeCrudService {
                 // 임시 write through
                 repository.delete(buildReplyLike(user, reply));
             } else {
-                redisService.addToSet(cacheKey, userId);
+                redisService.addToSet(cacheKey, userId, ONE_DAY_TTL);
 
                 // 임시 write through
                 repository.save(buildReplyLike(user, reply));
@@ -79,7 +77,7 @@ public class ReplyLikeCrudService {
             userIds.add(userId);
         }
 
-        redisService.addAllToSet(cacheKey, userIds);
+        redisService.addAllToSet(cacheKey, userIds, ONE_DAY_TTL);
 
         // 임시 write through
         replyLikes.stream()
@@ -122,7 +120,7 @@ public class ReplyLikeCrudService {
                 .collect(Collectors.toList());
         replyLikeUserIds.add(0L);
 
-        redisService.addAllToSet(cacheKey, replyLikeUserIds);
+        redisService.addAllToSet(cacheKey, replyLikeUserIds, ONE_DAY_TTL);
 
         return replyLikeUserIds.size() - 1;
     }
@@ -144,6 +142,6 @@ public class ReplyLikeCrudService {
                 .map(User::getId)
                 .collect(Collectors.toList());
 
-        return redisService.cacheListToSetWithDummy(replyLikeUserIds, cacheKey);
+        return redisService.cacheListToSetWithDummy(replyLikeUserIds, cacheKey, ONE_DAY_TTL);
     }
 }

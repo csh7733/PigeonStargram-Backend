@@ -4,7 +4,6 @@ import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.exception.comment.CommentNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
-import com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +14,6 @@ import org.springframework.data.redis.core.DefaultTypedTuple;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -73,7 +71,7 @@ public class CommentCrudService {
         log.info("findCommentIdByPostIdByPage = {}, commentId = {} 캐시 미스", postId, commentId);
         List<ZSetOperations.TypedTuple<Object>> commentIdTypedTuples = getCommentTuples(postId);
 
-        redisService.cacheListToSortedSetWithDummy(commentIdTypedTuples, cacheKey);
+        redisService.cacheListToSortedSetWithDummy(commentIdTypedTuples, cacheKey, ONE_DAY_TTL);
 
         return redisService.getSortedSetAfterValueAsList(cacheKey, commentId);
     }
@@ -91,7 +89,7 @@ public class CommentCrudService {
                 cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
         if (redisService.hasKey(allCommentIds)) {
             log.info("comment 저장후 postId에 대한 모든 commentId 캐시 저장 commentId = {}", postId);
-            redisService.addToSortedSet(allCommentIds, score, commentId);
+            redisService.addToSortedSet(allCommentIds, score, commentId, ONE_DAY_TTL);
         }
 
         return save;
@@ -151,7 +149,7 @@ public class CommentCrudService {
         log.info("getIsMoreComment = {}, lastCommentId = {} 캐시 미스", postId, lastCommentId);
         List<ZSetOperations.TypedTuple<Object>> commentIdTypedTuples = getCommentTuples(postId);
 
-        redisService.cacheListToSortedSetWithDummy(commentIdTypedTuples, cacheKey);
+        redisService.cacheListToSortedSetWithDummy(commentIdTypedTuples, cacheKey, ONE_DAY_TTL);
 
         return isMoreComment(lastCommentId, cacheKey);
     }

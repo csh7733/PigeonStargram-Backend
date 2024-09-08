@@ -678,6 +678,21 @@ public class RedisService {
     }
 
     /**
+     * Sorted Set에 List 전체 값을 추가하고 TTL(Time to Live)을 설정합니다.
+     *
+     * @param key     Sorted Set의 키
+     * @param list    추가할 List
+     * @param minutes TTL 값 (분 단위)
+     */
+    public void addAllToSortedSet(String key, List<ZSetOperations.TypedTuple<Object>> list, Long minutes) {
+        // Sorted Set에 List 전체 값을 추가
+        redisTemplate.opsForZSet().add(key, new HashSet<>(list));
+
+        // TTL 설정 (분 단위)
+        redisTemplate.expire(key, minutes, TimeUnit.MINUTES);
+    }
+
+    /**
      * List<DefaultTypedTuple<Long>>에 더미데이터를 추가하여 Redis의 Sorted Set에 캐시하고
      * 원본 value List를 반환합니다.
      *
@@ -697,5 +712,32 @@ public class RedisService {
                 .map(ZSetOperations.TypedTuple::getValue)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * List<DefaultTypedTuple<Long>>에 더미데이터를 추가하여 Redis의 Sorted Set에 캐시하고
+     * TTL을 설정한 후 원본 value List를 반환합니다.
+     *
+     * @param list     캐시할 데이터의 List
+     * @param cacheKey 캐시 Sorted Set의 Key
+     * @param minutes  TTL 값 (분 단위)
+     * @return 원본 List
+     */
+    public List<Object> cacheListToSortedSetWithDummy(List<ZSetOperations.TypedTuple<Object>> list,
+                                                      String cacheKey, Long minutes) {
+        // 더미 데이터를 추가
+        ZSetOperations.TypedTuple<Object> dummy = new DefaultTypedTuple<>(0L, 0D);
+        list.add(dummy);
+
+        // Sorted Set에 데이터를 추가하고 TTL 설정
+        addAllToSortedSet(cacheKey, list, minutes);
+
+        // 더미 데이터를 제거하고 원본 value List를 반환
+        list.remove(dummy);
+        return list.stream()
+                .map(ZSetOperations.TypedTuple::getValue)
+                .collect(Collectors.toList());
+    }
+
+
 
 }

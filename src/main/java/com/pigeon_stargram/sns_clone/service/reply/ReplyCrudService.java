@@ -1,8 +1,6 @@
 package com.pigeon_stargram.sns_clone.service.reply;
 
-import com.pigeon_stargram.sns_clone.domain.post.Post;
 import com.pigeon_stargram.sns_clone.domain.reply.Reply;
-import com.pigeon_stargram.sns_clone.exception.post.PostNotFoundException;
 import com.pigeon_stargram.sns_clone.exception.reply.ReplyNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
@@ -18,7 +16,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
-import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.POST_NOT_FOUND_ID;
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.REPLY_NOT_FOUND_ID;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 
@@ -54,7 +51,7 @@ public class ReplyCrudService {
                 .map(Reply::getId)
                 .collect(Collectors.toList());
 
-        return redisService.cacheListToSetWithDummy(replyIds, cacheKey);
+        return redisService.cacheListToSetWithDummy(replyIds, cacheKey, ONE_DAY_TTL);
     }
 
     @CachePut(value = REPLY,
@@ -68,14 +65,14 @@ public class ReplyCrudService {
                 cacheKeyGenerator(ALL_REPLY_IDS, COMMENT_ID, commentId.toString());
         if (redisService.hasKey(allReplyIds)) {
             log.info("reply 저장후 commentId에 대한 모든 replyId 캐시 저장 commentId = {}", commentId);
-            redisService.addToSet(allReplyIds, reply.getId());
+            redisService.addToSet(allReplyIds, reply.getId(), ONE_DAY_TTL);
         }
 
         String recentReplyIds =
                 cacheKeyGenerator(RECENT_REPLY_IDS, COMMENT_ID, commentId.toString());
         if (redisService.hasKey(recentReplyIds)) {
             log.info("reply 저장후 commentId에 대한 최근 replyId 캐시 저장 commentId = {}", commentId);
-            redisService.addToSet(recentReplyIds, reply.getId());
+            redisService.addToSet(recentReplyIds, reply.getId(), ONE_DAY_TTL);
         }
 
         return save;

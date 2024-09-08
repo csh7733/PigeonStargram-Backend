@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
@@ -56,7 +55,7 @@ public class NotificationCrudService {
                 cacheKeyGenerator(NOTIFICATION_CONTENT_IDS, USER_ID, recipientId.toString());
         if (redisService.hasKey(contentIdsKey)) {
             log.info("notification 저장후 recipientId에 대한 모든 contentId 캐시 저장 recipientId = {}", recipientId);
-            redisService.addToSet(contentIdsKey, notification.getContent().getId(), Day);
+            redisService.addToSet(contentIdsKey, notification.getContent().getId(), ONE_DAY_TTL);
         }
 
         return save;

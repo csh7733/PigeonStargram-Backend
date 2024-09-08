@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
 import static com.pigeon_stargram.sns_clone.constant.RedisUserConstants.ACTIVE_USERS_KEY_PREFIX;
-import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.USER_NOT_FOUND_ID;
 import static com.pigeon_stargram.sns_clone.service.chat.ChatBuilder.buildSendLastMessageDto;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFormattedTime;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
@@ -148,7 +147,7 @@ public class ChatService {
 
         // 캐시에 저장
         // TTL은 하루로 설정
-        redisService.putValueInHash(cacheKey, fieldKey, count, Day);
+        redisService.putValueInHash(cacheKey, fieldKey, count, ONE_DAY_TTL);
 
         return count;
     }
@@ -172,7 +171,7 @@ public class ChatService {
                 .orElse(0);
 
         // 조회한 결과를 Redis Hash에 저장
-        redisService.putValueInHash(cacheKey, fieldKey, count, Day);
+        redisService.putValueInHash(cacheKey, fieldKey, count, ONE_DAY_TTL);
 
         return count;
     }
@@ -186,7 +185,7 @@ public class ChatService {
         // TTL은 하루로 설정
         if (redisService.hasFieldInHash(cacheKey, fieldKey)) {
             log.info("캐시 히트: userId={}, toUserId={}", userId, toUserId);
-            redisService.putValueInHash(cacheKey, fieldKey, 0, Day);
+            redisService.putValueInHash(cacheKey, fieldKey, 0, ONE_DAY_TTL);
         } else {
             // 캐시 미스: 캐시에 값이 없다면 DB에서 가져와서 0으로 설정 후, 캐시에도 반영
             log.info("캐시 미스3: userId={}, toUserId={}", userId, toUserId);
@@ -197,7 +196,7 @@ public class ChatService {
 
                         // 캐시에 저장
                         // TTL은 하루로 설정
-                        redisService.putValueInHash(cacheKey, fieldKey, 0, Day);
+                        redisService.putValueInHash(cacheKey, fieldKey, 0, ONE_DAY_TTL);
                     });
         }
     }
@@ -226,7 +225,7 @@ public class ChatService {
 
             // 캐시 갱신
             // TTL은 하루로 설정
-            redisService.putValueInHash(hashKey, fieldKey, lastMessageDto, Day);
+            redisService.putValueInHash(hashKey, fieldKey, lastMessageDto, ONE_DAY_TTL);
 
         } else {
             // 캐시 미스
@@ -243,7 +242,7 @@ public class ChatService {
 
             // 캐시에 저장
             // TTL은 하루로 설정
-            redisService.putValueInHash(hashKey, fieldKey, lastMessageDto, Day);
+            redisService.putValueInHash(hashKey, fieldKey, lastMessageDto, ONE_DAY_TTL);
         }
 
         return lastMessageDto;
@@ -271,7 +270,7 @@ public class ChatService {
 
         // 조회한 결과를 Redis Hash에 저장
         // TTL은 하루로 설정
-        redisService.putValueInHash(hashKey, fieldKey, lastMessageDto, Day);
+        redisService.putValueInHash(hashKey, fieldKey, lastMessageDto, ONE_DAY_TTL);
 
         return lastMessageDto;
     }

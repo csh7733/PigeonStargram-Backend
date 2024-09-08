@@ -44,7 +44,7 @@ public class FollowCrudService {
                 .collect(Collectors.toList());
 
         // TTL은 하루로 설정
-        return redisService.cacheListToSetWithDummy(followerIds, cacheKey, Day);
+        return redisService.cacheListToSetWithDummy(followerIds, cacheKey, ONE_DAY_TTL);
     }
 
     public List<Long> findFollowingIds(Long userId) {
@@ -63,7 +63,7 @@ public class FollowCrudService {
                 .map(User::getId)
                 .collect(Collectors.toList());
 
-        return redisService.cacheListToSetWithDummy(followingIds, cacheKey, Day);
+        return redisService.cacheListToSetWithDummy(followingIds, cacheKey, ONE_DAY_TTL);
     }
 
     public List<Long> findNotificationEnabledIds(Long userId) {
@@ -83,7 +83,7 @@ public class FollowCrudService {
                 .map(User::getId)
                 .collect(Collectors.toList());
 
-        return redisService.cacheListToSetWithDummy(notificationEnabledUserIds, cacheKey, Day);
+        return redisService.cacheListToSetWithDummy(notificationEnabledUserIds, cacheKey, ONE_DAY_TTL);
     }
 
     public Follow save(Follow follow) {
@@ -97,7 +97,7 @@ public class FollowCrudService {
         if (redisService.hasKey(followerIds)) {
             log.info("follow 저장후 recipient 에 대한 senderId 캐시 저장 recipientId = {}, senderId = {}",
                     recipientId, senderId);
-            redisService.addToSet(followerIds, senderId, Day);
+            redisService.addToSet(followerIds, senderId, ONE_DAY_TTL);
         }
 
         String followingIds =
@@ -105,7 +105,7 @@ public class FollowCrudService {
         if (redisService.hasKey(followingIds)) {
             log.info("follow 저장후 senderId 에 대한 recipientId 캐시 저장 senderId = {}, recipientId = {}",
                     senderId, recipientId);
-            redisService.addToSet(followingIds, recipientId, Day);
+            redisService.addToSet(followingIds, recipientId, ONE_DAY_TTL);
         }
 
         return save;
@@ -121,7 +121,7 @@ public class FollowCrudService {
             if (redisService.isMemberOfSet(cacheKey, senderId)) {
                 redisService.removeFromSet(cacheKey, senderId);
             } else {
-                redisService.addToSet(cacheKey, senderId, Day);
+                redisService.addToSet(cacheKey, senderId, ONE_DAY_TTL);
             }
         }
 
