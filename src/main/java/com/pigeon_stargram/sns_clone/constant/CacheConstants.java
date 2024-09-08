@@ -49,4 +49,8 @@ public class CacheConstants {
     public static final String NOTIFICATION_ID = "notificationId";
     public static final String NOTIFICATION_CONTENT_ID = "notificationContentId";
 
+
+    // TTL
+    public static final Long Day = 1440L;
+    public static final Long Hour = 60L;
 }

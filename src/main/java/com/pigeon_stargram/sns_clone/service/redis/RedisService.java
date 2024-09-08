@@ -332,6 +332,23 @@ public class RedisService {
     }
 
     /**
+     * Sorted Set에 값을 추가하고 TTL을 설정합니다.
+     *
+     * @param setKey    Sorted Set의 키
+     * @param score     정렬 기준이 될 점수 (예: 타임스탬프)
+     * @param value     추가할 값
+     * @param ttlMinutes TTL을 분 단위로 설정 (TTL: Time to Live)
+     */
+    public void addToSortedSet(String setKey, double score, Object value, long ttlMinutes) {
+        // Sorted Set에 값을 추가
+        redisTemplate.opsForZSet().add(setKey, value, score);
+
+        // TTL을 분 단위로 설정
+        redisTemplate.expire(setKey, ttlMinutes, TimeUnit.MINUTES);
+    }
+
+
+    /**
      * Sorted Set에서 특정 범위 내의 값을 가져옵니다.
      *
      * @param setKey     Sorted Set의 키
