@@ -567,12 +567,11 @@ public class RedisService {
     /**
      * List<Long>에 더미데이터를 추가하여 Redis의 Set에 캐시하고 원본 List를 반환합니다.
      *
-     * @param list     캐시할 데이터의 List
      * @param cacheKey 캐시 Set의 Key
+     * @param list     캐시할 데이터의 List
      * @return 원본 List
      */
-    public List<Long> cacheListToSetWithDummy(List<Long> list,
-                                              String cacheKey) {
+    public List<Long> cacheListToSetWithDummy(String cacheKey, List<Long> list) {
         list.add(0L);
         addAllToSet(cacheKey, list);
 

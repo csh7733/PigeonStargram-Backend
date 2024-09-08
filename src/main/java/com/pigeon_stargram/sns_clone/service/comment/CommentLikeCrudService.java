@@ -2,10 +2,8 @@ package com.pigeon_stargram.sns_clone.service.comment;
 
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.comment.CommentLike;
-import com.pigeon_stargram.sns_clone.domain.post.PostLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentLikeRepository;
-import com.pigeon_stargram.sns_clone.service.post.PostCrudService;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import jakarta.transaction.Transactional;
@@ -19,7 +17,6 @@ import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
 import static com.pigeon_stargram.sns_clone.service.comment.CommentBuilder.*;
-import static com.pigeon_stargram.sns_clone.service.post.PostBuilder.buildPostLike;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 
 @Slf4j
@@ -147,6 +144,6 @@ public class CommentLikeCrudService {
                 .map(User::getId)
                 .collect(Collectors.toList());
 
-        return redisService.cacheListToSetWithDummy(commentLikeUserIds, cacheKey);
+        return redisService.cacheListToSetWithDummy(cacheKey, commentLikeUserIds);
     }
 }

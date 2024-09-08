@@ -43,7 +43,7 @@ public class FollowCrudService {
                 .map(User::getId)
                 .collect(Collectors.toList());
 
-        return redisService.cacheListToSetWithDummy(followerIds, cacheKey);
+        return redisService.cacheListToSetWithDummy(cacheKey, followerIds);
     }
 
     public List<Long> findFollowingIds(Long userId) {
@@ -62,7 +62,7 @@ public class FollowCrudService {
                 .map(User::getId)
                 .collect(Collectors.toList());
 
-        return redisService.cacheListToSetWithDummy(followingIds, cacheKey);
+        return redisService.cacheListToSetWithDummy(cacheKey, followingIds);
     }
 
     public List<Long> findNotificationEnabledIds(Long userId) {
@@ -82,7 +82,7 @@ public class FollowCrudService {
                 .map(User::getId)
                 .collect(Collectors.toList());
 
-        return redisService.cacheListToSetWithDummy(notificationEnabledUserIds, cacheKey);
+        return redisService.cacheListToSetWithDummy(cacheKey, notificationEnabledUserIds);
     }
 
     public Follow save(Follow follow) {

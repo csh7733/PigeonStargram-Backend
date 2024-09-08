@@ -56,7 +56,7 @@ public class PostCrudService {
                 .map(Post::getId)
                 .collect(Collectors.toList());
 
-        return redisService.cacheListToSetWithDummy(postIds, cacheKey);
+        return redisService.cacheListToSetWithDummy(cacheKey, postIds);
     }
 
     public List<Long> findPostIdsByUserIdAndCreatedDateAfter(Long userId,
@@ -75,7 +75,7 @@ public class PostCrudService {
                         .map(Post::getId)
                         .collect(Collectors.toList());
 
-        return redisService.cacheListToSetWithDummy(postIds, cacheKey);
+        return redisService.cacheListToSetWithDummy(cacheKey, postIds);
     }
 
     @CachePut(value = POST,

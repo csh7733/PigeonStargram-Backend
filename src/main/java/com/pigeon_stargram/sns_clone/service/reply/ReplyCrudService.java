@@ -1,8 +1,6 @@
 package com.pigeon_stargram.sns_clone.service.reply;
 
-import com.pigeon_stargram.sns_clone.domain.post.Post;
 import com.pigeon_stargram.sns_clone.domain.reply.Reply;
-import com.pigeon_stargram.sns_clone.exception.post.PostNotFoundException;
 import com.pigeon_stargram.sns_clone.exception.reply.ReplyNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
@@ -18,7 +16,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
-import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.POST_NOT_FOUND_ID;
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.REPLY_NOT_FOUND_ID;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 
@@ -54,7 +51,7 @@ public class ReplyCrudService {
                 .map(Reply::getId)
                 .collect(Collectors.toList());
 
-        return redisService.cacheListToSetWithDummy(replyIds, cacheKey);
+        return redisService.cacheListToSetWithDummy(cacheKey, replyIds);
     }
 
     @CachePut(value = REPLY,

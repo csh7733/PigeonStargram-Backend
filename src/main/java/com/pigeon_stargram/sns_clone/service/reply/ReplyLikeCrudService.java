@@ -15,8 +15,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
-import static com.pigeon_stargram.sns_clone.constant.CacheConstants.COMMENT_ID;
-import static com.pigeon_stargram.sns_clone.service.comment.CommentBuilder.buildCommentLike;
 import static com.pigeon_stargram.sns_clone.service.reply.ReplyBuilder.*;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 
@@ -144,6 +142,6 @@ public class ReplyLikeCrudService {
                 .map(User::getId)
                 .collect(Collectors.toList());
 
-        return redisService.cacheListToSetWithDummy(replyLikeUserIds, cacheKey);
+        return redisService.cacheListToSetWithDummy(cacheKey, replyLikeUserIds);
     }
 }
