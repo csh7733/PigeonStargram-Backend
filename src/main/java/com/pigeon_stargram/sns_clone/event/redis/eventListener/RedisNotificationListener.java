@@ -22,7 +22,7 @@ public class RedisNotificationListener implements MessageListener {
         ResponseNotificationDto messageDto = redisService.deserializeMessage(message.getBody(), ResponseNotificationDto.class);
 
         String destination = "/topic/notification/" + messageDto.getTargetUserId();
-        messagingTemplate.convertAndSend(destination, message);
+        messagingTemplate.convertAndSend(destination, messageDto);
         log.info("notification sent = {}", message);
 
     }
