@@ -1,9 +1,6 @@
 package com.pigeon_stargram.sns_clone.event.redis;
 
-import com.pigeon_stargram.sns_clone.event.redis.eventListener.RedisChatLastMessageListener;
-import com.pigeon_stargram.sns_clone.event.redis.eventListener.RedisChatMessageListener;
-import com.pigeon_stargram.sns_clone.event.redis.eventListener.RedisOnlineStatusListener;
-import com.pigeon_stargram.sns_clone.event.redis.eventListener.RedisUnReadChatCountListener;
+import com.pigeon_stargram.sns_clone.event.redis.eventListener.*;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +17,7 @@ public class RedisSubscriberInitializer {
     private final RedisOnlineStatusListener onlineStatusListener;
     private final RedisChatLastMessageListener chatLastMessageListener;
     private final RedisUnReadChatCountListener unReadChatCountListener;
+    private final RedisNotificationListener notificationListener;
 
     @PostConstruct
     public void init() {
@@ -27,5 +25,6 @@ public class RedisSubscriberInitializer {
         redisService.subscribeToPattern("user.online.status", onlineStatusListener);
         redisService.subscribeToPattern("lastMessage.chat.*.*", chatLastMessageListener);
         redisService.subscribeToPattern("unreadChatCount.*", unReadChatCountListener);
+        redisService.subscribeToPattern("notification.*", notificationListener);
     }
 }

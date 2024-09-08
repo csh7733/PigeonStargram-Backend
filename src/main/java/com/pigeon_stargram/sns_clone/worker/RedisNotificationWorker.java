@@ -92,7 +92,7 @@ public class RedisNotificationWorker implements NotificationWorker {
         notifications.forEach(notification -> {
             ResponseNotificationDto message =
                     saveNotificationAndbuildMessage(notification, sender);
-            sendMessage(message);
+            publishMessage(message);
         });
 
     }
@@ -106,10 +106,13 @@ public class RedisNotificationWorker implements NotificationWorker {
         return message;
     }
 
-    private void sendMessage(ResponseNotificationDto message) {
-        String destination = "/topic/notification/" + message.getTargetUserId();
-        messagingTemplate.convertAndSend(destination, message);
-        log.info("notification sent = {}", message);
+    private void publishMessage(ResponseNotificationDto message) {
+        String channel = getNotificationChannelName(message.getTargetUserId());
+        redisService.publishMessage(channel, message);
+    }
+
+    private String getNotificationChannelName(Long targetUserId) {
+        return "notification." + targetUserId;
     }
 
     @Override
