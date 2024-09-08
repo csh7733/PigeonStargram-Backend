@@ -1,7 +1,4 @@
 package com.pigeon_stargram.sns_clone.service.reply;
-
-import com.pigeon_stargram.sns_clone.domain.comment.Comment;
-import com.pigeon_stargram.sns_clone.domain.comment.CommentLike;
 import com.pigeon_stargram.sns_clone.domain.reply.Reply;
 import com.pigeon_stargram.sns_clone.domain.reply.ReplyLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
@@ -128,5 +125,25 @@ public class ReplyLikeCrudService {
         redisService.addAllToSet(cacheKey, replyLikeUserIds);
 
         return replyLikeUserIds.size() - 1;
+    }
+
+
+    public List<Long> getReplyLikeUserIds(Long replyId) {
+        // 수동 캐시
+        String cacheKey = cacheKeyGenerator(REPLY_LIKE_USER_IDS, REPLY_ID, replyId.toString());
+
+        if (redisService.hasKey(cacheKey)) {
+            log.info("getReplyLikeUserIds {} 캐시 히트", replyId);
+            return redisService.getSetAsLongListExcludeDummy(cacheKey);
+        }
+        log.info("getReplyLikeUserIds {} 캐시 미스", replyId);
+
+        // DB 조회후 레디스에 캐시
+        List<Long> replyLikeUserIds = repository.findByReplyId(replyId).stream()
+                .map(ReplyLike::getUser)
+                .map(User::getId)
+                .collect(Collectors.toList());
+
+        return redisService.cacheListToSetWithDummy(replyLikeUserIds, cacheKey);
     }
 }

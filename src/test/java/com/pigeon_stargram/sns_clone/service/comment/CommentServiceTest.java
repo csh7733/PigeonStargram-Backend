@@ -122,7 +122,7 @@ class CommentServiceTest {
         doReturn(new ResponseCommentDto()).when(commentService).getCombinedComment(3L);
 
         // When
-        List<ResponseCommentDto> result = commentService.getCommentDtosByPostId(1L);
+        List<ResponseCommentDto> result = commentService.getCommentResponseByPostId(1L);
 
         // Then
         assertThat(result.size()).isEqualTo(3);
@@ -208,7 +208,7 @@ class CommentServiceTest {
         when(post.getUser()).thenReturn(mock(User.class));
         when(post.getUser().getId()).thenReturn(1L);
 
-        when(notificationService.send(createCommentDto))
+        when(notificationService.sendToSplitWorker(createCommentDto))
                 .thenReturn(List.of());
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
 
@@ -216,7 +216,7 @@ class CommentServiceTest {
         Comment createComment = commentService.createComment(createCommentDto);
 
         //then
-        assertThat(createCommentDto.getRecipientIds().getFirst())
+        assertThat(createCommentDto.toRecipientIds().getFirst())
                 .isEqualTo(post.getUser().getId());
         assertThat(createComment).isEqualTo(comment);
     }
@@ -291,7 +291,7 @@ class CommentServiceTest {
 
         //then
         verify(commentLikeRepository, times(1)).save(any(CommentLike.class));
-        verify(notificationService, times(1)).send(likeCommentDto);
+        verify(notificationService, times(1)).sendToSplitWorker(likeCommentDto);
     }
 
 }

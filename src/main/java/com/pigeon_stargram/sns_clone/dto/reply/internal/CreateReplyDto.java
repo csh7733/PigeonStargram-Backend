@@ -70,7 +70,7 @@ public class CreateReplyDto implements NotificationConvertable {
     }
 
     @Override
-    public List<Long> getRecipientIds() {
+    public List<Long> toRecipientIds() {
         return List.of(commentUserId);
     }
 

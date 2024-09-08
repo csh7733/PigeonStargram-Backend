@@ -67,7 +67,7 @@ public class LikeReplyDto implements NotificationConvertable {
     }
 
     @Override
-    public List<Long> getRecipientIds() {
+    public List<Long> toRecipientIds() {
         return List.of(writerId);
     }
 

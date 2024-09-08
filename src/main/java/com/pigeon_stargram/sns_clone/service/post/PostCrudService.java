@@ -47,10 +47,7 @@ public class PostCrudService {
         if (redisService.hasKey(cacheKey)) {
             log.info("findPostIdsByUserId = {} 캐시 히트", userId);
 
-            return redisService.getSet(cacheKey).stream()
-                    .filter(postId -> !postId.equals(0))
-                    .map(postId -> Long.valueOf((Integer) postId))
-                    .collect(Collectors.toList());
+            return redisService.getSetAsLongListExcludeDummy(cacheKey);
         }
 
         log.info("findPostIdsByUserId = {} 캐시 미스", userId);
@@ -59,11 +56,7 @@ public class PostCrudService {
                 .map(Post::getId)
                 .collect(Collectors.toList());
 
-        postIds.add(0L);
-        redisService.addAllToSet(cacheKey, postIds);
-
-        postIds.remove(0L);
-        return postIds;
+        return redisService.cacheListToSetWithDummy(postIds, cacheKey);
     }
 
     public List<Long> findPostIdsByUserIdAndCreatedDateAfter(Long userId,
@@ -73,10 +66,7 @@ public class PostCrudService {
         if (redisService.hasKey(cacheKey)) {
             log.info("findPostIdsByUserIdAncCreatedDateAfter = {} 캐시 히트", userId);
 
-            return redisService.getSet(cacheKey).stream()
-                    .filter(postId -> !postId.equals(0))
-                    .map(postId -> Long.valueOf((Integer) postId))
-                    .collect(Collectors.toList());
+            return redisService.getSetAsLongListExcludeDummy(cacheKey);
         }
 
         log.info("findPostIdsByUserIdAncCreatedDateAfter = {} 캐시 미스", userId);
@@ -85,11 +75,7 @@ public class PostCrudService {
                         .map(Post::getId)
                         .collect(Collectors.toList());
 
-        postIds.add(0L);
-        redisService.addAllToSet(cacheKey, postIds);
-
-        postIds.remove(0L);
-        return postIds;
+        return redisService.cacheListToSetWithDummy(postIds, cacheKey);
     }
 
     @CachePut(value = POST,

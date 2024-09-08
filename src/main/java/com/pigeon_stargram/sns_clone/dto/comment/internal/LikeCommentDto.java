@@ -67,7 +67,7 @@ public class LikeCommentDto implements NotificationConvertable {
     }
 
     @Override
-    public List<Long> getRecipientIds() {
+    public List<Long> toRecipientIds() {
         return Arrays.asList(writerId);
     }
 

@@ -64,7 +64,7 @@ public class NotifyCommentTaggedDto implements NotificationConvertable {
     }
 
     @Override
-    public List<Long> getRecipientIds() {
+    public List<Long> toRecipientIds() {
         return notificationRecipientIds;
     }
 

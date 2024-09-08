@@ -1,20 +1,19 @@
 package com.pigeon_stargram.sns_clone.service.comment;
 
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
-import com.pigeon_stargram.sns_clone.domain.comment.CommentLike;
 import com.pigeon_stargram.sns_clone.domain.post.Post;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.CommentContentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.CreateCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.EditCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.LikeCommentDto;
+import com.pigeon_stargram.sns_clone.dto.comment.request.RequestGetCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.CommentLikeDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseCommentDto;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyCommentTaggedDto;
 import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.post.PostCrudService;
-import com.pigeon_stargram.sns_clone.service.reply.ReplyCrudService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import jakarta.transaction.Transactional;
@@ -38,9 +37,8 @@ public class CommentService {
     private final ReplyService replyService;
     private final NotificationService notificationService;
     private final CommentLikeCrudService commentLikeCrudService;
-    private final ReplyCrudService replyCrudService;
 
-    public List<ResponseCommentDto> getCommentDtosByPostId(Long postId) {
+    public List<ResponseCommentDto> getCommentResponseByPostId(Long postId) {
         List<Long> commentIds = commentCrudService.findCommentIdByPostId(postId);
         return commentIds.stream()
                 .sorted(Comparator.reverseOrder())
@@ -63,6 +61,10 @@ public class CommentService {
         return buildCommentContentDto(comment);
     }
 
+//    public List<ResponseCommentDto> getCommentResponseByPostIdAndCommentPage(RequestGetCommentDto dto) {
+//
+//    }
+
     public Comment createComment(CreateCommentDto dto) {
         User loginUser = userService.findById(dto.getLoginUserId());
         Post post = postCrudService.findById(dto.getPostId());
@@ -71,7 +73,7 @@ public class CommentService {
         Comment save = commentCrudService.save(comment);
 
         dto.setLoginUserName(loginUser.getName());
-        notificationService.send(dto);
+        notificationService.sendToSplitWorker(dto);
 
         notifyTaggedUsers(dto, loginUser);
 
@@ -104,10 +106,21 @@ public class CommentService {
     }
 
     public void likeComment(LikeCommentDto dto) {
-        // todo 좋아요 추가시 알림
-        User loginUser = userService.findById(dto.getLoginUserId());
-        dto.setLoginUserName(loginUser.getName());
-        commentLikeCrudService.toggleLike(dto.getLoginUserId(), dto.getCommentId());
+        Long loginUserId = dto.getLoginUserId();
+        Long commentId = dto.getCommentId();
 
+        User loginUser = userService.findById(loginUserId);
+        dto.setLoginUserName(loginUser.getName());
+
+        Comment comment = commentCrudService.findById(commentId);
+        dto.setWriterId(comment.getUser().getId());
+
+        commentLikeCrudService.toggleLike(loginUserId, commentId);
+
+        // 좋아요수가 증가할때 알림 보내기
+        List<Long> commentLikeUserIds = commentLikeCrudService.getCommentLikeUserIds(commentId);
+        if (commentLikeUserIds.contains(loginUserId)) {
+            notificationService.sendToSplitWorker(dto);
+        }
     }
 }

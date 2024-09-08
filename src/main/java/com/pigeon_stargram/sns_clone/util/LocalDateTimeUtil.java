@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone.util;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 
@@ -40,5 +41,9 @@ public class LocalDateTimeUtil {
         return (double) time.atZone(ZoneId.systemDefault())
                 .toInstant()
                 .toEpochMilli();
+    }
+
+    public static Double convertToScore(LocalDateTime localDateTime) {
+        return (double) localDateTime.toEpochSecond(ZoneOffset.UTC);
     }
 }

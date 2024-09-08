@@ -33,10 +33,7 @@ public class FollowCrudService {
         if (redisService.hasKey(cacheKey)) {
             log.info("findFollowerIds(userId = {}) 캐시 히트", userId);
 
-            return redisService.getSet(cacheKey).stream()
-                    .filter(replyId -> !replyId.equals(0))
-                    .map(replyId -> Long.valueOf((Integer) replyId))
-                    .collect(Collectors.toList());
+            return redisService.getSetAsLongListExcludeDummy(cacheKey);
         }
 
         log.info("findFollowerIds(userId = {}) 캐시 미스", userId);
@@ -46,7 +43,7 @@ public class FollowCrudService {
                 .map(User::getId)
                 .collect(Collectors.toList());
 
-        return cacheListToSetAndReturn(followerIds, cacheKey);
+        return redisService.cacheListToSetWithDummy(followerIds, cacheKey);
     }
 
     public List<Long> findFollowingIds(Long userId) {
@@ -55,21 +52,17 @@ public class FollowCrudService {
         if (redisService.hasKey(cacheKey)) {
             log.info("findFollowingIds(userId = {}) 캐시 히트", userId);
 
-            return redisService.getSet(cacheKey).stream()
-                    .filter(replyId -> !replyId.equals(0))
-                    .map(replyId -> Long.valueOf((Integer) replyId))
-                    .collect(Collectors.toList());
+            return redisService.getSetAsLongListExcludeDummy(cacheKey);
         }
 
         log.info("findFollowingIds(userId = {}) 캐시 미스", userId);
-
 
         List<Long> followingIds = repository.findBySenderId(userId).stream()
                 .map(Follow::getRecipient)// user 가 캐시되면 userId로 가져오도록 변경예정 - FollowService의 findFollowings에서 캐시로 사용하기 위해
                 .map(User::getId)
                 .collect(Collectors.toList());
 
-        return cacheListToSetAndReturn(followingIds, cacheKey);
+        return redisService.cacheListToSetWithDummy(followingIds, cacheKey);
     }
 
     public List<Long> findNotificationEnabledIds(Long userId) {
@@ -78,10 +71,7 @@ public class FollowCrudService {
         if (redisService.hasKey(cacheKey)) {
             log.info("findNotificationEnabledIds(userId = {}) 캐시 히트", userId);
 
-            return redisService.getSet(cacheKey).stream()
-                    .filter(replyId -> !replyId.equals(0))
-                    .map(replyId -> Long.valueOf((Integer) replyId))
-                    .collect(Collectors.toList());
+            return redisService.getSetAsLongListExcludeDummy(cacheKey);
         }
 
         log.info("findNotificationEnabledIds(userId = {}) 캐시 미스", userId);
@@ -92,15 +82,7 @@ public class FollowCrudService {
                 .map(User::getId)
                 .collect(Collectors.toList());
 
-        return cacheListToSetAndReturn(notificationEnabledUserIds, cacheKey);
-    }
-
-    private List<Long> cacheListToSetAndReturn(List<Long> list, String cacheKey) {
-        list.add(0L);
-        redisService.addAllToSet(cacheKey, list);
-
-        list.remove(0L);
-        return list;
+        return redisService.cacheListToSetWithDummy(notificationEnabledUserIds, cacheKey);
     }
 
     public Follow save(Follow follow) {

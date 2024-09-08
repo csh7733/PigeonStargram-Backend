@@ -95,10 +95,9 @@ public class StoryService {
 
     public List<ResponseUserInfoDto> getUserInfosWhoViewedStory(Long storyId) {
         String redisSetKey = cacheKeyGenerator(STORY_VIEWS, STORY_ID, storyId.toString());
-        Set<Object> userIdsWhoViewed = redisService.getSet(redisSetKey);
+        List<Long> userIdsWhoViewed = redisService.getSetAsLongListExcludeDummy(redisSetKey);
 
         return userIdsWhoViewed.stream()
-                .map(id -> ((Integer) id).longValue())
                 .collect(Collectors.collectingAndThen(Collectors.toList(), userIdList ->
                         userIdList.isEmpty() ? Collections.emptyList() : userService.getUserInfosByUserIds(userIdList)
                 ));
@@ -147,20 +146,13 @@ public class StoryService {
         removeExpiredStoriesFromSet(userStorySetKey);
 
         // 유효한 storyId들을 반환
-        Set<Object> validStoryIds = redisService.getSet(userStorySetKey);
-
-        return validStoryIds.stream()
-                .map(id -> ((Integer) id).longValue())
-                .collect(Collectors.toList());
+        return redisService.getSetAsLongListExcludeDummy(userStorySetKey);
     }
 
     private void removeExpiredStoriesFromSet(String userStorySetKey) {
-        Set<Object> storyIds = redisService.getSet(userStorySetKey);
+        List<Long> storyIds = redisService.getSetAsLongListExcludeDummy(userStorySetKey);
 
-        for (Object storyIdObj : storyIds) {
-            // Object를 Integer로 변환 후 Long으로 캐스팅
-            Long storyId = ((Integer) storyIdObj).longValue();
-
+        for (Long storyId : storyIds) {
             Story story = storyCrudService.findById(storyId);
 
             // 24시간이 지난 스토리인지 확인

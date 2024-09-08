@@ -197,7 +197,7 @@ class ReplyServiceTest {
         when(comment.getUser()).thenReturn(mock(User.class));
         when(comment.getUser().getId()).thenReturn(1L);
 
-        when(notificationService.send(createReplyDto))
+        when(notificationService.sendToSplitWorker(createReplyDto))
                 .thenReturn(List.of());
         when(replyRepository.save(any(Reply.class))).thenReturn(reply);
 
@@ -205,7 +205,7 @@ class ReplyServiceTest {
         Reply createReply = replyService.createReply(createReplyDto);
 
         //then
-        assertThat(createReplyDto.getRecipientIds().getFirst())
+        assertThat(createReplyDto.toRecipientIds().getFirst())
                 .isEqualTo(comment.getUser().getId());
         assertThat(createReply).isEqualTo(reply);
     }
@@ -292,7 +292,7 @@ class ReplyServiceTest {
 
         //then
         verify(replyLikeRepository, times(1)).save(any(ReplyLike.class));
-        verify(notificationService, times(1)).send(likeReplyDto);
+        verify(notificationService, times(1)).sendToSplitWorker(likeReplyDto);
     }
 
 }

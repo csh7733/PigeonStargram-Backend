@@ -27,19 +27,9 @@ public class MailSenderWorker {
 
     private final RedisService redisService;
     private final JavaMailSender mailSender;
-    private final ExecutorService executorService = Executors.newFixedThreadPool(3);
-
-    // 애플리케이션 시작 시 여러 워커 스레드를 실행
-    @PostConstruct
-    public void startWorkers() {
-        log.info("메일 전송 워커를 {}개의 스레드로 시작합니다.", 3);
-        for (int i = 0; i < 3; i++) {
-            executorService.submit(this::processTasks);
-        }
-    }
 
     // 각 스레드가 Redis 작업큐에서 task를 가져와 처리
-    private void processTasks() {
+    public void processTasks() {
         while (true) {
             try {
                 log.info("Redis 큐에서 메일 전송 작업을 대기 중입니다...");

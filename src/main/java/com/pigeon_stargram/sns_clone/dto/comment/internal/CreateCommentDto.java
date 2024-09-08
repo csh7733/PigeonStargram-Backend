@@ -80,7 +80,7 @@ public class CreateCommentDto implements NotificationConvertable {
     }
 
     @Override
-    public List<Long> getRecipientIds() {
+    public List<Long> toRecipientIds() {
         return List.of(postUserId);
     }
 

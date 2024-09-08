@@ -98,7 +98,7 @@ public class PostService {
     public ResponsePostDto getCombinedPost(Long postId) {
         PostContentDto contentDto = getPostContent(postId);
         PostLikeDto likeDto = getPostsLike(postId);
-        List<ResponseCommentDto> commentDtos = commentService.getCommentDtosByPostId(postId);
+        List<ResponseCommentDto> commentDtos = commentService.getCommentResponseByPostId(postId);
         return buildResponsePostDto(contentDto, likeDto, commentDtos);
     }
 
@@ -189,7 +189,7 @@ public class PostService {
         List<Long> notificationRecipientIds = followService.findFollows(dto.getLoginUserId());
         dto.setNotificationRecipientIds(notificationRecipientIds);
 
-        notificationService.send(dto);
+        notificationService.sendToSplitWorker(dto);
     }
 
     private void notifyTaggedUsers(CreatePostDto dto, User loginUser) {
@@ -202,17 +202,23 @@ public class PostService {
         postCrudService.edit(dto.getPostId(), dto.getContent());
     }
 
-
     public void deletePost(Long postId) {
         commentService.deleteAllCommentsAndReplyByPostId(postId);
         postCrudService.deleteById(postId);
     }
 
     public void likePost(LikePostDto dto) {
-        // todo 좋아요 추가시 알림
-        User loginUser = userService.findById(dto.getLoginUserId());
+        Long loginUserId = dto.getLoginUserId();
+        Long postId = dto.getPostId();
+
+        User loginUser = userService.findById(loginUserId);
         dto.setLoginUserName(loginUser.getName());
-        postLikeCrudService.toggleLike(dto.getLoginUserId(), dto.getPostId());
-        notificationService.send(dto);
+        postLikeCrudService.toggleLike(loginUserId, postId);
+
+        // 좋아요수가 증가할때 알림 보내기
+        List<Long> postLikeUserIds = postLikeCrudService.getPostLikeUserIds(postId);
+        if (postLikeUserIds.contains(loginUserId)) {
+            notificationService.sendToSplitWorker(dto);
+        }
     }
 }

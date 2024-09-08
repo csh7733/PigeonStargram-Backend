@@ -14,7 +14,7 @@ public interface NotificationConvertable {
                                                 Long contentId);
     NotificationContent toNotificationContent();
     Long getSenderId();
-    List<Long> getRecipientIds();
+    List<Long> toRecipientIds();
     String generateMessage();
 
 }

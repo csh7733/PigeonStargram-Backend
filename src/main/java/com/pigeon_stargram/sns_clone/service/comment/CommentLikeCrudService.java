@@ -2,7 +2,6 @@ package com.pigeon_stargram.sns_clone.service.comment;
 
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.comment.CommentLike;
-import com.pigeon_stargram.sns_clone.domain.post.Post;
 import com.pigeon_stargram.sns_clone.domain.post.PostLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentLikeRepository;
@@ -130,5 +129,24 @@ public class CommentLikeCrudService {
         redisService.addAllToSet(cacheKey, commentLikeUserIds);
 
         return commentLikeUserIds.size() - 1;
+    }
+
+    public List<Long> getCommentLikeUserIds(Long commentId) {
+        // 수동 캐시
+        String cacheKey = cacheKeyGenerator(COMMENT_LIKE_USER_IDS, COMMENT_ID, commentId.toString());
+
+        if (redisService.hasKey(cacheKey)) {
+            log.info("getCommentLikeUserIds {} 캐시 히트", commentId);
+            return redisService.getSetAsLongListExcludeDummy(cacheKey);
+        }
+        log.info("getCommentLikeUserIds {} 캐시 미스", commentId);
+
+        // DB 조회후 레디스에 캐시
+        List<Long> commentLikeUserIds = repository.findByCommentId(commentId).stream()
+                .map(CommentLike::getUser)
+                .map(User::getId)
+                .collect(Collectors.toList());
+
+        return redisService.cacheListToSetWithDummy(commentLikeUserIds, cacheKey);
     }
 }

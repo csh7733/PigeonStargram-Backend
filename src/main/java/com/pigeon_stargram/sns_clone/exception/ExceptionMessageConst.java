@@ -44,6 +44,8 @@ public class ExceptionMessageConst {
     
     public static final String NOTIFICATION_NOT_FOUND_ID
             = "ID와 일치하는 알림이 없습니다.";
+    public static final String NOTIFICATION_CONTENT_NOT_FOUND_ID
+            = "ID와 일치하는 알림 컨텐츠가 없습니다.";
 
     // Redis
     public static final String UNSUPPORTED_TYPE

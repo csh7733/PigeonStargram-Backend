@@ -21,7 +21,7 @@ import com.pigeon_stargram.sns_clone.exception.notification.NotificationNotFound
 import com.pigeon_stargram.sns_clone.exception.user.UserNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.notification.NotificationRepository;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
-import com.pigeon_stargram.sns_clone.worker.NotificationWorker;
+import com.pigeon_stargram.sns_clone.worker.Worker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -53,7 +53,7 @@ class NotificationServiceTest {
     @Mock
     NotificationRepository notificationRepository;
     @Mock
-    NotificationWorker notificationWorker;
+    Worker notificationWorker;
 
     User user;
     Post post;
@@ -122,7 +122,7 @@ class NotificationServiceTest {
 
         notificationConvertables.forEach(notificationConvertable -> {
             //when
-            List<Notification> notifications = notificationService.send(notificationConvertable);
+            List<Notification> notifications = notificationService.sendToSplitWorker(notificationConvertable);
 
             //then
             notifications.forEach(notification -> {
@@ -146,7 +146,7 @@ class NotificationServiceTest {
 
             //then
             assertThatThrownBy(() -> {
-                notificationService.send(notificationConvertable);
+                notificationService.sendToSplitWorker(notificationConvertable);
             }).isInstanceOf(UserNotFoundException.class);
         });
     }
@@ -238,14 +238,14 @@ class NotificationServiceTest {
     void testNotifyTaggedUsersTagged() {
         //given
         NotificationConvertable dto = new NotifyPostTaggedDto(user, "content", List.of(1L, 2L));
-        doReturn(null).when(notificationService).send(any(NotificationConvertable.class));
+        doReturn(null).when(notificationService).sendToSplitWorker(any(NotificationConvertable.class));
 
         //when
         notificationService.notifyTaggedUsers(dto);
 
         //then
         verify(notificationService, times(1))
-                .send(dto);
+                .sendToSplitWorker(dto);
     }
 
     @Test
@@ -258,7 +258,7 @@ class NotificationServiceTest {
         notificationService.notifyTaggedUsers(dto);
 
         //then
-        verify(notificationService, never()).send(dto);
+        verify(notificationService, never()).sendToSplitWorker(dto);
     }
 
 }

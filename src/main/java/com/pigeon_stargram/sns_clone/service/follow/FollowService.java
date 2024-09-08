@@ -1,6 +1,5 @@
 package com.pigeon_stargram.sns_clone.service.follow;
 
-import com.pigeon_stargram.sns_clone.constant.FollowConstants;
 import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.Follow.internal.AddFollowDto;
@@ -65,7 +64,7 @@ public class FollowService {
         Follow save = followCrudService.save(follow);
 
         dto.setSenderName(sender.getName());
-        notificationService.send(dto);
+        notificationService.sendToSplitWorker(dto);
 
         return save;
     }
