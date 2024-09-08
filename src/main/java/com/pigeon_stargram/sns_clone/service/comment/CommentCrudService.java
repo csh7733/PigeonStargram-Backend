@@ -48,27 +48,16 @@ public class CommentCrudService {
         if (redisService.hasKey(cacheKey)) {
             log.info("findCommentIdsByPostId = {} 캐시 히트", postId);
 
-            return redisService.getRangeByScore(cacheKey, Double.MIN_VALUE, Double.MAX_VALUE).stream()
-                    .map(value -> Long.valueOf((Integer) value))
-                    .sorted(Comparator.reverseOrder())
-                    .collect(Collectors.toList());
+            return redisService.getRangeByScoreAsList(cacheKey, Double.MIN_VALUE, Double.MAX_VALUE);
         }
 
         log.info("findCommentIdsByPostId = {} 캐시 미스", postId);
 
-        List<ZSetOperations.TypedTuple<Object>> commentIdTypedTuples = repository.findByPostId(postId).stream()
-                .map(comment -> {
-                    Double score = convertToScore(comment.getCreatedDate());
-                    return new DefaultTypedTuple<Object>(comment.getId(), score);
-                })
-                .collect(Collectors.toList());
+        List<ZSetOperations.TypedTuple<Object>> commentIdTypedTuples = getCommentTuples(postId);
 
         redisService.cacheListToSortedSetWithDummy(commentIdTypedTuples, cacheKey);
 
-        return redisService.getRangeByScore(cacheKey, Double.MIN_VALUE, Double.MAX_VALUE).stream()
-                .map(value -> Long.valueOf((Integer) value))
-                .sorted(Comparator.reverseOrder())
-                .collect(Collectors.toList());
+        return redisService.getRangeByScoreAsList(cacheKey, Double.MIN_VALUE, Double.MAX_VALUE);
     }
 
     public List<Long> findCommentIdByPostIdAndCommentId(Long postId,
@@ -82,12 +71,7 @@ public class CommentCrudService {
         }
 
         log.info("findCommentIdByPostIdByPage = {}, commentId = {} 캐시 미스", postId, commentId);
-        List<ZSetOperations.TypedTuple<Object>> commentIdTypedTuples = repository.findByPostId(postId).stream()
-                .map(comment -> {
-                    Double score = convertToScore(comment.getCreatedDate());
-                    return new DefaultTypedTuple<Object>(comment.getId(), score);
-                })
-                .collect(Collectors.toList());
+        List<ZSetOperations.TypedTuple<Object>> commentIdTypedTuples = getCommentTuples(postId);
 
         redisService.cacheListToSortedSetWithDummy(commentIdTypedTuples, cacheKey);
 
@@ -136,14 +120,7 @@ public class CommentCrudService {
                 cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
         if (redisService.hasKey(allCommentIds)) {
             log.info("comment 삭제후 postId에 대한 모든 commentId 캐시 삭제 postId = {}", postId);
-            redisService.removeFromSet(allCommentIds, commentId);
-        }
-
-        String recentCommentIds =
-                cacheKeyGenerator(RECENT_COMMENT_IDS, POST_ID, postId.toString());
-        if (redisService.hasKey(recentCommentIds)) {
-            log.info("comment 삭제후 postId에 대한 최근 commentId 캐시 삭제 postId = {}", postId);
-            redisService.removeFromSet(recentCommentIds, commentId);
+            redisService.removeFromSortedSet(allCommentIds, commentId);
         }
 
         String allReplyIds =
@@ -172,16 +149,20 @@ public class CommentCrudService {
         }
 
         log.info("getIsMoreComment = {}, lastCommentId = {} 캐시 미스", postId, lastCommentId);
-        List<ZSetOperations.TypedTuple<Object>> commentIdTypedTuples = repository.findByPostId(postId).stream()
+        List<ZSetOperations.TypedTuple<Object>> commentIdTypedTuples = getCommentTuples(postId);
+
+        redisService.cacheListToSortedSetWithDummy(commentIdTypedTuples, cacheKey);
+
+        return isMoreComment(lastCommentId, cacheKey);
+    }
+
+    private List<ZSetOperations.TypedTuple<Object>> getCommentTuples(Long postId) {
+        return repository.findByPostId(postId).stream()
                 .map(comment -> {
                     Double score = convertToScore(comment.getCreatedDate());
                     return new DefaultTypedTuple<Object>(comment.getId(), score);
                 })
                 .collect(Collectors.toList());
-
-        redisService.cacheListToSortedSetWithDummy(commentIdTypedTuples, cacheKey);
-
-        return isMoreComment(lastCommentId, cacheKey);
     }
 
     private Boolean isMoreComment(Long lastCommentId, String cacheKey) {

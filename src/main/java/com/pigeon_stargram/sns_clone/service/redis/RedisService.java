@@ -330,6 +330,21 @@ public class RedisService {
     }
 
     /**
+     * Sorted Set에서 특정 범위 내의 값을 List<Long> 역순으로 가져옵니다.
+     *
+     * @param setKey     Sorted Set의 키
+     * @param startScore 시작 점수
+     * @param endScore   종료 점수
+     * @return 점수 범위 내의 값들의 Set
+     */
+    public List<Long> getRangeByScoreAsList(String setKey, double startScore, double endScore) {
+        return getRangeByScore(setKey, startScore, endScore).stream()
+                .map(value -> Long.valueOf((Integer) value))
+                .sorted(Comparator.reverseOrder())
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Redis의 Sorted Set에서 상위 N개의 값을 점수순으로 가져와 지정된 타입으로 반환합니다.
      *
      * @param setKey Sorted Set의 키
