@@ -180,6 +180,24 @@ public class RedisService {
     }
 
     /**
+     * Redis Hash에 값을 저장하고, TTL(Time to Live)을 설정합니다.
+     * 기본 직렬화기를 사용하여 객체를 직렬화한 후 Redis에 저장합니다.
+     * 해당 Redis Hash Key에 대해 지정된 TTL(분 단위)을 설정합니다.
+     *
+     * @param redisHashKey Redis Hash의 키
+     * @param fieldKey     Redis Hash 내의 필드 키
+     * @param value        저장할 값 (객체)
+     * @param minutes      TTL 값 (분 단위)
+     */
+    public void putValueInHash(String redisHashKey, String fieldKey, Object value, Long minutes) {
+        // 기본 직렬화기를 사용하여 Redis Hash에 값을 저장
+        redisTemplate.opsForHash().put(redisHashKey, fieldKey, value);
+
+        // TTL 설정 (분 단위)
+        redisTemplate.expire(redisHashKey, minutes, TimeUnit.MINUTES);
+    }
+
+    /**
      * Redis Hash에서 값을 가져와 지정된 타입으로 반환합니다.
      * 기본 직렬화기를 사용하여 객체를 역직렬화합니다.
      *
