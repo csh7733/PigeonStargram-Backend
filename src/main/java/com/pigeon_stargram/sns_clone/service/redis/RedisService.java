@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.PageConstants.COMMENT_FETCH_NUM;
@@ -66,6 +67,21 @@ public class RedisService {
      */
     public void addToSet(String setKey, Object value) {
         redisTemplate.opsForSet().add(setKey, value);
+    }
+
+    /**
+     * Set에 값을 추가하고 TTL을 설정합니다.
+     *
+     * @param setKey Set의 키
+     * @param value  추가할 값
+     * @param ttlMinutes TTL을 분 단위로 설정 (TTL: Time to Live)
+     */
+    public void addToSet(String setKey, Object value, long ttlMinutes) {
+        // 기존의 addToSet 메서드를 호출하여 값을 Set에 추가
+        addToSet(setKey, value);
+
+        // TTL을 분 단위로 설정
+        redisTemplate.expire(setKey, ttlMinutes, TimeUnit.MINUTES);
     }
 
     /**
@@ -163,6 +179,24 @@ public class RedisService {
      */
     public void putValueInHash(String redisHashKey, String fieldKey, Object value) {
         redisTemplate.opsForHash().put(redisHashKey, fieldKey, value);
+    }
+
+    /**
+     * Redis Hash에 값을 저장하고, TTL(Time to Live)을 설정합니다.
+     * 기본 직렬화기를 사용하여 객체를 직렬화한 후 Redis에 저장합니다.
+     * 해당 Redis Hash Key에 대해 지정된 TTL(분 단위)을 설정합니다.
+     *
+     * @param redisHashKey Redis Hash의 키
+     * @param fieldKey     Redis Hash 내의 필드 키
+     * @param value        저장할 값 (객체)
+     * @param minutes      TTL 값 (분 단위)
+     */
+    public void putValueInHash(String redisHashKey, String fieldKey, Object value, Long minutes) {
+        // 기본 직렬화기를 사용하여 Redis Hash에 값을 저장
+        redisTemplate.opsForHash().put(redisHashKey, fieldKey, value);
+
+        // TTL 설정 (분 단위)
+        redisTemplate.expire(redisHashKey, minutes, TimeUnit.MINUTES);
     }
 
     /**
@@ -316,6 +350,23 @@ public class RedisService {
     public void addToSortedSet(String setKey, double score, Object value) {
         redisTemplate.opsForZSet().add(setKey, value, score);
     }
+
+    /**
+     * Sorted Set에 값을 추가하고 TTL을 설정합니다.
+     *
+     * @param setKey    Sorted Set의 키
+     * @param score     정렬 기준이 될 점수 (예: 타임스탬프)
+     * @param value     추가할 값
+     * @param ttlMinutes TTL을 분 단위로 설정 (TTL: Time to Live)
+     */
+    public void addToSortedSet(String setKey, double score, Object value, long ttlMinutes) {
+        // Sorted Set에 값을 추가
+        redisTemplate.opsForZSet().add(setKey, value, score);
+
+        // TTL을 분 단위로 설정
+        redisTemplate.expire(setKey, ttlMinutes, TimeUnit.MINUTES);
+    }
+
 
     /**
      * Sorted Set에서 특정 범위 내의 값을 가져옵니다.

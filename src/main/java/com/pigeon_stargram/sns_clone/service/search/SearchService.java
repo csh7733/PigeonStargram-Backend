@@ -74,8 +74,9 @@ public class SearchService {
         List<SearchHistory> searchHistories = searchHistoryRepository.findTop5ByUserOrderByModifiedDateDesc(user);
 
         // DB에서 가져온 검색 기록을 Redis에 저장
+        // 검색기록 TTL은 3일로 설정
         for (SearchHistory searchHistory : searchHistories) {
-            redisService.addToSortedSet(cacheKey, getTimeMillis(searchHistory.getModifiedDate()), searchHistory.getSearchQuery());
+            redisService.addToSortedSet(cacheKey, getTimeMillis(searchHistory.getModifiedDate()), searchHistory.getSearchQuery(),3 * Day);
         }
 
         // DB에서 가져온 검색 기록을 Response DTO로 변환하여 반환
@@ -128,7 +129,8 @@ public class SearchService {
         Double currentTimestamp = getCurrentTimeMillis();
 
         // Redis에 검색 기록 추가 (Sorted Set에 추가)
-        redisService.addToSortedSet(searchKey, currentTimestamp, searchQuery);
+        // 검색기록 TTL은 3일로 설정
+        redisService.addToSortedSet(searchKey, currentTimestamp, searchQuery, 3 * Day);
 
         // DB에 검색 기록 저장 (write-through 방식)
         SearchHistory searchHistory =

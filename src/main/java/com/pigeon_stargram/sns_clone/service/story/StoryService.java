@@ -95,7 +95,7 @@ public class StoryService {
 
     public List<ResponseUserInfoDto> getUserInfosWhoViewedStory(Long storyId) {
         String redisSetKey = cacheKeyGenerator(STORY_VIEWS, STORY_ID, storyId.toString());
-        List<Long> userIdsWhoViewed = redisService.getSetAsLongListExcludeDummy(redisSetKey);
+        List<Long> userIdsWhoViewed = redisService.getSetAsLongList(redisSetKey);
 
         return userIdsWhoViewed.stream()
                 .collect(Collectors.collectingAndThen(Collectors.toList(), userIdList ->
@@ -146,11 +146,11 @@ public class StoryService {
         removeExpiredStoriesFromSet(userStorySetKey);
 
         // 유효한 storyId들을 반환
-        return redisService.getSetAsLongListExcludeDummy(userStorySetKey);
+        return redisService.getSetAsLongList(userStorySetKey);
     }
 
     private void removeExpiredStoriesFromSet(String userStorySetKey) {
-        List<Long> storyIds = redisService.getSetAsLongListExcludeDummy(userStorySetKey);
+        List<Long> storyIds = redisService.getSetAsLongList(userStorySetKey);
 
         for (Long storyId : storyIds) {
             Story story = storyCrudService.findById(storyId);
@@ -158,6 +158,12 @@ public class StoryService {
             // 24시간이 지난 스토리인지 확인
             if (story.getCreatedDate().isBefore(getExpirationTime())) {
                 redisService.removeFromSet(userStorySetKey, storyId);
+
+                // 조회수에 해당하는 Redis 키 생성
+                String redisSetKey = cacheKeyGenerator(STORY_VIEWS, STORY_ID, storyId.toString());
+
+                // 해당 조회수 키 삭제
+                redisService.removeSet(redisSetKey);
             }
         }
     }
