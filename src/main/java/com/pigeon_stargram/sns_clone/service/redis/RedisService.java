@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -64,6 +65,21 @@ public class RedisService {
      */
     public void addToSet(String setKey, Object value) {
         redisTemplate.opsForSet().add(setKey, value);
+    }
+
+    /**
+     * Set에 값을 추가하고 TTL을 설정합니다.
+     *
+     * @param setKey Set의 키
+     * @param value  추가할 값
+     * @param ttlMinutes TTL을 분 단위로 설정 (TTL: Time to Live)
+     */
+    public void addToSet(String setKey, Object value, long ttlMinutes) {
+        // 기존의 addToSet 메서드를 호출하여 값을 Set에 추가
+        addToSet(setKey, value);
+
+        // TTL을 분 단위로 설정
+        redisTemplate.expire(setKey, ttlMinutes, TimeUnit.MINUTES);
     }
 
     /**
