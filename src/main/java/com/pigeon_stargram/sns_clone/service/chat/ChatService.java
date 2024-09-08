@@ -1,8 +1,7 @@
 package com.pigeon_stargram.sns_clone.service.chat;
 
-import com.pigeon_stargram.sns_clone.domain.chat.ImageChat;
+import com.pigeon_stargram.sns_clone.domain.chat.Chat;
 import com.pigeon_stargram.sns_clone.domain.chat.LastMessage;
-import com.pigeon_stargram.sns_clone.domain.chat.TextChat;
 import com.pigeon_stargram.sns_clone.domain.chat.UnreadChat;
 import com.pigeon_stargram.sns_clone.dto.chat.internal.GetUserChatsDto;
 import com.pigeon_stargram.sns_clone.dto.chat.internal.NewChatDto;
@@ -11,10 +10,7 @@ import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseChatHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.UnReadChatCountDto;
 import com.pigeon_stargram.sns_clone.event.user.UserConnectEvent;
-import com.pigeon_stargram.sns_clone.repository.chat.ImageChatRepository;
-import com.pigeon_stargram.sns_clone.repository.chat.LastMessageRepository;
-import com.pigeon_stargram.sns_clone.repository.chat.TextChatRepository;
-import com.pigeon_stargram.sns_clone.repository.chat.UnreadChatRepository;
+import com.pigeon_stargram.sns_clone.repository.chat.*;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -40,8 +36,7 @@ public class ChatService {
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    private final TextChatRepository textChatRepository;
-    private final ImageChatRepository imageChatRepository;
+    private final ChatRepository chatRepository;
 
     private final UnreadChatRepository unreadChatRepository;
     private final LastMessageRepository lastMessageRepository;
@@ -50,8 +45,7 @@ public class ChatService {
 
     public void save(NewChatDto dto){
 
-        if(dto.getIsImage()) imageChatRepository.save(dto.toImageEntity());
-        else textChatRepository.save(dto.toTextEntity());
+        chatRepository.save(dto.toEntity());
 
         Long user1Id = dto.getFrom();
         Long user2Id = dto.getTo();
@@ -90,34 +84,16 @@ public class ChatService {
         messagingTemplate.convertAndSend(destination2, lastMessage);
     }
 
-    // 테스트 데이터 주입에서만 사용
-    public void saveChat(Long fromUserId, Long toUserId, String text) {
-        TextChat textChat = TextChat.builder()
-                .fromUserId(fromUserId)
-                .toUserId(toUserId)
-                .text(text)
-                .build();
-        textChatRepository.save(textChat);
-    }
-
     public List<ResponseChatHistoryDto> getUserChats(GetUserChatsDto dto) {
         Long user1Id = dto.getUser1Id();
         Long user2Id = dto.getUser2Id();
 
-        List<TextChat> textChats = textChatRepository.findChatsBetweenUsers(user1Id, user2Id);
-        List<ImageChat> imageChats = imageChatRepository.findChatsBetweenUsers(user1Id, user2Id);
+        List<Chat> chats = chatRepository.findChatsBetweenUsers(user1Id, user2Id);
 
-        List<ResponseChatHistoryDto> chatHistoryDtos = new ArrayList<>();
-
-        chatHistoryDtos.addAll(textChats.stream()
+        List<ResponseChatHistoryDto> chatHistoryDtos = chats.stream()
                 .map(ChatBuilder::buildResponseChatHistoryDto)
-                .collect(Collectors.toList()));
-
-        chatHistoryDtos.addAll(imageChats.stream()
-                .map(ChatBuilder::buildResponseChatHistoryDto)
-                .collect(Collectors.toList()));
-
-        chatHistoryDtos.sort(Comparator.comparing(ResponseChatHistoryDto::getTime));
+                .sorted(Comparator.comparing(ResponseChatHistoryDto::getTime))
+                .collect(Collectors.toList());
 
         return chatHistoryDtos;
     }

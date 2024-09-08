@@ -1,7 +1,6 @@
 package com.pigeon_stargram.sns_clone.service.chat;
 
-import com.pigeon_stargram.sns_clone.domain.chat.ImageChat;
-import com.pigeon_stargram.sns_clone.domain.chat.TextChat;
+import com.pigeon_stargram.sns_clone.domain.chat.Chat;
 import com.pigeon_stargram.sns_clone.dto.chat.internal.GetUserChatsDto;
 import com.pigeon_stargram.sns_clone.dto.chat.internal.SendLastMessageDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
@@ -24,25 +23,16 @@ public class ChatBuilder {
                 .build();
     }
 
-    public static ResponseChatHistoryDto buildResponseChatHistoryDto(TextChat textChat) {
+    public static ResponseChatHistoryDto buildResponseChatHistoryDto(Chat chat) {
         return ResponseChatHistoryDto.builder()
-                .from(textChat.getSenderId())
-                .to(textChat.getRecipientId())
-                .text(textChat.getText())
-                .time(formatTime(textChat.getCreatedDate()))
-                .isImage(false)
+                .from(chat.getSenderId())
+                .to(chat.getRecipientId())
+                .text(chat.getType().equals("image") ? chat.getImagePath() : chat.getText())
+                .time(formatTime(chat.getCreatedDate()))
+                .isImage(chat.getType().equals("image"))
                 .build();
     }
 
-    public static ResponseChatHistoryDto buildResponseChatHistoryDto(ImageChat imageChat) {
-        return ResponseChatHistoryDto.builder()
-                .from(imageChat.getSenderId())
-                .to(imageChat.getRecipientId())
-                .text(imageChat.getImagePath())
-                .time(formatTime(imageChat.getCreatedDate()))
-                .isImage(true)
-                .build();
-    }
 
     public static ResponseOnlineStatusDto buildResponseOnlineStatusDto(Long userId,
                                                                        String onlineStatus) {

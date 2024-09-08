@@ -1,7 +1,6 @@
 package com.pigeon_stargram.sns_clone.dto.chat.internal;
 
-import com.pigeon_stargram.sns_clone.domain.chat.ImageChat;
-import com.pigeon_stargram.sns_clone.domain.chat.TextChat;
+import com.pigeon_stargram.sns_clone.domain.chat.Chat;
 import lombok.*;
 
 @Getter
@@ -18,19 +17,21 @@ public class NewChatDto {
     private String time;
     private Boolean isImage;
 
-    public TextChat toTextEntity(){
-        return TextChat.builder()
-                .fromUserId(from)
-                .toUserId(to)
-                .text(text)
-                .build();
-    }
-
-    public ImageChat toImageEntity(){
-        return ImageChat.builder()
-                .fromUserId(from)
-                .toUserId(to)
-                .imagePath(text)
-                .build();
+    public Chat toEntity(){
+        if (isImage) {
+            return Chat.builder()
+                    .senderId(from)
+                    .recipientId(to)
+                    .type("image")
+                    .imagePath(text)
+                    .build();
+        } else {
+            return Chat.builder()
+                    .senderId(from)
+                    .recipientId(to)
+                    .type("text")
+                    .text(text)
+                    .build();
+        }
     }
 }
