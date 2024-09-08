@@ -6,6 +6,7 @@ import com.pigeon_stargram.sns_clone.dto.comment.internal.CreateCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.EditCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.LikeCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.request.*;
+import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseGetCommentDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.service.comment.CommentCrudService;
@@ -38,17 +39,12 @@ public class CommentController {
     }
 
     @PostMapping
-    public List<ResponsePostDto> addComment(@LoginUser SessionUser loginUser,
-                                            @RequestBody RequestAddCommentDto request) {
-
-        String context = request.getContext();
-        Long loginUserId = loginUser.getId();
-        Long postUserId = request.getPostUserId();
+    public ResponseCommentDto addComment(@LoginUser SessionUser loginUser,
+                                         @RequestBody RequestAddCommentDto request) {
 
         CreateCommentDto createCommentDto = buildCreateCommentDto(request, loginUser);
-        commentService.createComment(createCommentDto);
 
-        return getPostsBasedOnContext(context, loginUserId, postUserId);
+        return commentService.createComment(createCommentDto);
     }
 
     @PatchMapping("/{commentId}")

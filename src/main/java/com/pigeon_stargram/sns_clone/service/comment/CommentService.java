@@ -9,6 +9,7 @@ import com.pigeon_stargram.sns_clone.dto.comment.internal.EditCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.LikeCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.request.RequestGetCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.CommentLikeDto;
+import com.pigeon_stargram.sns_clone.dto.comment.response.CommentProfileDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseGetCommentDto;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyCommentTaggedDto;
@@ -17,6 +18,7 @@ import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.post.PostCrudService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
+import com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -77,19 +79,28 @@ public class CommentService {
         return buildCommentContentDto(comment);
     }
 
-    public Comment createComment(CreateCommentDto dto) {
+    public ResponseCommentDto createComment(CreateCommentDto dto) {
         User loginUser = userService.findById(dto.getLoginUserId());
         Post post = postCrudService.findById(dto.getPostId());
 
         Comment comment = buildComment(dto, loginUser, post);
-        Comment save = commentCrudService.save(comment);
+        commentCrudService.save(comment);
 
         dto.setLoginUserName(loginUser.getName());
         notificationService.sendToSplitWorker(dto);
 
         notifyTaggedUsers(dto, loginUser);
 
-        return save;
+        return getCombinedComment(comment.getId());
+    }
+
+    private static CommentProfileDto buildCommentProfileDto(User loginUser, Comment comment) {
+        return CommentProfileDto.builder()
+                .id(loginUser.getId())
+                .name(loginUser.getName())
+                .avatar(loginUser.getAvatar())
+                .time(LocalDateTimeUtil.formatTime(comment.getCreatedDate()))
+                .build();
     }
 
     private void notifyTaggedUsers(CreateCommentDto dto, User loginUser) {
