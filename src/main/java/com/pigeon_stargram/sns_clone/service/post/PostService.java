@@ -187,7 +187,7 @@ public class PostService {
             // 각 팔로워의 타임라인에 게시물 추가
             followerIds.forEach(followerId -> {
                 String timelineKey = cacheKeyGenerator(TIMELINE, USER_ID, followerId.toString());
-                redisService.addToSortedSet(timelineKey, currentTime, save.getId(), ONE_DAY_TTL);
+                redisService.addToSortedSet(timelineKey, currentTime, save.getId());
             });
         }
 
