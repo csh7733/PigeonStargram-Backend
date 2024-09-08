@@ -4,16 +4,15 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.MessageListener;
+import org.springframework.data.redis.core.DefaultTypedTuple;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,8 +26,9 @@ public class RedisService {
 
     /**
      * 메시지 큐에 태스크를 추가합니다.
+     *
      * @param queueName 큐의 이름
-     * @param task 추가할 태스크 (Object 타입)
+     * @param task      추가할 태스크 (Object 타입)
      */
     public void pushTask(String queueName, Object task) {
         redisTemplate.opsForList().leftPush(queueName, task);
@@ -36,8 +36,9 @@ public class RedisService {
 
     /**
      * 메시지 큐에서 태스크를 블로킹 팝 방식으로 가져옵니다.
+     *
      * @param queueName 큐의 이름
-     * @param timeout 초과 대기 시간
+     * @param timeout   초과 대기 시간
      * @return 가져온 태스크 (Object 타입)
      */
     public Object popTask(String queueName, Duration timeout) {
@@ -46,6 +47,7 @@ public class RedisService {
 
     /**
      * 메시지 큐에서 블로킹 팝 방식으로 태스크를 가져오며 대기시간을 무한으로 설정합니다.
+     *
      * @param queueName 큐의 이름
      * @return 가져온 태스크 (Object 타입)
      */
@@ -55,8 +57,9 @@ public class RedisService {
 
     /**
      * Set에 값을 추가합니다.
+     *
      * @param setKey Set의 키
-     * @param value 추가할 값
+     * @param value  추가할 값
      */
     public void addToSet(String setKey, Object value) {
         redisTemplate.opsForSet().add(setKey, value);
@@ -64,6 +67,7 @@ public class RedisService {
 
     /**
      * Set에 List전체 값을 추가합니다.
+     *
      * @param setKey Set의 키
      * @param values 추가할 List
      */
@@ -73,8 +77,9 @@ public class RedisService {
 
     /**
      * Set에서 값을 제거합니다.
+     *
      * @param setKey Set의 키
-     * @param value 제거할 값
+     * @param value  제거할 값
      */
     public void removeFromSet(String setKey, Object value) {
         redisTemplate.opsForSet().remove(setKey, value);
@@ -83,6 +88,7 @@ public class RedisService {
 
     /**
      * Set의 모든 값을 제거합니다.
+     *
      * @param setKey Set의 키
      */
     public void removeSet(String setKey) {
@@ -91,8 +97,9 @@ public class RedisService {
 
     /**
      * Set에서 특정 값의 존재 여부를 확인합니다.
+     *
      * @param setKey Set의 키
-     * @param value 확인할 값
+     * @param value  확인할 값
      * @return 값의 존재 여부
      */
     public Boolean isMemberOfSet(String setKey, Object value) {
@@ -101,6 +108,7 @@ public class RedisService {
 
     /**
      * Set의 모든 값들을 Set으로 가져옵니다.
+     *
      * @param setKey Set의 키
      * @return 키에 해당하는 Set
      */
@@ -110,6 +118,7 @@ public class RedisService {
 
     /**
      * Set의 모든 값들을 Long 타입 리스트로 변환하여 가져옵니다.
+     *
      * @param setKey Set의 키
      * @return 키에 해당하는 Set을 Long 타입 리스트로 변환한 결과
      */
@@ -121,6 +130,7 @@ public class RedisService {
 
     /**
      * Set의 모든 값들을 Long 타입 리스트로 변환하고 더미 데이터를 제거하여 가져옵니다.
+     *
      * @param setKey Set의 키
      * @return 키에 해당하는 Set을 Long 타입 리스트로 변환하고 더미데이터 0L을 제거한 결과
      */
@@ -132,6 +142,7 @@ public class RedisService {
 
     /**
      * Set의 원소 갯수를 가져옵니다.
+     *
      * @param setKey Set의 키
      * @return Set에 포함된 원소의 갯수
      */
@@ -144,8 +155,8 @@ public class RedisService {
      * 기본 직렬화기를 사용하여 객체를 직렬화한 후 Redis에 저장합니다.
      *
      * @param redisHashKey Redis Hash의 키
-     * @param fieldKey Redis Hash 내의 필드 키
-     * @param value 저장할 값 (객체)
+     * @param fieldKey     Redis Hash 내의 필드 키
+     * @param value        저장할 값 (객체)
      */
     public void putValueInHash(String redisHashKey, String fieldKey, Object value) {
         redisTemplate.opsForHash().put(redisHashKey, fieldKey, value);
@@ -156,9 +167,9 @@ public class RedisService {
      * 기본 직렬화기를 사용하여 객체를 역직렬화합니다.
      *
      * @param redisHashKey Redis Hash의 키
-     * @param fieldKey Redis Hash 내의 필드 키
-     * @param clazz 반환할 타입의 클래스
-     * @param <T> 반환할 타입
+     * @param fieldKey     Redis Hash 내의 필드 키
+     * @param clazz        반환할 타입의 클래스
+     * @param <T>          반환할 타입
      * @return 지정된 타입으로 변환된 값, 또는 null (값이 없을 경우)
      */
     public <T> T getValueFromHash(String redisHashKey, String fieldKey, Class<T> clazz) {
@@ -194,7 +205,7 @@ public class RedisService {
      * Redis Hash에서 특정 필드를 제거합니다.
      *
      * @param redisHashKey Redis Hash의 키
-     * @param fieldKey 제거할 필드의 키
+     * @param fieldKey     제거할 필드의 키
      */
     public void removeFieldFromHash(String redisHashKey, String fieldKey) {
         redisTemplate.opsForHash().delete(redisHashKey, fieldKey);
@@ -202,6 +213,7 @@ public class RedisService {
 
     /**
      * 레디스에 key에 해당하는 자료구조가 있는지 확인합니다.
+     *
      * @param key 자료구조 키
      * @return 키에 해당하는 자료구조 존재여부
      */
@@ -211,6 +223,7 @@ public class RedisService {
 
     /**
      * 레디스의 key:value 에서 값을 가져옵니다.
+     *
      * @param key - 키값
      * @return 키에 해당하는 값
      */
@@ -220,7 +233,8 @@ public class RedisService {
 
     /**
      * Redis Hash에서 특정 필드의 존재 여부를 확인합니다.
-     * @param hashKey Hash의 키
+     *
+     * @param hashKey  Hash의 키
      * @param fieldKey 확인할 필드의 키
      * @return 필드의 존재 여부
      */
@@ -230,9 +244,10 @@ public class RedisService {
 
     /**
      * Redis Hash에서 특정 필드의 값을 증가시킵니다.
-     * @param hashKey Hash의 키
+     *
+     * @param hashKey  Hash의 키
      * @param fieldKey 증가시킬 필드의 키
-     * @param delta 증가시킬 값
+     * @param delta    증가시킬 값
      * @return 증가된 값
      */
     public Long incrementHashValue(String hashKey, String fieldKey, long delta) {
@@ -241,8 +256,9 @@ public class RedisService {
 
     /**
      * Redis 채널에 메시지를 발행합니다.
+     *
      * @param channelName 채널의 이름
-     * @param message 발행할 메시지 (Object 타입)
+     * @param message     발행할 메시지 (Object 타입)
      */
     public void publishMessage(String channelName, Object message) {
         redisTemplate.convertAndSend(channelName, message);
@@ -250,7 +266,8 @@ public class RedisService {
 
     /**
      * Redis 패턴을 구독하여 메시지를 수신합니다.
-     * @param pattern 구독할 패턴 (예: "chat.*.*")
+     *
+     * @param pattern  구독할 패턴 (예: "chat.*.*")
      * @param listener 메시지를 수신할 리스너
      */
     public void subscribeToPattern(String pattern, MessageListener listener) {
@@ -259,7 +276,8 @@ public class RedisService {
 
     /**
      * Redis 패턴 구독을 해제합니다.
-     * @param pattern 구독을 해제할 패턴 (예: "chat.*.*")
+     *
+     * @param pattern  구독을 해제할 패턴 (예: "chat.*.*")
      * @param listener 메시지를 수신할 리스너
      */
     public void unsubscribeFromPattern(String pattern, MessageListener listener) {
@@ -287,9 +305,10 @@ public class RedisService {
 
     /**
      * Sorted Set에 값을 추가합니다.
+     *
      * @param setKey Sorted Set의 키
-     * @param score 정렬 기준이 될 점수 (예: 타임스탬프)
-     * @param value 추가할 값
+     * @param score  정렬 기준이 될 점수 (예: 타임스탬프)
+     * @param value  추가할 값
      */
     public void addToSortedSet(String setKey, double score, Object value) {
         redisTemplate.opsForZSet().add(setKey, value, score);
@@ -297,9 +316,10 @@ public class RedisService {
 
     /**
      * Sorted Set에서 특정 범위 내의 값을 가져옵니다.
-     * @param setKey Sorted Set의 키
+     *
+     * @param setKey     Sorted Set의 키
      * @param startScore 시작 점수
-     * @param endScore 종료 점수
+     * @param endScore   종료 점수
      * @return 점수 범위 내의 값들의 Set
      */
     public Set<Object> getRangeByScore(String setKey, double startScore, double endScore) {
@@ -328,12 +348,11 @@ public class RedisService {
                 .collect(Collectors.toList());
     }
 
-
-
     /**
      * Sorted Set에서 특정 값을 제거합니다.
+     *
      * @param setKey Sorted Set의 키
-     * @param value 제거할 값
+     * @param value  제거할 값
      */
     public void removeFromSortedSet(String setKey, Object value) {
         redisTemplate.opsForZSet().remove(setKey, value);
@@ -341,6 +360,7 @@ public class RedisService {
 
     /**
      * Sorted Set에서 값을 삭제합니다.
+     *
      * @param setKey Sorted Set의 키
      */
     public void removeSortedSet(String setKey) {
@@ -349,6 +369,7 @@ public class RedisService {
 
     /**
      * Sorted Set의 크기를 가져옵니다.
+     *
      * @param setKey Sorted Set의 키
      * @return Sorted Set의 원소 개수
      */
@@ -365,6 +386,46 @@ public class RedisService {
     public Boolean isSortedSetExists(String setKey) {
         // Redis에서 해당 키가 존재하는지 확인
         return redisTemplate.hasKey(setKey);
+    }
+
+    /**
+     * Sorted Set의 값들을 순위를 확인해 Set으로 가져옵니다.
+     *
+     * @param key   Sorted Set의 키
+     * @param start 시작 순위
+     * @param end   끝나는 순위
+     * @return 키에 해당하는 Sorted Set
+     */
+    public Set<Object> getSortedSetRangeByRank(String key, Integer start, Integer end) {
+        return redisTemplate.opsForZSet().reverseRange(key, start, end);
+    }
+
+    /**
+     * Sorted Set의 값들을 순위를 확인해 List로 가져옵니다.
+     *
+     * @param key   Sorted Set의 키
+     * @param start 시작 순위
+     * @param end   끝나는 순위
+     * @return 키에 해당하는 Sorted Set을 List로 변환한 결과
+     */
+    public List<Long> getSortedSetRangeByRankAsList(String key, Integer start, Integer end) {
+        return getSortedSetRangeByRank(key, start, end).stream()
+                .map(object -> Long.valueOf((Integer) object))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Sorted Set의 값들을 순위를 확인해 더미데이터를 제거하여 List로 가져옵니다.
+     *
+     * @param key   Sorted Set의 키
+     * @param start 시작 순위
+     * @param end   끝나는 순위
+     * @return 키에 해당하는 Sorted Set을 List로 변환하고 더미데이터를 제거한 결과
+     */
+    public List<Long> getSortedSetRangeByRankAsListExcludeDummy(String key, Integer start, Integer end) {
+        return getSortedSetRangeByRankAsList(key, start, end).stream()
+                .filter(value -> !value.equals(0L))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -404,17 +465,50 @@ public class RedisService {
 
     /**
      * List<Long>에 더미데이터를 추가하여 Redis의 Set에 캐시하고 원본 List를 반환합니다.
-     * @param list 캐시할 데이터의 List
+     *
+     * @param list     캐시할 데이터의 List
      * @param cacheKey 캐시 Set의 Key
      * @return 원본 List
      */
     public List<Long> cacheListToSetWithDummy(List<Long> list,
-                                               String cacheKey) {
+                                              String cacheKey) {
         list.add(0L);
         addAllToSet(cacheKey, list);
 
         list.remove(0L);
         return list;
+    }
+
+    /**
+     * Sorted Set에 List전체 값을 추가합니다.
+     *
+     * @param key Sorted Set의 키
+     * @param list 추가할 List
+     */
+    public void addAllToSortedSet(String key,
+                                  List<ZSetOperations.TypedTuple<Object>> list) {
+        redisTemplate.opsForZSet().add(key, new HashSet<>(list));
+    }
+
+    /**
+     * List<DefaultTypedTuple<Long>>에 더미데이터를 추가하여 Redis의 Sorted Set에 캐시하고
+     * 원본 value List를 반환합니다.
+     *
+     * @param list     캐시할 데이터의 List
+     * @param cacheKey 캐시 Sorted Set의 Key
+     * @return 원본 List
+     */
+    public List<Object> cacheListToSortedSetWithDummy(List<ZSetOperations.TypedTuple<Object>> list,
+                                                                                 String cacheKey) {
+        ZSetOperations.TypedTuple<Object> dummy = new DefaultTypedTuple<>(0L, 0D);
+
+        list.add(dummy);
+        addAllToSortedSet(cacheKey, list);
+
+        list.remove(dummy);
+        return list.stream()
+                .map(ZSetOperations.TypedTuple::getValue)
+                .collect(Collectors.toList());
     }
 
 }

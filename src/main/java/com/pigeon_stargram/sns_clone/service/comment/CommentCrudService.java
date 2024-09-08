@@ -4,19 +4,25 @@ import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.exception.comment.CommentNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
+import com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.DefaultTypedTuple;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.COMMENT_NOT_FOUND_ID;
+import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.*;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 
 @Slf4j
@@ -51,6 +57,33 @@ public class CommentCrudService {
                 .collect(Collectors.toList());
 
         return redisService.cacheListToSetWithDummy(commentIds, cacheKey);
+    }
+
+    public List<Long> findCommentIdByPostIdByPage(Long postId,
+                                                  Integer page) {
+        String cacheKey = cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
+        Integer start = 10 * (page - 1);
+        Integer end = 10 * page - 1;
+
+        if (redisService.hasKey(cacheKey)) {
+            log.info("findCommentIdByPostIdByPage = {}, page = {} 캐시 히트", postId, page);
+
+            return redisService.getSortedSetRangeByRankAsListExcludeDummy(cacheKey, start, end);
+        }
+
+        log.info("findCommentIdByPostIdByPage = {}, page = {} 캐시 미스", postId, page);
+        List<ZSetOperations.TypedTuple<Object>> commentIdTypedTuples = repository.findByPostId(postId).stream()
+                .map(comment -> {
+                    Double score = convertToScore(comment.getCreatedDate());
+                    Long commentId = comment.getId();
+                    return new DefaultTypedTuple<Object>(commentId, score);
+                })
+                .collect(Collectors.toList());
+
+        return redisService.cacheListToSortedSetWithDummy(commentIdTypedTuples, cacheKey).stream()
+                .map(value -> (Long) value)
+                .sorted(Comparator.reverseOrder())
+                .collect(Collectors.toList());
     }
 
     @CachePut(value = COMMENT,

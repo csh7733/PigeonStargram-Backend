@@ -73,7 +73,7 @@ public class PostService {
     public ResponsePostDto getCombinedPost(Long postId) {
         PostContentDto contentDto = getPostContent(postId);
         PostLikeDto likeDto = getPostsLike(postId);
-        List<ResponseCommentDto> commentDtos = commentService.getCommentDtosByPostId(postId);
+        List<ResponseCommentDto> commentDtos = commentService.getCommentResponseByPostId(postId);
         return buildResponsePostDto(contentDto, likeDto, commentDtos);
     }
 

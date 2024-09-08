@@ -158,7 +158,7 @@ class PostServiceTest {
                 .thenReturn(5);
 
         //comment
-        when(commentService.getCommentDtosByPostId(anyLong()))
+        when(commentService.getCommentResponseByPostId(anyLong()))
                 .thenReturn(List.of());
 
         //when

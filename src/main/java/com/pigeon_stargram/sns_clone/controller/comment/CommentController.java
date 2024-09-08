@@ -5,16 +5,12 @@ import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.CreateCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.EditCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.LikeCommentDto;
-import com.pigeon_stargram.sns_clone.dto.comment.request.RequestAddCommentDto;
-import com.pigeon_stargram.sns_clone.dto.comment.request.RequestDeleteCommentDto;
-import com.pigeon_stargram.sns_clone.dto.comment.request.RequestEditCommentDto;
-import com.pigeon_stargram.sns_clone.dto.comment.request.RequestLikeCommentDto;
+import com.pigeon_stargram.sns_clone.dto.comment.request.*;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.service.comment.CommentCrudService;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.post.PostService;
 import com.pigeon_stargram.sns_clone.service.timeline.TimelineService;
-import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +28,17 @@ public class CommentController {
     private final PostService postService;
     private final TimelineService timelineService;
     private final CommentService commentService;
+
     private final CommentCrudService commentCrudService;
+
+    @GetMapping
+    public List<Long> getComment(@LoginUser SessionUser loginUser,
+                                 @RequestBody RequestGetCommentDto request) {
+        Long postId = request.getPostId();
+        Integer commentPage = request.getCommentPage();
+
+        return commentCrudService.findCommentIdByPostIdByPage(postId, commentPage);
+    }
 
     @PostMapping
     public List<ResponsePostDto> addComment(@LoginUser SessionUser loginUser,

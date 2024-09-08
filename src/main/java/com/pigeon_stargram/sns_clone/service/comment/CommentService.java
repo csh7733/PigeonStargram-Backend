@@ -7,13 +7,13 @@ import com.pigeon_stargram.sns_clone.dto.comment.internal.CommentContentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.CreateCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.EditCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.LikeCommentDto;
+import com.pigeon_stargram.sns_clone.dto.comment.request.RequestGetCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.CommentLikeDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseCommentDto;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyCommentTaggedDto;
 import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.post.PostCrudService;
-import com.pigeon_stargram.sns_clone.service.reply.ReplyCrudService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import jakarta.transaction.Transactional;
@@ -37,9 +37,8 @@ public class CommentService {
     private final ReplyService replyService;
     private final NotificationService notificationService;
     private final CommentLikeCrudService commentLikeCrudService;
-    private final ReplyCrudService replyCrudService;
 
-    public List<ResponseCommentDto> getCommentDtosByPostId(Long postId) {
+    public List<ResponseCommentDto> getCommentResponseByPostId(Long postId) {
         List<Long> commentIds = commentCrudService.findCommentIdByPostId(postId);
         return commentIds.stream()
                 .sorted(Comparator.reverseOrder())
@@ -61,6 +60,10 @@ public class CommentService {
         Comment comment = commentCrudService.findById(commentId);
         return buildCommentContentDto(comment);
     }
+
+//    public List<ResponseCommentDto> getCommentResponseByPostIdAndCommentPage(RequestGetCommentDto dto) {
+//
+//    }
 
     public Comment createComment(CreateCommentDto dto) {
         User loginUser = userService.findById(dto.getLoginUserId());
