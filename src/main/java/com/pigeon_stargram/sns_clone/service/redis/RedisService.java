@@ -520,13 +520,13 @@ public class RedisService {
         if (value.equals(0L)) {
             // 더미데이터를 제외한 count
             return redisTemplate.opsForZSet()
-                    .count(key, Double.MIN_VALUE, Double.MAX_VALUE) - 1;
+                    .count(key, -Double.MAX_VALUE, Double.MAX_VALUE) - 1;
         }
 
         Double score = redisTemplate.opsForZSet().score(key, value);
 
         // 더미데이터와 value를 제외한 count
-        return redisTemplate.opsForZSet().count(key, Double.MIN_VALUE, score) - 2;
+        return redisTemplate.opsForZSet().count(key, -Double.MAX_VALUE, score) - 2;
     }
 
     /**
