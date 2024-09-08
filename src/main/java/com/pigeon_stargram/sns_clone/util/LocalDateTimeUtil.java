@@ -8,9 +8,18 @@ import java.util.Comparator;
 
 public class LocalDateTimeUtil {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter chatFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnnnnnn");
 
     public static String formatTime(LocalDateTime modifiedDate) {
         return modifiedDate.format(formatter);
+    }
+    public static String chatFormatTime(LocalDateTime modifiedDate) {
+        return modifiedDate.format(chatFormatter);
+    }
+
+    public static LocalDateTime getChatLocalDateTime(String lastFetchedTime){
+        if(lastFetchedTime == null) return getCurrentTime();
+        return LocalDateTime.parse(lastFetchedTime, chatFormatter);
     }
 
     public static String getCurrentFormattedTime() {

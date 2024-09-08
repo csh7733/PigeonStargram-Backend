@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "chats")
+@ToString
 public class Chat extends MongoBaseTimeEntity {
 
     @Id

@@ -18,6 +18,7 @@ import com.pigeon_stargram.sns_clone.service.user.UserBuilder;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -25,6 +26,9 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 import static com.pigeon_stargram.sns_clone.service.chat.ChatBuilder.*;
@@ -58,10 +62,13 @@ public class ChatController {
     }
 
     @GetMapping("/chats")
-    public List<ResponseChatHistoryDto> getCurrentChatHistory(@RequestParam Long user1Id,
-                                                              @RequestParam Long user2Id) {
+    public ResponseChatHistoriesDto getCurrentChatHistory(@RequestParam Long user1Id,
+                                                              @RequestParam Long user2Id,
+                                                              @RequestParam(required = false) String lastFetchedTime,
+                                                              @RequestParam(defaultValue = "10") int size) {
+
         GetUserChatsDto getUserChatsDto = buildGetUserChatsDto(user1Id, user2Id);
-        return chatService.getUserChats(getUserChatsDto);
+        return chatService.getUserChats(getUserChatsDto, lastFetchedTime, size);
     }
 
     @GetMapping("/users/{id}/online-status")

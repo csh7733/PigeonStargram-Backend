@@ -8,6 +8,7 @@ import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseChatHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseOnlineStatusDto;
 
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.UNSUPPORTED_OPERATION;
+import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.chatFormatTime;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.formatTime;
 
 public class ChatBuilder {
@@ -25,10 +26,11 @@ public class ChatBuilder {
 
     public static ResponseChatHistoryDto buildResponseChatHistoryDto(Chat chat) {
         return ResponseChatHistoryDto.builder()
+                .id(chat.getId())
                 .from(chat.getSenderId())
                 .to(chat.getRecipientId())
                 .text(chat.getType().equals("image") ? chat.getImagePath() : chat.getText())
-                .time(formatTime(chat.getCreatedDate()))
+                .time(chatFormatTime(chat.getCreatedDate()))
                 .isImage(chat.getType().equals("image"))
                 .build();
     }

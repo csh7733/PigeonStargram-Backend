@@ -6,6 +6,7 @@ import com.pigeon_stargram.sns_clone.domain.chat.UnreadChat;
 import com.pigeon_stargram.sns_clone.dto.chat.internal.GetUserChatsDto;
 import com.pigeon_stargram.sns_clone.dto.chat.internal.NewChatDto;
 import com.pigeon_stargram.sns_clone.dto.chat.internal.SendLastMessageDto;
+import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseChatHistoriesDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseChatHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.UnReadChatCountDto;
@@ -16,16 +17,20 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
 import static com.pigeon_stargram.sns_clone.constant.RedisUserConstants.ACTIVE_USERS_KEY_PREFIX;
 import static com.pigeon_stargram.sns_clone.service.chat.ChatBuilder.buildSendLastMessageDto;
-import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFormattedTime;
+import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.*;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 
 @Service
@@ -84,18 +89,27 @@ public class ChatService {
         messagingTemplate.convertAndSend(destination2, lastMessage);
     }
 
-    public List<ResponseChatHistoryDto> getUserChats(GetUserChatsDto dto) {
+    public ResponseChatHistoriesDto getUserChats(GetUserChatsDto dto, String lastFetchedTime, Integer size) {
         Long user1Id = dto.getUser1Id();
         Long user2Id = dto.getUser2Id();
 
-        List<Chat> chats = chatRepository.findChatsBetweenUsers(user1Id, user2Id);
+        LocalDateTime lastFetchedDateTime = getChatLocalDateTime(lastFetchedTime);
 
-        List<ResponseChatHistoryDto> chatHistoryDtos = chats.stream()
+        // size+1개의 데이터를 가져옴
+        Pageable pageable = PageRequest.of(0, size + 1, Sort.by("id").descending());
+        List<Chat> chats = chatRepository.findChatsBefore(user1Id, user2Id, lastFetchedDateTime, pageable);
+
+        // size+1개 중에서 size개만 반환하고, size+1번째 데이터가 있으면 hasMoreChat을 true로 설정
+        Boolean hasMoreChat = chats.size() > size;
+        List<Chat> limitedChats = chats.subList(0, Math.min(chats.size(), size));
+
+        // 최대 size개의 메시지만 DTO로 변환
+        List<ResponseChatHistoryDto> chatHistoryDtos = limitedChats.stream()
                 .map(ChatBuilder::buildResponseChatHistoryDto)
-                .sorted(Comparator.comparing(ResponseChatHistoryDto::getTime))
+                .sorted(Comparator.comparing(ResponseChatHistoryDto::getId))
                 .collect(Collectors.toList());
 
-        return chatHistoryDtos;
+        return new ResponseChatHistoriesDto(chatHistoryDtos, hasMoreChat);
     }
 
 
