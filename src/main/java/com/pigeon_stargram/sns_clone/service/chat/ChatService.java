@@ -224,12 +224,6 @@ public class ChatService {
             lastMessageDto.setLastMessage(lastMessageText);
             lastMessageDto.setTime(getCurrentFormattedTime());
 
-            // DB 업데이트
-            LastMessage lastMessageEntity = lastMessageRepository.findByUser1IdAndUser2Id(userIds[0], userIds[1])
-                    .orElse(new LastMessage(userIds[0], userIds[1], lastMessageText));
-            lastMessageEntity.update(lastMessageText);
-            lastMessageRepository.save(lastMessageEntity);
-
             // 캐시 갱신
             // TTL은 하루로 설정
             redisService.putValueInHash(hashKey, fieldKey, lastMessageDto, Day);

@@ -95,6 +95,21 @@ public class RedisService {
     }
 
     /**
+     * Set에 List 전체 값을 추가하고, TTL(Time to Live)을 설정합니다.
+     *
+     * @param setKey  Set의 키
+     * @param values  추가할 List
+     * @param minutes TTL 값 (분 단위)
+     */
+    public <T> void addAllToSet(String setKey, List<T> values, Long minutes) {
+        // Set에 List 전체 값을 추가
+        redisTemplate.opsForSet().add(setKey, values.toArray());
+
+        // TTL 설정 (분 단위)
+        redisTemplate.expire(setKey, minutes, TimeUnit.MINUTES);
+    }
+
+    /**
      * Set에서 값을 제거합니다.
      *
      * @param setKey Set의 키
@@ -627,6 +642,26 @@ public class RedisService {
         list.add(0L);
         addAllToSet(cacheKey, list);
 
+        list.remove(0L);
+        return list;
+    }
+
+    /**
+     * List<Long>에 더미 데이터를 추가하여 Redis의 Set에 캐시하고, TTL을 설정한 후 원본 List를 반환합니다.
+     *
+     * @param list     캐시할 데이터의 List
+     * @param cacheKey 캐시 Set의 Key
+     * @param minutes  TTL 값 (분 단위)
+     * @return 원본 List
+     */
+    public List<Long> cacheListToSetWithDummy(List<Long> list, String cacheKey, Long minutes) {
+        // 더미 데이터 추가
+        list.add(0L);
+
+        // Set에 캐시하고 TTL 설정
+        addAllToSet(cacheKey, list, minutes);
+
+        // 더미 데이터 제거
         list.remove(0L);
         return list;
     }
