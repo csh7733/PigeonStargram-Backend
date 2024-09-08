@@ -481,10 +481,19 @@ public class RedisService {
      * @return 키에 해당하는 Sorted Set을 List로 변환하고 더미데이터를 제거한 결과
      */
     public List<Long> getSortedSetAfterValueAsList(String key, Long value) {
+        if (value.equals(0L)) {
+            return redisTemplate.opsForZSet()
+                    .reverseRangeByScore(key, Double.MIN_VALUE, Double.MAX_VALUE, 0, COMMENT_FETCH_NUM).stream()
+                    .map(returnValue -> Long.valueOf((Integer) returnValue))
+                    .filter(returnValue -> !returnValue.equals(0L))
+                    .collect(Collectors.toList());
+        }
+
         Double score = redisTemplate.opsForZSet().score(key, value);
+        // todo value가 삭제됐을때 예외처리
 
         return redisTemplate.opsForZSet()
-                .reverseRangeByScore(key, Double.MIN_VALUE, score, 0, COMMENT_FETCH_NUM).stream()
+                .reverseRangeByScore(key, Double.MIN_VALUE, score, 1, COMMENT_FETCH_NUM).stream()
                 .map(returnValue -> Long.valueOf((Integer) returnValue))
                 .filter(returnValue -> !returnValue.equals(0L))
                 .collect(Collectors.toList());

@@ -59,7 +59,7 @@ public class PostService {
     private final CommentCrudService commentCrudService;
 
     public List<ResponsePostDto> getPostsByUserId(Long userId) {
-        return postCrudService.findPostIdByUserId(userId).stream()
+            return postCrudService.findPostIdByUserId(userId).stream()
                 .filter(postId -> !redisService.isMemberOfSet(UPLOADING_POSTS_SET, postId))
                 .sorted(Comparator.reverseOrder())
                 .map(this::getCombinedPost)
@@ -99,8 +99,7 @@ public class PostService {
 
 
     public ResponsePostDto getCombinedPost(Long postId) {
-        List<Long> commentIds = commentCrudService.findCommentIdByPostId(postId);
-        Long lastCommentId = commentIds.isEmpty() ? 0L : commentIds.getFirst();
+        Long lastCommentId = 0L;
 
         PostContentDto contentDto = getPostContent(postId);
         PostLikeDto likeDto = getPostsLike(postId);
