@@ -4,7 +4,6 @@ import com.pigeon_stargram.sns_clone.domain.post.Post;
 import com.pigeon_stargram.sns_clone.domain.post.PostLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.repository.post.PostLikeRepository;
-import com.pigeon_stargram.sns_clone.repository.post.PostRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -14,9 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
-import static com.pigeon_stargram.sns_clone.service.post.PostBuilder.*;
-import static com.pigeon_stargram.sns_clone.util.RedisUtil.*;
+import static com.pigeon_stargram.sns_clone.constant.CacheConstants.POST_ID;
+import static com.pigeon_stargram.sns_clone.constant.CacheConstants.POST_LIKE_USER_IDS;
+import static com.pigeon_stargram.sns_clone.service.post.PostBuilder.buildPostLike;
+import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyWildcardPatternGenerator;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -30,7 +30,13 @@ public class PostWriteBackService {
 
     private final PostLikeRepository postLikeRepository;
 
-    private final String postLikeUserIdsPattern = cacheKeyPatternGenerator(POST_LIKE_USER_IDS, POST_ID);
+    // Redis 에서 사용하는 글로벌 와일드카드 패턴으로, 정규표현식이 아님
+    private final String postLikeUserIdsPattern = cacheKeyWildcardPatternGenerator(POST_LIKE_USER_IDS, POST_ID);
+
+    private static Long parsePostId(String key) {
+        String[] parts = key.split("_", 2);
+        return Long.valueOf(parts[1].trim());
+    }
 
     public void writeBackPostLikeUserIds() {
         List<String> postLikeUserIdsKeys = redisService.findKeyByPattern(postLikeUserIdsPattern);
@@ -38,7 +44,7 @@ public class PostWriteBackService {
         postLikeUserIdsKeys.forEach(this::syncPostLikeUserIds);
     }
 
-    private void syncPostLikeUserIds(String key) {
+    public void syncPostLikeUserIds(String key) {
         Long postId = parsePostId(key);
 
         List<Long> postLikeUserIds = redisService.getSetAsLongListExcludeDummy(key);
@@ -50,10 +56,12 @@ public class PostWriteBackService {
         log.info("before={}", list);
         log.info("after={}", postLikeUserIds);
 
-        postLikeUserIds.forEach(postLikeUserId -> {
-            PostLike postLike = getPostLike(postLikeUserId, postId);
-            postLikeRepository.save(postLike);
-        });
+        postLikeUserIds.stream()
+                .filter(postLikeUserId -> !postLikeRepository.existsByUserIdAndPostId(postLikeUserId, postId))
+                .forEach(postLikeUserId -> {
+                    PostLike postLike = getPostLike(postLikeUserId, postId);
+                    postLikeRepository.save(postLike);
+                });
     }
 
     private PostLike getPostLike(Long postLikeUserId, Long postId) {
@@ -61,10 +69,5 @@ public class PostWriteBackService {
         Post post = postService.findById(postId);
 
         return buildPostLike(postLikeUser, post);
-    }
-
-    private static Long parsePostId(String key) {
-        String[] parts = key.split("_", 2);
-        return Long.valueOf(parts[1].trim());
     }
 }

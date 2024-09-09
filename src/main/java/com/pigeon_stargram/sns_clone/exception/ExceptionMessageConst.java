@@ -50,6 +50,8 @@ public class ExceptionMessageConst {
     // Redis
     public static final String UNSUPPORTED_TYPE
             = "큐에서 지원하지 않는 형식입니다.";
+    public static final String PATTERN_NOT_MATCH
+            = "Key에 매칭되는 패턴이 없습니다.";
 
     public static final String FOLLOW_EXIST
             = "이미 팔로우중입니다.";
