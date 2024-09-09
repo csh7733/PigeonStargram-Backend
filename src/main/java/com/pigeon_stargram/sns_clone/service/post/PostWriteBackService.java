@@ -33,11 +33,6 @@ public class PostWriteBackService {
     // Redis 에서 사용하는 글로벌 와일드카드 패턴으로, 정규표현식이 아님
     private final String postLikeUserIdsPattern = cacheKeyWildcardPatternGenerator(POST_LIKE_USER_IDS, POST_ID);
 
-    private static Long parsePostId(String key) {
-        String[] parts = key.split("_", 2);
-        return Long.valueOf(parts[1].trim());
-    }
-
     public void writeBackPostLikeUserIds() {
         List<String> postLikeUserIdsKeys = redisService.findKeyByPattern(postLikeUserIdsPattern);
 
@@ -62,6 +57,11 @@ public class PostWriteBackService {
                     PostLike postLike = getPostLike(postLikeUserId, postId);
                     postLikeRepository.save(postLike);
                 });
+    }
+
+    private static Long parsePostId(String key) {
+        String[] parts = key.split("_", 2);
+        return Long.valueOf(parts[1].trim());
     }
 
     private PostLike getPostLike(Long postLikeUserId, Long postId) {

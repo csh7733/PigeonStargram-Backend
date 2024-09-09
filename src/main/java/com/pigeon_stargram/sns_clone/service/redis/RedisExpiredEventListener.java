@@ -5,6 +5,7 @@ import com.pigeon_stargram.sns_clone.exception.redis.PatternNotMatchException;
 import com.pigeon_stargram.sns_clone.service.post.PostWriteBackService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import static com.pigeon_stargram.sns_clone.constant.CacheConstants.POST_ID;
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.POST_LIKE_USER_IDS;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyRegexPatternGenerator;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class RedisExpiredEventListener implements MessageListener {
@@ -35,6 +37,8 @@ public class RedisExpiredEventListener implements MessageListener {
     @Override
     public void onMessage(Message message, byte[] pattern) {
         String expiredKey = message.toString();
+
+        log.info("Key Expired={}", expiredKey);
 
         regexPatterns.entrySet().stream()
                 .filter(entry -> {
