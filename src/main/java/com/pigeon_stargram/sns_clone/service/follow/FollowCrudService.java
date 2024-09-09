@@ -43,7 +43,6 @@ public class FollowCrudService {
                 .map(User::getId)
                 .collect(Collectors.toList());
 
-        // TTL은 하루로 설정
         return redisService.cacheListToSetWithDummy(followerIds, cacheKey, ONE_DAY_TTL);
     }
 

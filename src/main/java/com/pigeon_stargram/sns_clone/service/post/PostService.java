@@ -57,6 +57,10 @@ public class PostService {
     private final FileUploadWorker fileUploadWorker;
     private final CommentCrudService commentCrudService;
 
+    public Post findById(Long postId) {
+        return postCrudService.findById(postId);
+    }
+
     public List<ResponsePostDto> getPostsByUserId(Long userId) {
             return postCrudService.findPostIdByUserId(userId).stream()
                 .filter(postId -> !redisService.isMemberOfSet(UPLOADING_POSTS_SET, postId))
@@ -64,7 +68,6 @@ public class PostService {
                 .map(this::getCombinedPost)
                 .collect(Collectors.toList());
     }
-
 
     public List<ResponsePostDto> getRecentPostsByUser(Long userId) {
         LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);

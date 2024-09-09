@@ -72,8 +72,8 @@ public class RedisService {
     /**
      * Set에 값을 추가하고 TTL을 설정합니다.
      *
-     * @param setKey Set의 키
-     * @param value  추가할 값
+     * @param setKey     Set의 키
+     * @param value      추가할 값
      * @param ttlMinutes TTL을 분 단위로 설정 (TTL: Time to Live)
      */
     public void addToSet(String setKey, Object value, long ttlMinutes) {
@@ -369,9 +369,9 @@ public class RedisService {
     /**
      * Sorted Set에 값을 추가하고 TTL을 설정합니다.
      *
-     * @param setKey    Sorted Set의 키
-     * @param score     정렬 기준이 될 점수 (예: 타임스탬프)
-     * @param value     추가할 값
+     * @param setKey     Sorted Set의 키
+     * @param score      정렬 기준이 될 점수 (예: 타임스탬프)
+     * @param value      추가할 값
      * @param ttlMinutes TTL을 분 단위로 설정 (TTL: Time to Live)
      */
     public void addToSortedSet(String setKey, double score, Object value, long ttlMinutes) {
@@ -633,12 +633,11 @@ public class RedisService {
     /**
      * List<Long>에 더미데이터를 추가하여 Redis의 Set에 캐시하고 원본 List를 반환합니다.
      *
-     * @param list     캐시할 데이터의 List
      * @param cacheKey 캐시 Set의 Key
+     * @param list     캐시할 데이터의 List
      * @return 원본 List
      */
-    public List<Long> cacheListToSetWithDummy(List<Long> list,
-                                              String cacheKey) {
+    public List<Long> cacheListToSetWithDummy(String cacheKey, List<Long> list) {
         list.add(0L);
         addAllToSet(cacheKey, list);
 
@@ -714,6 +713,7 @@ public class RedisService {
     }
 
     /**
+     *
      * List<DefaultTypedTuple<Long>>에 더미데이터를 추가하여 Redis의 Sorted Set에 캐시하고
      * TTL을 설정한 후 원본 value List를 반환합니다.
      *
@@ -739,5 +739,14 @@ public class RedisService {
     }
 
 
+    /**
+     * 특정 형식에 맞는 Redis의 Key들을 가져옵니다.
+     *
+     * @param patten 검색하고자하는 Key의 패턴
+     * @return 해당되는 Key의 List
+     */
+    public List<String> findKeyByPattern(String patten) {
+        return new ArrayList<>(Objects.requireNonNull(redisTemplate.keys(patten)));
+    }
 
 }
