@@ -111,8 +111,15 @@ public class PostService {
     }
 
     public ResponsePostDto getPostByPostId(Long postId) {
+        // 아직 업로드중인 post는 리턴하지 않음
+        if (redisService.isMemberOfSet(UPLOADING_POSTS_SET, postId)) {
+            return null;
+        }
+
+        // 그 외에는 포스트를 가져옴
         return getCombinedPost(postId);
     }
+
 
     public PostContentDto getPostContent(Long postId) {
         Post post = postCrudService.findById(postId);
