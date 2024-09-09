@@ -96,7 +96,6 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-
     public ResponsePostDto getCombinedPost(Long postId) {
         Long lastCommentId = 0L;
 
@@ -109,6 +108,10 @@ public class PostService {
         Boolean isMoreComments = commentCrudService.getIsMoreComment(postId, lastCommentId);
 
         return buildResponsePostDto(contentDto, likeDto, commentDtos, isMoreComments);
+    }
+
+    public ResponsePostDto getPostByPostId(Long postId) {
+        return getCombinedPost(postId);
     }
 
     public PostContentDto getPostContent(Long postId) {

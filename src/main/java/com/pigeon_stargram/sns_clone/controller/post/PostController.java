@@ -54,6 +54,13 @@ public class PostController {
         return postService.createPost(createPostDto);
     }
 
+    @GetMapping("/{postId}")
+    public ResponsePostDto getPost(@LoginUser SessionUser loginUser,
+                                    @PathVariable Long postId) {
+
+        return postService.getPostByPostId(postId);
+    }
+
     @PatchMapping("/{postId}")
     public void editPost(@LoginUser SessionUser loginUser,
                          @PathVariable Long postId,
