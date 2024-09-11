@@ -32,6 +32,7 @@ import static com.pigeon_stargram.sns_clone.constant.RedisUserConstants.ACTIVE_U
 import static com.pigeon_stargram.sns_clone.service.chat.ChatBuilder.buildSendLastMessageDto;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.*;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
+import static com.pigeon_stargram.sns_clone.util.RedisUtil.hashWriteBackKeyGenerator;
 
 @Service
 @RequiredArgsConstructor
@@ -113,10 +114,15 @@ public class ChatService {
     }
 
 
-    public Integer increaseUnReadChatCount(Long userId, Long toUserId) {
+    public Integer increaseUnReadChatCount(Long userId,
+                                           Long toUserId) {
         // 캐시 키 생성
         String cacheKey = cacheKeyGenerator(UNREAD_CHAT_COUNT, USER_ID, userId.toString());
         String fieldKey = toUserId.toString();
+
+        // write back set에 추가
+        String dirtyKey = hashWriteBackKeyGenerator(cacheKey, fieldKey);
+        redisService.pushToWriteBackSet(dirtyKey);
 
         // Redis Hash에서 해당 값이 있는지 확인하고, 있으면 값을 증가시킵니다.
         if (redisService.hasFieldInHash(cacheKey, fieldKey)) {

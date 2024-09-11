@@ -4,6 +4,7 @@ import com.pigeon_stargram.sns_clone.domain.post.PostLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.repository.post.PostLikeRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
+import com.pigeon_stargram.sns_clone.service.redis.WriteBackScheduler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,9 @@ public class PostLikeCrudService {
     public void toggleLike(Long userId,
                            Long postId) {
         String cacheKey = cacheKeyGenerator(POST_LIKE_USER_IDS, POST_ID, postId.toString());
+
+        // write back set에 추가
+        redisService.pushToWriteBackSet(cacheKey);
 
         // 캐시 히트
         if (redisService.hasKey(cacheKey)) {
@@ -64,8 +68,6 @@ public class PostLikeCrudService {
         } else {
             postLikeUserIds.add(userId);
         }
-
-        redisService.addAllToSet(cacheKey, postLikeUserIds, ONE_DAY_TTL);
     }
 
     public Integer countByPostId(Long postId) {

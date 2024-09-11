@@ -39,6 +39,7 @@ public class CacheConstants {
     public static final String USER_NAME_TO_ID_MAPPING_CACHE_KEY = "userNameToIdMapping";
     public static final String TIMELINE = "timeline";
 
+    public static final String WRITE_BACK = "writeBack";
 
     // key
     public static final String USER_ID = "userId";

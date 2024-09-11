@@ -17,6 +17,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.pigeon_stargram.sns_clone.constant.CacheConstants.ONE_MINUTE_TTL;
+import static com.pigeon_stargram.sns_clone.constant.CacheConstants.WRITE_BACK;
 import static com.pigeon_stargram.sns_clone.constant.PageConstants.COMMENT_FETCH_NUM;
 
 @Slf4j
@@ -56,7 +58,17 @@ public class RedisService {
      * @return 가져온 태스크 (Object 타입)
      */
     public Object popTask(String queueName) {
+
         return popTask(queueName, Duration.ZERO);
+    }
+
+    /**
+     * Set에서 랜덤한 원소 하나를 삭제하고 반환합니다.
+     * @param setKey Set의 Key
+     * @return 랜덤하게 삭제된 원소
+     */
+    public Object popFromSet(String setKey) {
+        return redisTemplate.opsForSet().pop(setKey);
     }
 
     /**
@@ -747,6 +759,28 @@ public class RedisService {
      */
     public List<String> findKeyByPattern(String patten) {
         return new ArrayList<>(Objects.requireNonNull(redisTemplate.keys(patten)));
+    }
+
+    /**
+     * Key에 TTL을 설정하고, 성공 여부를 반환합니다.
+     * @param key TTL을 설정할 Key
+     * @param minutes TTL
+     * @return 성공여부
+     */
+    public Boolean setTtl(String key,
+                          Long minutes) {
+        return redisTemplate.expire(key, minutes, TimeUnit.MINUTES);
+    }
+
+    /**
+     * 변경된 내용을 가진 Key의 TTL을 연장하고 WriteBack Set에 등록합니다.
+     * @param dirtyKey 변경된 Key
+     */
+    public void pushToWriteBackSet(String dirtyKey) {
+        setTtl(dirtyKey, ONE_MINUTE_TTL);
+        addToSet(WRITE_BACK, dirtyKey);
+
+        log.info("WriteBack Set에 추가되었습니다. key={}", dirtyKey);
     }
 
 }

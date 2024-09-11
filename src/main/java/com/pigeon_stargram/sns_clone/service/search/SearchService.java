@@ -30,10 +30,10 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 @Transactional
 public class SearchService {
 
-    private final SearchHistoryRepository searchHistoryRepository;
     private final UserService userService;
     private final RedisService redisService;
 
+    private final SearchHistoryRepository searchHistoryRepository;
 
     public List<ResponseTopSearchDto> getTopSearchTermsByPrefix(String prefix) {
         // 캐시 키 생성
