@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
+@ToString
 @Getter
 @NoArgsConstructor
 @Entity
@@ -46,5 +48,9 @@ public class UnreadChat {
 
     public void resetCount() {
         this.count = 0;
+    }
+
+    public void setCount(Integer count) {
+        this.count = count;
     }
 }

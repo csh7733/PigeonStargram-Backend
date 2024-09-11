@@ -8,9 +8,11 @@ import jakarta.persistence.Id;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.formatTime;
 
+@ToString
 @Getter
 @NoArgsConstructor
 @Entity
@@ -33,6 +35,10 @@ public class LastMessage extends BaseTimeEntity {
         this.lastMessage = lastMessage;
     }
     public void update(String lastMessage){
+        this.lastMessage = lastMessage;
+    }
+
+    public void setLastMessage(String lastMessage) {
         this.lastMessage = lastMessage;
     }
 }

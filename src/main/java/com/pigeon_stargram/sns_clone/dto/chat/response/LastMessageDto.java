@@ -5,6 +5,7 @@ import lombok.*;
 
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.formatTime;
 
+@ToString
 @Getter
 @Setter
 @AllArgsConstructor

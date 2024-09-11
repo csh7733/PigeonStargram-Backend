@@ -2,6 +2,7 @@ package com.pigeon_stargram.sns_clone.service.redis;
 
 import com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst;
 import com.pigeon_stargram.sns_clone.exception.redis.PatternNotMatchException;
+import com.pigeon_stargram.sns_clone.service.chat.ChatWriteBackService;
 import com.pigeon_stargram.sns_clone.service.post.PostWriteBackService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class WriteBackScheduler {
     private static final Map<String, Consumer<String>> regexPatterns = new HashMap<>();
 
     private final PostWriteBackService postWriteBackService;
+    private final ChatWriteBackService chatWriteBackService;
     private final RedisService redisService;
 
     @PostConstruct
@@ -35,23 +37,26 @@ public class WriteBackScheduler {
         regexPatterns.put(
                 cacheKeyPatternGenerator(POST_LIKE_USER_IDS, POST_ID),
                 postWriteBackService::syncPostLikeUserIds);
-//        regexPatterns.put(
-//                cacheKeyPatternGenerator(UNREAD_CHAT_COUNT, USER_ID),
-//
-//        )
+        regexPatterns.put(
+                cacheKeyPatternGenerator(UNREAD_CHAT_COUNT, USER_ID),
+                chatWriteBackService::syncUnreadChatCount);
+        regexPatterns.put(
+                cacheKeyPatternGenerator(LAST_MESSAGE, USER_ID),
+                chatWriteBackService::syncLastMessage);
     }
 
     @Scheduled(fixedRate = 10000)
     public void syncCacheToDB() {
 
-        List<String> bottomNFromSortedSet = redisService.getBottomNFromSortedSet(WRITE_BACK, 1, String.class);
-        if(bottomNFromSortedSet.isEmpty()){
+        List<String> sortedSetList = redisService.getBottomNFromSortedSet(WRITE_BACK, 1, String.class);
+        if(sortedSetList.isEmpty()){
             return;
         }
-        String writeBackKey = bottomNFromSortedSet.getFirst();
+        String writeBackKey = sortedSetList.getFirst();
         log.info("WriteBack Set에서 DB에 기록할 Key를 가져왔습니다. key={}", writeBackKey);
 
         writeBack(writeBackKey);
+        redisService.removeFromSortedSet(WRITE_BACK, writeBackKey);
     }
 
     /**
