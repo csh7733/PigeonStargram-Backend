@@ -12,13 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.pigeon_stargram.sns_clone.constant.CacheConstants.POST_ID;
-import static com.pigeon_stargram.sns_clone.constant.CacheConstants.POST_LIKE_USER_IDS;
 import static com.pigeon_stargram.sns_clone.service.post.PostBuilder.buildPostLike;
 
 @Slf4j
@@ -37,39 +33,26 @@ public class PostWriteBackService {
         Long postId = RedisUtil.parseSuffix(key);
         log.info("WriteBack key={}", key);
 
+        //for test
         Set<Long> repositoryPostLikeUserIds = postLikeRepository.findByPostId(postId).stream()
                 .map(PostLike::getUser)
                 .map(User::getId)
                 .collect(Collectors.toSet());
         Set<Long> cachePostLikeUserIds = redisService.getSetAsLongListExcludeDummy(key).stream()
-                        .collect(Collectors.toSet());
+                .collect(Collectors.toSet());
         log.info("before={}", repositoryPostLikeUserIds);
         log.info("after={}", cachePostLikeUserIds);
 
-        removeLike(repositoryPostLikeUserIds, cachePostLikeUserIds);
-        createLike(repositoryPostLikeUserIds, cachePostLikeUserIds, postId);
+        cachePostLikeUserIds.stream()
+                .filter(userId -> !postLikeRepository.existsByUserIdAndPostId(userId, postId))
+                .forEach(userId -> {
+                    PostLike postLike = getPostLike(userId, postId);
+                    postLikeRepository.save(postLike);
+                });
     }
 
-    private void createLike(Set<Long> repositoryPostLikeUserIds, Set<Long> cachePostLikeUserIds, Long postId) {
-        Set<Long> createUserIds = new HashSet<>(cachePostLikeUserIds);
-        createUserIds.removeAll(repositoryPostLikeUserIds);
-        log.info("createUserIds={}", createUserIds);
-
-        createUserIds.forEach(createUserId -> {
-            PostLike postLike = getPostLike(createUserId, postId);
-            postLikeRepository.save(postLike);
-        });
-    }
-
-    private void removeLike(Set<Long> repositoryPostLikeUserIds, Set<Long> cachePostLikeUserIds) {
-        Set<Long> removeUserIds = new HashSet<>(repositoryPostLikeUserIds);
-        removeUserIds.removeAll(cachePostLikeUserIds);
-        log.info("removeUserIds={}", removeUserIds);
-
-        postLikeRepository.deleteAllByUserIdIn(removeUserIds);
-    }
-
-    private PostLike getPostLike(Long postLikeUserId, Long postId) {
+    private PostLike getPostLike(Long postLikeUserId,
+                                 Long postId) {
         User postLikeUser = userService.findById(postLikeUserId);
         Post post = postService.findById(postId);
 

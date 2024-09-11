@@ -27,6 +27,7 @@ public class PostLikeCrudService {
 
     /**
      * Post에 대한 User의 Like 정보를 캐시에서 토글한다.
+     *
      * @param userId 좋아요를 누른 사용자 Id
      * @param postId Post Id
      */
@@ -35,7 +36,6 @@ public class PostLikeCrudService {
         String cacheKey = cacheKeyGenerator(POST_LIKE_USER_IDS, POST_ID, postId.toString());
 
         // write back set에 추가
-        redisService.pushToWriteBackSortedSet(cacheKey);
 
         // 캐시 히트
         if (redisService.hasKey(cacheKey)) {
@@ -44,8 +44,10 @@ public class PostLikeCrudService {
             // 좋아요 정보 토글
             if (redisService.isMemberOfSet(cacheKey, userId)) {
                 redisService.removeFromSet(cacheKey, userId);
+                repository.deleteByUserIdAndPostId(userId, postId);
             } else {
                 redisService.addToSet(cacheKey, userId, ONE_DAY_TTL);
+                redisService.pushToWriteBackSortedSet(cacheKey);
             }
 
             return;
@@ -56,16 +58,18 @@ public class PostLikeCrudService {
         List<PostLike> postLikes = repository.findByPostId(postId);
 
         List<Long> postLikeUserIds = postLikes.stream()
-                        .map(PostLike::getUser)
-                        .map(User::getId)
-                        .collect(Collectors.toList());
+                .map(PostLike::getUser)
+                .map(User::getId)
+                .collect(Collectors.toList());
         postLikeUserIds.add(0L);
 
         // 좋아요 정보 토글
         if (postLikeUserIds.contains(userId)) {
             postLikeUserIds.remove(userId);
+            repository.deleteByUserIdAndPostId(userId, postId);
         } else {
             postLikeUserIds.add(userId);
+            redisService.pushToWriteBackSortedSet(cacheKey);
         }
 
         redisService.addAllToSet(cacheKey, postLikeUserIds, ONE_DAY_TTL);

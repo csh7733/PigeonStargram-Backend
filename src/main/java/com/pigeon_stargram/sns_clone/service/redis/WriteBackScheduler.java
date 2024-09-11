@@ -37,6 +37,9 @@ public class WriteBackScheduler {
         regexPatterns.put(
                 cacheKeyPatternGenerator(POST_LIKE_USER_IDS, POST_ID),
                 postWriteBackService::syncPostLikeUserIds);
+//        regexPatterns.put(
+//                cacheKeyPatternGenerator(COMMENT_LIKE_USER_IDS, COMMENT_ID),
+//                commentWriteBackService::syncCommentLikeUserIds);
         regexPatterns.put(
                 cacheKeyPatternGenerator(UNREAD_CHAT_COUNT, USER_ID),
                 chatWriteBackService::syncUnreadChatCount);

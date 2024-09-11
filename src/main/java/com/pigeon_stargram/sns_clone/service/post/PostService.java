@@ -221,6 +221,7 @@ public class PostService {
     }
 
     public void editPost(EditPostDto dto) {
+
         postCrudService.edit(dto.getPostId(), dto.getContent());
     }
 
