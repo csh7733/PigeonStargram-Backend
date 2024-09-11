@@ -6,17 +6,20 @@ import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.repository.post.PostLikeRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
+import com.pigeon_stargram.sns_clone.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.POST_ID;
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.POST_LIKE_USER_IDS;
 import static com.pigeon_stargram.sns_clone.service.post.PostBuilder.buildPostLike;
-import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyWildcardPatternGenerator;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -30,38 +33,40 @@ public class PostWriteBackService {
 
     private final PostLikeRepository postLikeRepository;
 
-    // Redis 에서 사용하는 글로벌 와일드카드 패턴으로, 정규표현식이 아님
-    private final String postLikeUserIdsPattern = cacheKeyWildcardPatternGenerator(POST_LIKE_USER_IDS, POST_ID);
-
-    public void writeBackPostLikeUserIds() {
-        List<String> postLikeUserIdsKeys = redisService.findKeyByPattern(postLikeUserIdsPattern);
-
-        postLikeUserIdsKeys.forEach(this::syncPostLikeUserIds);
-    }
-
     public void syncPostLikeUserIds(String key) {
-        Long postId = parsePostId(key);
-
-        List<Long> postLikeUserIds = redisService.getSetAsLongListExcludeDummy(key);
+        Long postId = RedisUtil.parseSuffix(key);
         log.info("WriteBack key={}", key);
-        List<Long> list = postLikeRepository.findByPostId(postId).stream()
+
+        Set<Long> repositoryPostLikeUserIds = postLikeRepository.findByPostId(postId).stream()
                 .map(PostLike::getUser)
                 .map(User::getId)
-                .toList();
-        log.info("before={}", list);
-        log.info("after={}", postLikeUserIds);
+                .collect(Collectors.toSet());
+        Set<Long> cachePostLikeUserIds = redisService.getSetAsLongListExcludeDummy(key).stream()
+                        .collect(Collectors.toSet());
+        log.info("before={}", repositoryPostLikeUserIds);
+        log.info("after={}", cachePostLikeUserIds);
 
-        postLikeUserIds.stream()
-                .filter(postLikeUserId -> !postLikeRepository.existsByUserIdAndPostId(postLikeUserId, postId))
-                .forEach(postLikeUserId -> {
-                    PostLike postLike = getPostLike(postLikeUserId, postId);
-                    postLikeRepository.save(postLike);
-                });
+        removeLike(repositoryPostLikeUserIds, cachePostLikeUserIds);
+        createLike(repositoryPostLikeUserIds, cachePostLikeUserIds, postId);
     }
 
-    private static Long parsePostId(String key) {
-        String[] parts = key.split("_", 2);
-        return Long.valueOf(parts[1].trim());
+    private void createLike(Set<Long> repositoryPostLikeUserIds, Set<Long> cachePostLikeUserIds, Long postId) {
+        Set<Long> createUserIds = new HashSet<>(cachePostLikeUserIds);
+        createUserIds.removeAll(repositoryPostLikeUserIds);
+        log.info("createUserIds={}", createUserIds);
+
+        createUserIds.forEach(createUserId -> {
+            PostLike postLike = getPostLike(createUserId, postId);
+            postLikeRepository.save(postLike);
+        });
+    }
+
+    private void removeLike(Set<Long> repositoryPostLikeUserIds, Set<Long> cachePostLikeUserIds) {
+        Set<Long> removeUserIds = new HashSet<>(repositoryPostLikeUserIds);
+        removeUserIds.removeAll(cachePostLikeUserIds);
+        log.info("removeUserIds={}", removeUserIds);
+
+        postLikeRepository.deleteAllByUserIdIn(removeUserIds);
     }
 
     private PostLike getPostLike(Long postLikeUserId, Long postId) {

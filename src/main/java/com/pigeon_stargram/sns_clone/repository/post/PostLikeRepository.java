@@ -4,6 +4,7 @@ import com.pigeon_stargram.sns_clone.domain.post.PostLike;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,5 +17,5 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
 
     Integer countByPostId(Long postId);
 
-    Boolean existsByUserIdAndPostId(Long userId, Long postId);
+    void deleteAllByUserIdIn(Collection<Long> userIds);
 }

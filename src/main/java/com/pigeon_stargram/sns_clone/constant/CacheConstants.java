@@ -39,6 +39,7 @@ public class CacheConstants {
     public static final String USER_NAME_TO_ID_MAPPING_CACHE_KEY = "userNameToIdMapping";
     public static final String TIMELINE = "timeline";
 
+    public static final String WRITE_BACK = "writeBack";
 
     // key
     public static final String USER_ID = "userId";
@@ -54,4 +55,9 @@ public class CacheConstants {
     public static final Long ONE_DAY_TTL = 1440L;
     public static final Long ONE_HOUR_TTL = 60L;
     public static final Long ONE_MINUTE_TTL = 1L;
+
+    // Key Generator
+    public static final String SEPARATOR_1 = "::";
+    public static final String SEPARATOR_2 = "_";
+    public static final String SEPARATOR_3 = "+";
 }

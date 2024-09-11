@@ -34,6 +34,9 @@ public class PostLikeCrudService {
                            Long postId) {
         String cacheKey = cacheKeyGenerator(POST_LIKE_USER_IDS, POST_ID, postId.toString());
 
+        // write back set에 추가
+        redisService.pushToWriteBackSortedSet(cacheKey);
+
         // 캐시 히트
         if (redisService.hasKey(cacheKey)) {
             log.info("toggleLike 캐시 히트, postId={}, userId={}", postId, userId);
@@ -64,8 +67,6 @@ public class PostLikeCrudService {
         } else {
             postLikeUserIds.add(userId);
         }
-
-        redisService.addAllToSet(cacheKey, postLikeUserIds, ONE_DAY_TTL);
     }
 
     public Integer countByPostId(Long postId) {
