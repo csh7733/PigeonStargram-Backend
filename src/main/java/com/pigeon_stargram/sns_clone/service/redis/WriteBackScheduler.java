@@ -44,8 +44,11 @@ public class WriteBackScheduler {
     @Scheduled(fixedRate = 10000)
     public void syncCacheToDB() {
 
-        String writeBackKey = redisService.getBottomNFromSortedSet(WRITE_BACK, 1, String.class)
-                .getFirst();
+        List<String> bottomNFromSortedSet = redisService.getBottomNFromSortedSet(WRITE_BACK, 1, String.class);
+        if(bottomNFromSortedSet.isEmpty()){
+            return;
+        }
+        String writeBackKey = bottomNFromSortedSet.getFirst();
         log.info("WriteBack Set에서 DB에 기록할 Key를 가져왔습니다. key={}", writeBackKey);
 
         writeBack(writeBackKey);

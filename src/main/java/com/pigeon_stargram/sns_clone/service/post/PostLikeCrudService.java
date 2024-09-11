@@ -67,6 +67,8 @@ public class PostLikeCrudService {
         } else {
             postLikeUserIds.add(userId);
         }
+
+        redisService.addAllToSet(cacheKey, postLikeUserIds, ONE_DAY_TTL);
     }
 
     public Integer countByPostId(Long postId) {
