@@ -122,7 +122,7 @@ public class ChatService {
 
         // write back set에 추가
         String dirtyKey = hashWriteBackKeyGenerator(cacheKey, fieldKey);
-        redisService.pushToWriteBackSet(dirtyKey);
+        redisService.pushToWriteBackSortedSet(dirtyKey);
 
         // Redis Hash에서 해당 값이 있는지 확인하고, 있으면 값을 증가시킵니다.
         if (redisService.hasFieldInHash(cacheKey, fieldKey)) {
@@ -137,9 +137,6 @@ public class ChatService {
                 .orElse(new UnreadChat(userId, toUserId));
 
         Integer count = unReadChat.incrementCount();
-
-        // DB에 저장
-        unreadChatRepository.save(unReadChat);
 
         // 캐시에 저장
         // TTL은 하루로 설정

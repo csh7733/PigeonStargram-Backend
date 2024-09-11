@@ -55,4 +55,9 @@ public class CacheConstants {
     public static final Long ONE_DAY_TTL = 1440L;
     public static final Long ONE_HOUR_TTL = 60L;
     public static final Long ONE_MINUTE_TTL = 1L;
+
+    // Key Generator
+    public static final String SEPARATOR_1 = "::";
+    public static final String SEPARATOR_2 = "_";
+    public static final String SEPARATOR_3 = "+";
 }

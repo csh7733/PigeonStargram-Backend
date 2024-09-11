@@ -1,11 +1,10 @@
 package com.pigeon_stargram.sns_clone.util;
 
+import com.pigeon_stargram.sns_clone.constant.CacheConstants;
+
+import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
+
 public class RedisUtil {
-
-    private static final String SEPARATOR_1 = "::";
-    private static final String SEPARATOR_2 = "_";
-    private static final String SEPARATOR_3 = "+";
-
 
     public static String cacheKeyGenerator(String value,
                                            String prefix,

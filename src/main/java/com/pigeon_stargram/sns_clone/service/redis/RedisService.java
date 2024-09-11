@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.ONE_MINUTE_TTL;
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.WRITE_BACK;
 import static com.pigeon_stargram.sns_clone.constant.PageConstants.COMMENT_FETCH_NUM;
+import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -30,6 +31,12 @@ public class RedisService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final RedisMessageListenerContainer redisMessageListenerContainer;
 
+    /**
+     * 메시지 큐에 태스크를 추가합니다.
+     *
+     * @param queueName 큐의 이름
+     * @param task      추가할 태스크 (Object 타입)
+     */
     /**
      * 메시지 큐에 태스크를 추가합니다.
      *
@@ -445,6 +452,28 @@ public class RedisService {
     }
 
     /**
+     * Redis의 Sorted Set에서 하위 N개의 값을 점수순으로 가져와 지정된 타입으로 반환합니다.
+     *
+     * @param setKey Sorted Set의 키
+     * @param count  가져올 값의 개수
+     * @param clazz  반환할 값의 타입
+     * @param <T>    반환할 타입
+     * @return 하위 N개의 값을 지정된 타입으로 변환하여 List로 반환
+     */
+    public <T> List<T> getBottomNFromSortedSet(String setKey, int count, Class<T> clazz) {
+        Set<Object> rawResults = redisTemplate.opsForZSet().range(setKey, 0, count - 1);
+
+        if (rawResults == null) {
+            return Collections.emptyList();
+        }
+
+        return rawResults.stream()
+                .filter(clazz::isInstance)
+                .map(clazz::cast)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Redis의 Sorted Set에서 모든 값과 그에 대한 스코어를 가져와 지정된 타입으로 반환합니다.
      *
      * @param setKey Sorted Set의 키
@@ -773,14 +802,14 @@ public class RedisService {
     }
 
     /**
-     * 변경된 내용을 가진 Key의 TTL을 연장하고 WriteBack Set에 등록합니다.
+     * 변경된 내용을 가진 Key의 TTL을 연장하고 WriteBack Sorted Set에 등록합니다.
      * @param dirtyKey 변경된 Key
      */
-    public void pushToWriteBackSet(String dirtyKey) {
+    public void pushToWriteBackSortedSet(String dirtyKey) {
         setTtl(dirtyKey, ONE_MINUTE_TTL);
-        addToSet(WRITE_BACK, dirtyKey);
+        addToSortedSet(WRITE_BACK, convertToScore(getCurrentTime()), dirtyKey);
 
-        log.info("WriteBack Set에 추가되었습니다. key={}", dirtyKey);
+        log.info("WriteBack Sorted Set에 추가되었습니다. key={}", dirtyKey);
     }
 
 }
