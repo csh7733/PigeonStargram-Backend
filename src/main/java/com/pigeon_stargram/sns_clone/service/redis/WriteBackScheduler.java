@@ -2,12 +2,12 @@ package com.pigeon_stargram.sns_clone.service.redis;
 
 import com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst;
 import com.pigeon_stargram.sns_clone.exception.redis.PatternNotMatchException;
-import com.pigeon_stargram.sns_clone.service.follow.FollowWriteBackService;
 import com.pigeon_stargram.sns_clone.service.chat.ChatWriteBackService;
 import com.pigeon_stargram.sns_clone.service.comment.CommentWriteBackService;
+import com.pigeon_stargram.sns_clone.service.follow.FollowWriteBackService;
 import com.pigeon_stargram.sns_clone.service.post.PostWriteBackService;
-import com.pigeon_stargram.sns_clone.service.search.SearchWriteBackService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyWriteBackService;
+import com.pigeon_stargram.sns_clone.service.search.SearchWriteBackService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,8 +40,25 @@ public class WriteBackScheduler {
     private final ChatWriteBackService chatWriteBackService;
     private final RedisService redisService;
 
-    private Integer writeBackBatchSize;
-    private Integer writeBackBatchNum;
+    /**
+     * Key의 데이터를 DB에 기록한다.
+     *
+     * @param key 저장할 Key
+     */
+    private static void writeBack(String key) {
+        regexPatterns.entrySet().stream()
+                .filter(entry -> {
+                    String regexPattern = entry.getKey();
+                    return key.matches(regexPattern);
+                })
+                .findFirst()
+                .ifPresentOrElse(entry -> {
+                    Consumer<String> writeBackMethod = entry.getValue();
+                    writeBackMethod.accept(key);
+                }, () -> {
+                    throw new PatternNotMatchException(ExceptionMessageConst.PATTERN_NOT_MATCH);
+                });
+    }
 
     @PostConstruct
     public void prepareRegexPatterns() {
@@ -73,21 +90,23 @@ public class WriteBackScheduler {
                 cacheKeyPatternGenerator(LAST_MESSAGE, USER_ID),
                 chatWriteBackService::syncLastMessage);
 
-        writeBackBatchSize = 3;
-        writeBackBatchNum = 10;
+        redisService.setValue(WRITE_BACK_BATCH_SIZE, WRITE_BACK_BATCH_SIZE_INIT);
     }
 
-    @Scheduled(fixedRate = 20000)
+    @Scheduled(fixedRate = 200)
     public void syncCacheToDB() {
-        // 하위 3개의 값을 가져옴
+        // 한 번에 몇개를 가져올지 확인
+        Integer writeBackBatchSize = (Integer) redisService.getValue(WRITE_BACK_BATCH_SIZE);
+
+        log.info("writeBackBatchSize={}", writeBackBatchSize);
+        // 하위 N개의 값을 가져옴
         List<String> sortedSetList =
                 redisService.getAndRemoveBottomNFromSortedSet(WRITE_BACK, writeBackBatchSize, String.class);
 
         // 리스트가 비어 있으면 반환
-        if (sortedSetList.isEmpty()) {
-            return;
-        } else if (sortedSetList.size() < writeBackBatchSize) {
-            writeBackBatchSize = 3;
+        if (sortedSetList.size() < writeBackBatchSize) {
+            redisService.setValue(WRITE_BACK_BATCH_SIZE, WRITE_BACK_BATCH_SIZE_INIT);
+            log.info("Write Back Batch Size를 {}로 설정했습니다.", WRITE_BACK_BATCH_SIZE_INIT);
         }
 
         // 가져온 모든 키에 대해 처리
@@ -100,32 +119,15 @@ public class WriteBackScheduler {
     @Profile("write-back-boost")
     @Scheduled(fixedRate = 10000)
     public void syncAllCache() {
-        log.info("전체 Write Back 시작");
+        log.info("전체 Write Back Boosting 시작");
         Long writeBackKeyNum = redisService.getSortedSetSize(WRITE_BACK);
 
-        writeBackBatchSize = Math.toIntExact(writeBackKeyNum / writeBackBatchNum);
-        if(writeBackBatchSize < 1){
+        Integer writeBackBatchSize = Math.toIntExact(writeBackKeyNum / WRITE_BACK_BATCH_NUM);
+        if (writeBackBatchSize < 1) {
             writeBackBatchSize = 1;
         }
-        log.info("Write Back Batch Size를 {}로 설정했습니다.", writeBackBatchSize);
-    }
 
-    /**
-     * Key의 데이터를 DB에 기록한다.
-     * @param key 저장할 Key
-     */
-    private static void writeBack(String key) {
-        regexPatterns.entrySet().stream()
-                .filter(entry -> {
-                    String regexPattern = entry.getKey();
-                    return key.matches(regexPattern);
-                })
-                .findFirst()
-                .ifPresentOrElse(entry -> {
-                    Consumer<String> writeBackMethod = entry.getValue();
-                    writeBackMethod.accept(key);
-                }, () -> {
-                    throw new PatternNotMatchException(ExceptionMessageConst.PATTERN_NOT_MATCH);
-                });
+        redisService.setValue(WRITE_BACK_BATCH_SIZE, writeBackBatchSize);
+        log.info("Write Back Batch Size를 {}로 설정했습니다.", writeBackBatchSize);
     }
 }

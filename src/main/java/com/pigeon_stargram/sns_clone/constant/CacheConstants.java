@@ -39,7 +39,9 @@ public class CacheConstants {
     public static final String USER_NAME_TO_ID_MAPPING_CACHE_KEY = "userNameToIdMapping";
     public static final String TIMELINE = "timeline";
 
+    // non-volatile
     public static final String WRITE_BACK = "writeBack";
+    public static final String WRITE_BACK_BATCH_SIZE = "writeBackBatchSize";
 
     // key
     public static final String USER_ID = "userId";
@@ -60,4 +62,9 @@ public class CacheConstants {
     public static final String SEPARATOR_1 = "::";
     public static final String SEPARATOR_2 = "_";
     public static final String SEPARATOR_3 = "@";
+
+    // Cache
+    public static final Integer WRITE_BACK_BATCH_NUM = 10;
+    public static final Integer WRITE_BACK_BATCH_SIZE_INIT = 3;
+
 }

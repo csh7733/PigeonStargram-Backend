@@ -294,7 +294,19 @@ public class RedisService {
      * @return 키에 해당하는 값
      */
     public Object getValue(String key) {
+
         return redisTemplate.opsForValue().get(key);
+    }
+
+    /**
+     * 레디스의 key:value 에 값을 설정합니다.
+     *
+     * @param key - 키값
+     * @param value - 키에 해당하는 값
+     */
+    public void setValue(String key, Object value) {
+
+        redisTemplate.opsForValue().set(key, value);
     }
 
     /**
