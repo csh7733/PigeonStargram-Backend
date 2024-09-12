@@ -168,7 +168,7 @@ class NotificationServiceTest {
         when(notificationRepository.findAllByRecipientId(anyLong()))
                 .thenReturn(notifications);
         //when
-        List<ResponseNotificationDto> unreadNotifications = notificationService.findUnreadNotifications(1L);
+        List<ResponseNotificationDto> unreadNotifications = notificationService.findByUserId(1L);
 
         //then
         assertThat(unreadNotifications.size()).isEqualTo(1);

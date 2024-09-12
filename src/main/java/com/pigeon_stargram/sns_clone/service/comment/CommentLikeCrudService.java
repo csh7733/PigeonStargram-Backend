@@ -27,70 +27,51 @@ public class CommentLikeCrudService {
 
     private final RedisService redisService;
 
-    //write through 를 위한 임시 서비스
-    private final UserService userService;
-    private final CommentCrudService commentCrudService;
-
     private final CommentLikeRepository repository;
-
-
 
     public void toggleLike(Long userId,
                            Long commentId) {
         String cacheKey = cacheKeyGenerator(COMMENT_LIKE_USER_IDS, COMMENT_ID, commentId.toString());
 
-        // 임시 write through를 위한 객체
-        User user = userService.findById(userId);
-        Comment comment = commentCrudService.findById(commentId);
-
         // 캐시 히트
         if (redisService.hasKey(cacheKey)) {
-            log.info("toggleLike = {} 캐시 히트", userId);
+            log.info("toggleLike 캐시 히트, commentId={}, userId={}", commentId, userId);
 
+            // 좋아요 정보 토글
             if (redisService.isMemberOfSet(cacheKey, userId)) {
                 redisService.removeFromSet(cacheKey, userId);
-
-                // 임시 write through
-                repository.delete(buildCommentLike(user, comment));
+                // 삭제시 write through
+                repository.deleteByUserIdAndCommentId(userId, commentId);
             } else {
                 redisService.addToSet(cacheKey, userId, ONE_DAY_TTL);
-
-                // 임시 write through
-                repository.save(buildCommentLike(user, comment));
+                // 생성시 write back
+                redisService.pushToWriteBackSortedSet(cacheKey);
             }
 
             return;
         }
 
         // 캐시 미스
-        log.info("toggleLike = {} 캐시 미스", commentId);
+        log.info("toggleLike 캐시 미스, commentId={}, userId={}", commentId, userId);
         List<CommentLike> commentLikes = repository.findByCommentId(commentId);
 
-        List<Long> userIds =
-                commentLikes.stream()
+        List<Long> commentLikeUserIds = commentLikes.stream()
                         .map(CommentLike::getUser)
                         .map(User::getId)
                         .collect(Collectors.toList());
         // 비어있는 set을 캐시하기 위한 더미데이터
-        userIds.add(0L);
+        commentLikeUserIds.add(0L);
 
-        if (userIds.contains(userId)) {
-            userIds.remove(userId);
+        // 좋아요 정보 토글
+        if (commentLikeUserIds.contains(userId)) {
+            commentLikeUserIds.remove(userId);
+            repository.deleteByUserIdAndCommentId(userId, commentId);
         } else {
-            userIds.add(userId);
+            commentLikeUserIds.add(userId);
+            redisService.pushToWriteBackSortedSet(cacheKey);
         }
 
-        redisService.addAllToSet(cacheKey, userIds, ONE_DAY_TTL);
-
-        // 임시 write through
-        commentLikes.stream()
-                .filter(commentLike -> commentLike.getUser().getId().equals(userId))
-                .findFirst()
-                .ifPresentOrElse(commentLike -> {
-                    repository.delete(commentLike);
-                }, () -> {
-                    repository.save(buildCommentLike(user, comment));
-                });
+        redisService.addAllToSet(cacheKey, commentLikeUserIds, ONE_DAY_TTL);
     }
 
     public Optional<CommentLike> findByUserIdAndCommentId(Long userId,
