@@ -11,6 +11,7 @@ import com.pigeon_stargram.sns_clone.service.reply.ReplyWriteBackService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,9 @@ public class WriteBackScheduler {
     private final ReplyWriteBackService replyWriteBackService;
     private final ChatWriteBackService chatWriteBackService;
     private final RedisService redisService;
+
+    private Integer writeBackBatchSize;
+    private Integer writeBackBatchNum;
 
     @PostConstruct
     public void prepareRegexPatterns() {
@@ -68,16 +72,22 @@ public class WriteBackScheduler {
         regexPatterns.put(
                 cacheKeyPatternGenerator(LAST_MESSAGE, USER_ID),
                 chatWriteBackService::syncLastMessage);
+
+        writeBackBatchSize = 3;
+        writeBackBatchNum = 10;
     }
 
-    @Scheduled(fixedRate = 100000)
+    @Scheduled(fixedRate = 20000)
     public void syncCacheToDB() {
         // 하위 3개의 값을 가져옴
-        List<String> sortedSetList = redisService.getAndRemoveBottomNFromSortedSet(WRITE_BACK, 3, String.class);
+        List<String> sortedSetList =
+                redisService.getAndRemoveBottomNFromSortedSet(WRITE_BACK, writeBackBatchSize, String.class);
 
         // 리스트가 비어 있으면 반환
         if (sortedSetList.isEmpty()) {
             return;
+        } else if (sortedSetList.size() < writeBackBatchSize) {
+            writeBackBatchSize = 3;
         }
 
         // 가져온 모든 키에 대해 처리
@@ -87,21 +97,17 @@ public class WriteBackScheduler {
         }
     }
 
+    @Profile("write-back-boost")
     @Scheduled(fixedRate = 10000)
     public void syncAllCache() {
         log.info("전체 Write Back 시작");
-        List<String> sortedSetList = redisService.getAllFromSortedSet(WRITE_BACK, String.class);
+        Long writeBackKeyNum = redisService.getSortedSetSize(WRITE_BACK);
 
-        // 리스트가 비어 있으면 반환
-        if (sortedSetList.isEmpty()) {
-            return;
+        writeBackBatchSize = Math.toIntExact(writeBackKeyNum / writeBackBatchNum);
+        if(writeBackBatchSize < 1){
+            writeBackBatchSize = 1;
         }
-
-        // 가져온 모든 키에 대해 처리
-        for (String writeBackKey : sortedSetList) {
-            log.info("WriteBack Set에서 DB에 기록할 Key를 가져왔습니다. key={}", writeBackKey);
-            writeBack(writeBackKey); // 각 키에 대해 writeBack 처리
-        }
+        log.info("Write Back Batch Size를 {}로 설정했습니다.", writeBackBatchSize);
     }
 
     /**

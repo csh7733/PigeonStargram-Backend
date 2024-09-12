@@ -38,12 +38,6 @@ public class RedisService {
      * @param queueName 큐의 이름
      * @param task      추가할 태스크 (Object 타입)
      */
-    /**
-     * 메시지 큐에 태스크를 추가합니다.
-     *
-     * @param queueName 큐의 이름
-     * @param task      추가할 태스크 (Object 타입)
-     */
     public void pushTask(String queueName, Object task) {
         redisTemplate.opsForList().leftPush(queueName, task);
     }
@@ -846,5 +840,4 @@ public class RedisService {
 
         log.info("WriteBack Sorted Set에 추가되었습니다. key={}", dirtyKey);
     }
-
 }
