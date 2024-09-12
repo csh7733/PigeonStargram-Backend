@@ -70,7 +70,7 @@ public class WriteBackScheduler {
                 chatWriteBackService::syncLastMessage);
     }
 
-    @Scheduled(fixedRate = 100)
+    @Scheduled(fixedRate = 100000)
     public void syncCacheToDB() {
         // 하위 3개의 값을 가져옴
         List<String> sortedSetList = redisService.getAndRemoveBottomNFromSortedSet(WRITE_BACK, 3, String.class);
@@ -87,9 +87,25 @@ public class WriteBackScheduler {
         }
     }
 
+    @Scheduled(fixedRate = 10000)
+    public void syncAllCache() {
+        log.info("전체 Write Back 시작");
+        List<String> sortedSetList = redisService.getAllFromSortedSet(WRITE_BACK, String.class);
+
+        // 리스트가 비어 있으면 반환
+        if (sortedSetList.isEmpty()) {
+            return;
+        }
+
+        // 가져온 모든 키에 대해 처리
+        for (String writeBackKey : sortedSetList) {
+            log.info("WriteBack Set에서 DB에 기록할 Key를 가져왔습니다. key={}", writeBackKey);
+            writeBack(writeBackKey); // 각 키에 대해 writeBack 처리
+        }
+    }
+
     /**
-     * Hash 이외의 자료구조를 WriteBack 한다.
-     *
+     * Key의 데이터를 DB에 기록한다.
      * @param key 저장할 Key
      */
     private static void writeBack(String key) {

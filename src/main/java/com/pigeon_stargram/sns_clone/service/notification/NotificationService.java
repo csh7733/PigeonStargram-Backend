@@ -86,6 +86,16 @@ public class NotificationService {
         notifications.forEach(notification -> notification.setRead(true));
     }
 
+    public void deleteNotification(Long notificationId) {
+
+        notificationCrudService.deleteNotificationById(notificationId);
+    }
+
+    public void deleteAll(Long recipientId) {
+
+        notificationCrudService.deleteAllNotificationByRecipientId(recipientId);
+    }
+
     public void notifyTaggedUsers(NotificationConvertable dto) {
 
         if (!dto.toRecipientIds().isEmpty()) sendToSplitWorker(dto);

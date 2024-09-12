@@ -34,18 +34,19 @@ public class NotificationController {
         notificationService.readNotification(notificationId);
     }
 
-    // 전체 알림 읽음 처리요청
-    @PatchMapping("read")
-    public void readNotifications(@LoginUser SessionUser loginUser) {
-
-        notificationService.readNotifications(loginUser.getId());
-    }
-
     // 단일 알림 삭제 처리요청
     @DeleteMapping("/{notificationId}")
     public void deleteNotification(@LoginUser SessionUser loginUser,
                                    @PathVariable Long notificationId) {
         
-        
+        notificationService.deleteNotification(notificationId);
     }
+
+    // 전체 알림 삭제 처리요청
+    @DeleteMapping("")
+    public void deleteAllNotification(@LoginUser SessionUser loginUser) {
+
+        notificationService.deleteAll(loginUser.getId());
+    }
+
 }

@@ -67,4 +67,14 @@ public class NotificationCrudService {
         return contentRepository.save(content);
     }
 
+    public void deleteNotificationById(Long notificationId) {
+
+        notificationRepository.deleteById(notificationId);
+    }
+
+    public void deleteAllNotificationByRecipientId(Long recipientId) {
+
+        notificationRepository.deleteAllByRecipientId(recipientId);
+    }
+
 }
