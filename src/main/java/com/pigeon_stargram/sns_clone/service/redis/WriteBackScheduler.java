@@ -62,14 +62,19 @@ public class WriteBackScheduler {
 
     @Scheduled(fixedRate = 100)
     public void syncCacheToDB() {
-        List<String> sortedSetList = redisService.getAndRemoveBottomNFromSortedSet(WRITE_BACK, 1, String.class);
-        if(sortedSetList.isEmpty()){
+        // 하위 3개의 값을 가져옴
+        List<String> sortedSetList = redisService.getAndRemoveBottomNFromSortedSet(WRITE_BACK, 3, String.class);
+
+        // 리스트가 비어 있으면 반환
+        if (sortedSetList.isEmpty()) {
             return;
         }
-        String writeBackKey = sortedSetList.getFirst();
-        log.info("WriteBack Set에서 DB에 기록할 Key를 가져왔습니다. key={}", writeBackKey);
 
-        writeBack(writeBackKey);
+        // 가져온 모든 키에 대해 처리
+        for (String writeBackKey : sortedSetList) {
+            log.info("WriteBack Set에서 DB에 기록할 Key를 가져왔습니다. key={}", writeBackKey);
+            writeBack(writeBackKey); // 각 키에 대해 writeBack 처리
+        }
     }
 
     /**

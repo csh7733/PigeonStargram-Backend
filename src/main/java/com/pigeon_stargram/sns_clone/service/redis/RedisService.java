@@ -8,6 +8,7 @@ import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.DefaultTypedTuple;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Service;
@@ -485,15 +486,20 @@ public class RedisService {
      * @return 하위 N개의 값을 지정된 타입으로 변환하여 List로 반환하고 각각 삭제
      */
     public <T> List<T> getAndRemoveBottomNFromSortedSet(String setKey, int count, Class<T> clazz) {
-        // 하위 N개의 값을 가져옴
-        Set<Object> rawResults = redisTemplate.opsForZSet().range(setKey, 0, count - 1);
+        String script = "local result = redis.call('ZRANGE', KEYS[1], 0, ARGV[1] - 1) " +
+                "if #result > 0 then redis.call('ZREMRANGEBYRANK', KEYS[1], 0, ARGV[1] - 1) end " +
+                "return result";
+
+        // Lua 스크립트를 실행하여 하위 N개의 값을 가져오고 삭제
+        List<Object> rawResults = redisTemplate.execute(
+                new DefaultRedisScript<>(script, List.class),
+                Collections.singletonList(setKey),
+                count
+        );
 
         if (rawResults == null || rawResults.isEmpty()) {
             return Collections.emptyList();
         }
-
-        // 가져온 값을 각각 삭제
-        rawResults.forEach(value -> removeFromSortedSet(setKey, value));
 
         // 지정된 타입으로 변환하여 반환
         return rawResults.stream()
