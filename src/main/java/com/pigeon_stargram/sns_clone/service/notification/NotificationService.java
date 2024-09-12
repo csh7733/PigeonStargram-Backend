@@ -60,11 +60,10 @@ public class NotificationService {
                 .collect(Collectors.toList());
     }
 
-    public List<ResponseNotificationDto> findUnreadNotifications(Long userId) {
+    public List<ResponseNotificationDto> findByUserId(Long userId) {
         List<NotificationV2> notifications = notificationCrudService.findNotificationByRecipientId(userId);
 
         return notifications.stream()
-                .filter(notification -> !notification.getIsRead())
                 .map(notification -> {
                     NotificationContent content =
                             notificationCrudService.findContentById(notification.getContent().getId());

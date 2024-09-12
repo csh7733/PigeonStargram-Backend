@@ -26,68 +26,51 @@ public class ReplyLikeCrudService {
 
     private final RedisService redisService;
 
-    //write through 를 위한 임시 서비스
-    private final UserService userService;
-    private final ReplyCrudService ReplyCrudService;
-
     private final ReplyLikeRepository repository;
 
     public void toggleLike(Long userId,
                            Long replyId) {
         String cacheKey = cacheKeyGenerator(REPLY_LIKE_USER_IDS, REPLY_ID, replyId.toString());
 
-        // 임시 write through를 위한 객체
-        User user = userService.findById(userId);
-        Reply reply = ReplyCrudService.findById(replyId);
-
         // 캐시 히트
         if (redisService.hasKey(cacheKey)) {
-            log.info("toggleLike = {} 캐시 히트", userId);
+            log.info("toggleLike 캐시 히트, replyId={}, userId={}", replyId, userId);
 
+            // 좋아요 정보 토글
             if (redisService.isMemberOfSet(cacheKey, userId)) {
                 redisService.removeFromSet(cacheKey, userId);
-
-                // 임시 write through
-                repository.delete(buildReplyLike(user, reply));
+                // 삭제시 write through
+                repository.deleteByUserIdAndReplyId(userId, replyId);
             } else {
                 redisService.addToSet(cacheKey, userId, ONE_DAY_TTL);
-
-                // 임시 write through
-                repository.save(buildReplyLike(user, reply));
+                // 생성시 write back
+                redisService.pushToWriteBackSortedSet(cacheKey);
             }
 
             return;
         }
 
         // 캐시 미스
-        log.info("toggleLike = {} 캐시 미스", replyId);
+        log.info("toggleLike 캐시 미스, replyId={}, userId={}", replyId, userId);
         List<ReplyLike> replyLikes = repository.findByReplyId(replyId);
 
-        List<Long> userIds =
-                replyLikes.stream()
+        List<Long> replyLikeUserIds = replyLikes.stream()
                         .map(ReplyLike::getUser)
                         .map(User::getId)
                         .collect(Collectors.toList());
         // 비어있는 set을 캐시하기 위한 더미데이터
-        userIds.add(0L);
+        replyLikeUserIds.add(0L);
 
-        if (userIds.contains(userId)) {
-            userIds.remove(userId);
+        // 좋아요 정보 토글
+        if (replyLikeUserIds.contains(userId)) {
+            replyLikeUserIds.remove(userId);
+            repository.deleteByUserIdAndReplyId(userId, replyId);
         } else {
-            userIds.add(userId);
+            replyLikeUserIds.add(userId);
+            redisService.pushToWriteBackSortedSet(cacheKey);
         }
 
-        redisService.addAllToSet(cacheKey, userIds, ONE_DAY_TTL);
-
-        // 임시 write through
-        replyLikes.stream()
-                .filter(replyLike -> replyLike.getUser().getId().equals(userId))
-                .findFirst()
-                .ifPresentOrElse(replyLike -> {
-                    repository.delete(replyLike);
-                }, () -> {
-                    repository.save(buildReplyLike(user, reply));
-                });
+        redisService.addAllToSet(cacheKey, replyLikeUserIds, ONE_DAY_TTL);
     }
 
     public Optional<ReplyLike> findByUserIdAndReplyId(Long userId,

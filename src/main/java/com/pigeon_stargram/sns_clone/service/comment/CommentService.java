@@ -41,6 +41,10 @@ public class CommentService {
     private final NotificationService notificationService;
     private final CommentLikeCrudService commentLikeCrudService;
 
+    public Comment findById(Long commentId) {
+        return commentCrudService.findById(commentId);
+    }
+
     public ResponseGetCommentDto getPartialComment(RequestGetCommentDto dto) {
         Long postId = dto.getPostId();
         Long lastCommentId = dto.getLastCommentId();

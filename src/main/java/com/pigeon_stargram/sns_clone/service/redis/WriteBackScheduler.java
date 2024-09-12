@@ -3,7 +3,9 @@ package com.pigeon_stargram.sns_clone.service.redis;
 import com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst;
 import com.pigeon_stargram.sns_clone.exception.redis.PatternNotMatchException;
 import com.pigeon_stargram.sns_clone.service.chat.ChatWriteBackService;
+import com.pigeon_stargram.sns_clone.service.comment.CommentWriteBackService;
 import com.pigeon_stargram.sns_clone.service.post.PostWriteBackService;
+import com.pigeon_stargram.sns_clone.service.reply.ReplyWriteBackService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +31,8 @@ public class WriteBackScheduler {
     private static final Map<String, Consumer<String>> regexPatterns = new HashMap<>();
 
     private final PostWriteBackService postWriteBackService;
+    private final CommentWriteBackService commentWriteBackService;
+    private final ReplyWriteBackService replyWriteBackService;
     private final ChatWriteBackService chatWriteBackService;
     private final RedisService redisService;
 
@@ -37,9 +41,12 @@ public class WriteBackScheduler {
         regexPatterns.put(
                 cacheKeyPatternGenerator(POST_LIKE_USER_IDS, POST_ID),
                 postWriteBackService::syncPostLikeUserIds);
-//        regexPatterns.put(
-//                cacheKeyPatternGenerator(COMMENT_LIKE_USER_IDS, COMMENT_ID),
-//                commentWriteBackService::syncCommentLikeUserIds);
+        regexPatterns.put(
+                cacheKeyPatternGenerator(COMMENT_LIKE_USER_IDS, COMMENT_ID),
+                commentWriteBackService::syncCommentLikeUserIds);
+        regexPatterns.put(
+                cacheKeyPatternGenerator(REPLY_LIKE_USER_IDS, REPLY_ID),
+                replyWriteBackService::syncReplyLikeUserIds);
         regexPatterns.put(
                 cacheKeyPatternGenerator(UNREAD_CHAT_COUNT, USER_ID),
                 chatWriteBackService::syncUnreadChatCount);

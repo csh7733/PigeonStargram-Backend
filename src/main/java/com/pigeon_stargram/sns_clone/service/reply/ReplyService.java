@@ -34,6 +34,10 @@ public class ReplyService {
     private final NotificationService notificationService;
     private final CommentCrudService commentCrudService;
 
+    public Reply findById(Long replyId) {
+        return replyCrudService.findById(replyId);
+    }
+
     public List<ResponseReplyDto> getReplyDtosByCommentId(Long commentId) {
         return replyCrudService.findReplyIdByCommentId(commentId).stream()
                 .sorted(Comparator.reverseOrder())
