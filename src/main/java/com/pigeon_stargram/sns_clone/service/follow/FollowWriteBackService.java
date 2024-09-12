@@ -42,13 +42,14 @@ public class FollowWriteBackService {
         // Sender 찾기
         User sender = userService.findById(senderId);
 
-        // followerIds 리스트 가져오기 (Dummy 제외)
-        List<Long> followerIds = redisService.getSetAsLongListExcludeDummy(key);
+        // followingIds 리스트 가져오기 (Dummy 제외)
+        List<Long> followingIds = redisService.getSetAsLongListExcludeDummy(key);
 
-        for (Long recipientId : followerIds) {
+        for (Long recipientId : followingIds) {
             // 중복 여부 확인
             if (!followRepository.existsBySenderIdAndRecipientId(senderId, recipientId)) {
                 User recipient = userService.findById(recipientId);
+                log.info("sender = {},recipient = {}",senderId,recipientId);
                 // Follow 객체 생성 및 저장
                 // 알림 신청 여부에 따라 저장한다
                 Boolean isEnabled = getisEnabled(senderId, recipientId);
@@ -58,16 +59,16 @@ public class FollowWriteBackService {
         }
     }
     public void syncFollowerIds(String key) {
-        Long recipientId = RedisUtil.parseSuffix(key);  // Following하는 유저의 ID
+        Long recipientId = RedisUtil.parseSuffix(key);
         log.info("WriteBack key={}", key);
 
         // Recipient 찾기
         User recipient = userService.findById(recipientId);
 
-        // followingIds 리스트 가져오기 (Dummy 제외)
-        List<Long> followingIds = redisService.getSetAsLongListExcludeDummy(key);
+        // followerIds 리스트 가져오기 (Dummy 제외)
+        List<Long> followerIds = redisService.getSetAsLongListExcludeDummy(key);
 
-        for (Long senderId : followingIds) {
+        for (Long senderId : followerIds) {
             // 중복 여부 확인
             if (!followRepository.existsBySenderIdAndRecipientId(senderId, recipientId)) {
                 User sender = userService.findById(senderId);
@@ -89,11 +90,6 @@ public class FollowWriteBackService {
 
         // 캐시에서 알림 신청한 userIds 가져오기
         List<Long> enableFollowingIds = redisService.getSetAsLongListExcludeDummy(key);
-
-        // DB에 있는 follow들의 senderId 수집
-        Set<Long> senderIdsFromDB = followsFromDB.stream()
-                .map(follow -> follow.getSender().getId())
-                .collect(Collectors.toSet());
 
         // 캐시와 DB 간 차이점 확인
         for (Follow follow : followsFromDB) {

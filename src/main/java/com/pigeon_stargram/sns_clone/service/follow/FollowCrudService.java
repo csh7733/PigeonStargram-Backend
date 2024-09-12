@@ -80,7 +80,7 @@ public class FollowCrudService {
 
         // 캐시가 존재하지 않으면 DB에서 가져온다
         if (!redisService.hasKey(followerIds)) {
-            getFollowerIdsFromDB(senderId, followerIds);
+            getFollowerIdsFromDB(recipientId, followerIds);
         }
 
         // 캐시에 follower ID 추가
@@ -93,7 +93,7 @@ public class FollowCrudService {
 
         // 캐시가 존재하지 않으면 DB에서 가져온다
         if (!redisService.hasKey(followingIds)) {
-            getFollowingIdsFromDB(recipientId, followingIds);
+            getFollowingIdsFromDB(senderId, followingIds);
         }
 
         // 캐시에 following ID 추가
