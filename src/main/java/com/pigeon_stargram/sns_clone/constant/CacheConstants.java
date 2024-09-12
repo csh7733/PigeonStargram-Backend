@@ -59,5 +59,5 @@ public class CacheConstants {
     // Key Generator
     public static final String SEPARATOR_1 = "::";
     public static final String SEPARATOR_2 = "_";
-    public static final String SEPARATOR_3 = "+";
+    public static final String SEPARATOR_3 = "@";
 }

@@ -20,7 +20,7 @@ public class RedisUtil {
     public static String cacheKeyPatternGenerator(String value,
                                                   String prefix) {
         // 숫자가 하나 이상 포함된 것
-        return value + SEPARATOR_1 + prefix + SEPARATOR_2 + "\\d+";
+        return value + SEPARATOR_1 + prefix + SEPARATOR_2 + ".+";
     }
 
     /**

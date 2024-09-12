@@ -174,6 +174,10 @@ public class ChatService {
         String cacheKey = cacheKeyGenerator(UNREAD_CHAT_COUNT, USER_ID, userId.toString());
         String fieldKey = toUserId.toString();
 
+        // write back set에 추가
+        String dirtyKey = hashWriteBackKeyGenerator(cacheKey, fieldKey);
+        redisService.pushToWriteBackSortedSet(dirtyKey);
+
         // 캐시에서 값이 있는지 확인하고, 있다면 값을 0으로 업데이트 (캐시 히트 처리)
         // TTL은 하루로 설정
         if (redisService.hasFieldInHash(cacheKey, fieldKey)) {
@@ -204,6 +208,10 @@ public class ChatService {
 
         String hashKey = cacheKeyGenerator(LAST_MESSAGE, USER_ID, userIds[0].toString());
         String fieldKey = userIds[1].toString();
+
+        // write back set에 추가
+        String dirtyKey = hashWriteBackKeyGenerator(hashKey, fieldKey);
+        redisService.pushToWriteBackSortedSet(dirtyKey);
 
         LastMessageDto lastMessageDto;
 
