@@ -74,6 +74,16 @@ public class FollowBuilder {
                 .build();
     }
 
+    public static Follow buildFollow(User sender,
+                                     User recipient,
+                                     Boolean isNotificationEnabled) {
+        return Follow.builder()
+                .sender(sender)
+                .recipient(recipient)
+                .isNotificationEnabled(isNotificationEnabled)
+                .build();
+    }
+
     public static ResponseFollowerDto buildResponseFollowerDto(User user) {
         return ResponseFollowerDto.builder()
                 .id(user.getId())

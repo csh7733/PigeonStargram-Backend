@@ -48,7 +48,7 @@ public class FollowService {
     private final NotificationService notificationService;
     private final StoryService storyService;
 
-    public Follow createFollow(AddFollowDto dto) {
+    public void createFollow(AddFollowDto dto) {
         Long senderId = dto.getSenderId();
         Long recipientId = dto.getRecipientId();
 
@@ -61,12 +61,10 @@ public class FollowService {
         log.info("sender ={}, recipient = {}",sender.getId(),recipient.getId());
 
         Follow follow = buildFollow(sender, recipient);
-        Follow save = followCrudService.save(follow);
+        followCrudService.save(follow);
 
         dto.setSenderName(sender.getName());
         notificationService.sendToSplitWorker(dto);
-
-        return save;
     }
 
     public void deleteFollow(DeleteFollowDto dto){

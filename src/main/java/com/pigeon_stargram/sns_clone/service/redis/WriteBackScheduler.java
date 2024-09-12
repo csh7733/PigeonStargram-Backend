@@ -2,7 +2,9 @@ package com.pigeon_stargram.sns_clone.service.redis;
 
 import com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst;
 import com.pigeon_stargram.sns_clone.exception.redis.PatternNotMatchException;
+import com.pigeon_stargram.sns_clone.service.follow.FollowWriteBackService;
 import com.pigeon_stargram.sns_clone.service.post.PostWriteBackService;
+import com.pigeon_stargram.sns_clone.service.search.SearchWriteBackService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,8 @@ public class WriteBackScheduler {
     private static final Map<String, Consumer<String>> regexPatterns = new HashMap<>();
 
     private final PostWriteBackService postWriteBackService;
+    private final FollowWriteBackService followWriteBackService;
+    private final SearchWriteBackService searchWriteBackService;
     private final RedisService redisService;
 
     @PostConstruct
@@ -35,16 +39,24 @@ public class WriteBackScheduler {
         regexPatterns.put(
                 cacheKeyPatternGenerator(POST_LIKE_USER_IDS, POST_ID),
                 postWriteBackService::syncPostLikeUserIds);
-//        regexPatterns.put(
-//                cacheKeyPatternGenerator(UNREAD_CHAT_COUNT, USER_ID),
-//
-//        )
+        regexPatterns.put(
+                cacheKeyPatternGenerator(FOLLOWING_IDS, USER_ID),
+                followWriteBackService::syncFollowingIds);
+        regexPatterns.put(
+                cacheKeyPatternGenerator(FOLLOWER_IDS, USER_ID),
+                followWriteBackService::syncFollowerIds);
+        regexPatterns.put(
+                cacheKeyPatternGenerator(NOTIFICATION_ENABLED_IDS, USER_ID),
+                followWriteBackService::syncNotificationEnabledIds);
+        regexPatterns.put(
+                cacheKeyPatternGenerator(SEARCH_HISTORY, USER_ID),
+                searchWriteBackService::syncSearchHistory);
     }
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = 100)
     public void syncCacheToDB() {
 
-        List<String> bottomNFromSortedSet = redisService.getBottomNFromSortedSet(WRITE_BACK, 1, String.class);
+        List<String> bottomNFromSortedSet = redisService.getAndRemoveBottomNFromSortedSet(WRITE_BACK, 1, String.class);
         if(bottomNFromSortedSet.isEmpty()){
             return;
         }

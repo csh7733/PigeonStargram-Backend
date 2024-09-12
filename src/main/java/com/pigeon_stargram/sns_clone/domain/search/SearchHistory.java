@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.convertDoubleToLocalDateTime;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentTime;
 
 @Builder
@@ -30,9 +31,12 @@ public class SearchHistory extends BaseTimeEntity {
 
     private String searchQuery;
 
-    public void updateModifiedDate() {
-        setModifiedDate(getCurrentTime());
+    private Double score;
+
+    public void updateScore(Double score) {
+        this.score = score;
     }
+
 
     protected void setModifiedDate(LocalDateTime modifiedDate) {
         super.setModifiedDate(modifiedDate);

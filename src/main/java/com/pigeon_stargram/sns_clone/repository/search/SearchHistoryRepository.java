@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface SearchHistoryRepository extends JpaRepository<SearchHistory, Long> {
 
-    List<SearchHistory> findTop5ByUserOrderByModifiedDateDesc(User user);
+    List<SearchHistory> findTop5ByUserOrderByScoreDesc(User user);
 
     Optional<SearchHistory> findByUserIdAndSearchQuery(Long userId, String SearchQuery);
 

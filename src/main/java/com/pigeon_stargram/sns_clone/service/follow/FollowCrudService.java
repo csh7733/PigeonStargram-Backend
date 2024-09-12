@@ -38,12 +38,7 @@ public class FollowCrudService {
 
         log.info("findFollowerIds(userId = {}) 캐시 미스", userId);
 
-        List<Long> followerIds = repository.findByRecipientId(userId).stream()
-                .map(Follow::getSender)
-                .map(User::getId)
-                .collect(Collectors.toList());
-
-        return redisService.cacheListToSetWithDummy(followerIds, cacheKey, ONE_DAY_TTL);
+        return getFollowerIdsFromDB(userId, cacheKey);
     }
 
     public List<Long> findFollowingIds(Long userId) {
@@ -57,12 +52,7 @@ public class FollowCrudService {
 
         log.info("findFollowingIds(userId = {}) 캐시 미스", userId);
 
-        List<Long> followingIds = repository.findBySenderId(userId).stream()
-                .map(Follow::getRecipient)// user 가 캐시되면 userId로 가져오도록 변경예정 - FollowService의 findFollowings에서 캐시로 사용하기 위해
-                .map(User::getId)
-                .collect(Collectors.toList());
-
-        return redisService.cacheListToSetWithDummy(followingIds, cacheKey, ONE_DAY_TTL);
+        return getFollowingIdsFromDB(userId, cacheKey);
     }
 
     public List<Long> findNotificationEnabledIds(Long userId) {
@@ -76,59 +66,65 @@ public class FollowCrudService {
 
         log.info("findNotificationEnabledIds(userId = {}) 캐시 미스", userId);
 
-        List<Long> notificationEnabledUserIds = repository.findByRecipientId(userId).stream()
-                .filter(Follow::getIsNotificationEnabled)
-                .map(Follow::getSender)
-                .map(User::getId)
-                .collect(Collectors.toList());
-
-        return redisService.cacheListToSetWithDummy(notificationEnabledUserIds, cacheKey, ONE_DAY_TTL);
+        return getNotificationEnabledIdsFromDB(userId, cacheKey);
     }
 
-    public Follow save(Follow follow) {
-        Follow save = repository.save(follow);
+    public void save(Follow follow) {
+        Long senderId = follow.getSender().getId();
+        Long recipientId = follow.getRecipient().getId();
 
-        Long senderId = save.getSender().getId();
-        Long recipientId = save.getRecipient().getId();
+        // Follower Ids 관련 처리
+        String followerIds = cacheKeyGenerator(FOLLOWER_IDS, USER_ID, recipientId.toString());
+        // Write-back Sorted Set에 추가
+        redisService.pushToWriteBackSortedSet(followerIds);
 
-        String followerIds =
-                cacheKeyGenerator(FOLLOWER_IDS, USER_ID, recipientId.toString());
-        if (redisService.hasKey(followerIds)) {
-            log.info("follow 저장후 recipient 에 대한 senderId 캐시 저장 recipientId = {}, senderId = {}",
-                    recipientId, senderId);
-            redisService.addToSet(followerIds, senderId, ONE_DAY_TTL);
+        // 캐시가 존재하지 않으면 DB에서 가져온다
+        if (!redisService.hasKey(followerIds)) {
+            getFollowerIdsFromDB(senderId, followerIds);
         }
 
-        String followingIds =
-                cacheKeyGenerator(FOLLOWING_IDS, USER_ID, senderId.toString());
-        if (redisService.hasKey(followingIds)) {
-            log.info("follow 저장후 senderId 에 대한 recipientId 캐시 저장 senderId = {}, recipientId = {}",
-                    senderId, recipientId);
-            redisService.addToSet(followingIds, recipientId, ONE_DAY_TTL);
+        // 캐시에 follower ID 추가
+        redisService.addToSet(followerIds, senderId, ONE_DAY_TTL);
+
+        // Following Ids 관련 처리
+        String followingIds = cacheKeyGenerator(FOLLOWING_IDS, USER_ID, senderId.toString());
+        // Write-back Sorted Set에 추가
+        redisService.pushToWriteBackSortedSet(followingIds);
+
+        // 캐시가 존재하지 않으면 DB에서 가져온다
+        if (!redisService.hasKey(followingIds)) {
+            getFollowingIdsFromDB(recipientId, followingIds);
         }
 
-        return save;
+        // 캐시에 following ID 추가
+        redisService.addToSet(followingIds, recipientId, ONE_DAY_TTL);
     }
 
-    public void toggleNotificationEnabled(Long senderId,
-                                          Long recipientId) {
+    public void toggleNotificationEnabled(Long senderId, Long recipientId) {
+        // 캐시 키 생성 (recipientId를 기준으로 Notification Enabled 상태를 관리)
         String cacheKey = cacheKeyGenerator(NOTIFICATION_ENABLED_IDS, USER_ID, recipientId.toString());
 
-        if (redisService.hasKey(cacheKey)) {
-            log.info("toggleNotificationEnabled(recipientId = {}) 캐시 히트", recipientId);
+        // 캐시 키를 Write-back Sorted Set에 추가하여 나중에 동기화하도록 준비
+        redisService.pushToWriteBackSortedSet(cacheKey);
 
-            if (redisService.isMemberOfSet(cacheKey, senderId)) {
-                redisService.removeFromSet(cacheKey, senderId);
-            } else {
-                redisService.addToSet(cacheKey, senderId, ONE_DAY_TTL);
-            }
+        // 캐시가 존재하지 않으면 DB에서 Notification Enabled ID 목록을 로드
+        if (!redisService.hasKey(cacheKey)) {
+            getNotificationEnabledIdsFromDB(recipientId, cacheKey);
         }
 
-        Follow follow = repository.findBySenderIdAndRecipientId(senderId, recipientId)
-                .orElseThrow(() -> new FollowNotFoundException(FOLLOW_NOT_FOUND));
-        follow.toggleNotificationEnabled();
+        // senderId가 Notification Enabled Set에 이미 존재하면 삭제 (알림 비활성화)
+        if (redisService.isMemberOfSet(cacheKey, senderId)) {
+            redisService.removeFromSet(cacheKey, senderId);
+        } else {
+            // 존재하지 않으면 추가 (알림 활성화) 및 TTL 설정
+            redisService.addToSet(cacheKey, senderId, ONE_DAY_TTL);
+        }
     }
 
+
+//    Follow follow = repository.findBySenderIdAndRecipientId(senderId, recipientId)
+//            .orElseThrow(() -> new FollowNotFoundException(FOLLOW_NOT_FOUND));
+//        follow.toggleNotificationEnabled();
     public void deleteFollowBySenderIdAndRecipientId(Long senderId,
                                                      Long recipientId) {
         repository.deleteBySenderIdAndRecipientId(senderId, recipientId);
@@ -157,6 +153,36 @@ public class FollowCrudService {
             redisService.removeFromSet(notificationEnabledIds, senderId);
         }
     }
+
+    private List<Long> getFollowerIdsFromDB(Long userId, String cacheKey) {
+        List<Long> followerIds = repository.findByRecipientId(userId).stream()
+                .map(Follow::getSender)
+                .map(User::getId)
+                .collect(Collectors.toList());
+
+        return redisService.cacheListToSetWithDummy(followerIds, cacheKey, ONE_DAY_TTL);
+    }
+
+    private List<Long> getFollowingIdsFromDB(Long userId, String cacheKey) {
+        List<Long> followingIds = repository.findBySenderId(userId).stream()
+                .map(Follow::getRecipient)
+                .map(User::getId)
+                .collect(Collectors.toList());
+
+        return redisService.cacheListToSetWithDummy(followingIds, cacheKey, ONE_DAY_TTL);
+    }
+
+    private List<Long> getNotificationEnabledIdsFromDB(Long userId, String cacheKey) {
+        List<Long> notificationEnabledUserIds = repository.findByRecipientId(userId).stream()
+                .filter(Follow::getIsNotificationEnabled)
+                .map(Follow::getSender)
+                .map(User::getId)
+                .collect(Collectors.toList());
+
+        return redisService.cacheListToSetWithDummy(notificationEnabledUserIds, cacheKey, ONE_DAY_TTL);
+    }
+
+
 
 
 }

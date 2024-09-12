@@ -452,21 +452,50 @@ public class RedisService {
     }
 
     /**
-     * Redis의 Sorted Set에서 하위 N개의 값을 점수순으로 가져와 지정된 타입으로 반환합니다.
+     * Redis의 Sorted Set에서 모든 값을 점수순으로 가져와 지정된 타입으로 반환합니다.
      *
      * @param setKey Sorted Set의 키
-     * @param count  가져올 값의 개수
      * @param clazz  반환할 값의 타입
      * @param <T>    반환할 타입
-     * @return 하위 N개의 값을 지정된 타입으로 변환하여 List로 반환
+     * @return 모든 값을 지정된 타입으로 변환하여 List로 반환
      */
-    public <T> List<T> getBottomNFromSortedSet(String setKey, int count, Class<T> clazz) {
-        Set<Object> rawResults = redisTemplate.opsForZSet().range(setKey, 0, count - 1);
+    public <T> List<T> getAllFromSortedSet(String setKey, Class<T> clazz) {
+        // Sorted Set의 모든 값을 역순으로 가져옴
+        Set<Object> rawResults = redisTemplate.opsForZSet().reverseRange(setKey, 0, -1);
 
         if (rawResults == null) {
             return Collections.emptyList();
         }
 
+        // 지정된 타입으로 변환하여 List로 반환
+        return rawResults.stream()
+                .filter(clazz::isInstance)
+                .map(clazz::cast)
+                .collect(Collectors.toList());
+    }
+
+
+    /**
+     * Redis의 Sorted Set에서 하위 N개의 값을 점수순으로 가져와 지정된 타입으로 반환하고, 각각 삭제합니다.
+     *
+     * @param setKey Sorted Set의 키
+     * @param count  가져올 값의 개수
+     * @param clazz  반환할 값의 타입
+     * @param <T>    반환할 타입
+     * @return 하위 N개의 값을 지정된 타입으로 변환하여 List로 반환하고 각각 삭제
+     */
+    public <T> List<T> getAndRemoveBottomNFromSortedSet(String setKey, int count, Class<T> clazz) {
+        // 하위 N개의 값을 가져옴
+        Set<Object> rawResults = redisTemplate.opsForZSet().range(setKey, 0, count - 1);
+
+        if (rawResults == null || rawResults.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 가져온 값을 각각 삭제
+        rawResults.forEach(value -> removeFromSortedSet(setKey, value));
+
+        // 지정된 타입으로 변환하여 반환
         return rawResults.stream()
                 .filter(clazz::isInstance)
                 .map(clazz::cast)

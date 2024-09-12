@@ -70,12 +70,12 @@ public class SearchService {
 
         // Redis에 데이터가 없을 경우 (캐시 미스)
         User user = userService.findById(userId);
-        List<SearchHistory> searchHistories = searchHistoryRepository.findTop5ByUserOrderByModifiedDateDesc(user);
+        List<SearchHistory> searchHistories = searchHistoryRepository.findTop5ByUserOrderByScoreDesc(user);
 
         // DB에서 가져온 검색 기록을 Redis에 저장
         // 검색기록 TTL은 3일로 설정
         for (SearchHistory searchHistory : searchHistories) {
-            redisService.addToSortedSet(cacheKey, getTimeMillis(searchHistory.getModifiedDate()), searchHistory.getSearchQuery(),3 * ONE_DAY_TTL);
+            redisService.addToSortedSet(cacheKey, searchHistory.getScore(), searchHistory.getSearchQuery(),3 * ONE_DAY_TTL);
         }
 
         // DB에서 가져온 검색 기록을 Response DTO로 변환하여 반환
@@ -124,24 +124,15 @@ public class SearchService {
         // 캐시 키 생성
         String searchKey = cacheKeyGenerator(SEARCH_HISTORY, USER_ID, userId.toString());
 
+        // Write-back Sorted Set에 추가
+        redisService.pushToWriteBackSortedSet(searchKey);
+
         // Score를 위한 Double형태의 현재 시간값을 가져옴
         Double currentTimestamp = getCurrentTimeMillis();
 
         // Redis에 검색 기록 추가 (Sorted Set에 추가)
         // 검색기록 TTL은 3일로 설정
         redisService.addToSortedSet(searchKey, currentTimestamp, searchQuery, 3 * ONE_DAY_TTL);
-
-        // DB에 검색 기록 저장 (write-through 방식)
-        SearchHistory searchHistory =
-                searchHistoryRepository.findByUserIdAndSearchQuery(userId, searchQuery)
-                        .map(history -> {
-                            history.updateModifiedDate();
-                            return history;
-                        })
-                        .orElseGet(() -> buildSearchHistory(user, searchQuery));
-
-        // DB에 저장
-        searchHistoryRepository.save(searchHistory);
 
         // 검색어 점수 업데이트
         updateSearchTermScores(searchQuery);

@@ -1,5 +1,6 @@
 package com.pigeon_stargram.sns_clone.util;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -30,6 +31,11 @@ public class LocalDateTimeUtil {
     public static LocalDateTime getCurrentTime() {
         return LocalDateTime.now();
     }
+
+    public static LocalDateTime convertDoubleToLocalDateTime(Double timestamp) {
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp.longValue()), ZoneId.systemDefault());
+    }
+
 
     public static Comparator<String> getReverseOrderComparator() {
         return Comparator.comparing(

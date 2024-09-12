@@ -28,14 +28,16 @@ public class SearchBuilder {
     }
 
     public static ResponseSearchHistoryDto buildResponseSearchHistoryDto(SearchHistory searchHistory) {
+        LocalDateTime dateTime = convertDoubleToLocalDateTime(searchHistory.getScore());
+
         return ResponseSearchHistoryDto.builder()
                 .searchQuery(searchHistory.getSearchQuery())
-                .time(formatTime(searchHistory.getModifiedDate()))
+                .time(formatTime(dateTime))
                 .build();
     }
 
     public static ResponseSearchHistoryDto buildResponseSearchHistoryDto(String searchQuery, Double score) {
-        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(score.longValue()), ZoneId.systemDefault());
+        LocalDateTime dateTime = convertDoubleToLocalDateTime(score);
 
         return ResponseSearchHistoryDto.builder()
                 .searchQuery(searchQuery)
