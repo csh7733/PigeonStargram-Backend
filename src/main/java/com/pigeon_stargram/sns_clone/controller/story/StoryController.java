@@ -48,7 +48,7 @@ public class StoryController {
 
         String imageUrl = fileService.saveFile(imageFile);
 
-        UploadStoryDto uploadStoryDto = buildUploadStoryDto(userId, content, imageUrl);
+        UploadStoryDto uploadStoryDto = toUploadStoryDto(userId, content, imageUrl);
         storyService.uploadStory(uploadStoryDto);
     }
 
@@ -75,7 +75,7 @@ public class StoryController {
                                                @PathVariable Long userId) {
         Long currentMemberId = loginUser.getId();
 
-        GetRecentStoriesDto getRecentStoriesDto = buildGetRecentStoriesDto(userId, currentMemberId);
+        GetRecentStoriesDto getRecentStoriesDto = toGetRecentStoriesDto(userId, currentMemberId);
         return storyService.getRecentStories(getRecentStoriesDto);
     }
 
@@ -90,7 +90,7 @@ public class StoryController {
                                   @PathVariable Long storyId) {
         Long userId = loginUser.getId();
 
-        MarkStoryAsViewedDto markStoryAsViewedDto = buildMarkStoryAsViewedDto(storyId, userId);
+        MarkStoryAsViewedDto markStoryAsViewedDto = toMarkStoryAsViewedDto(storyId, userId);
         storyService.markStoryAsViewed(markStoryAsViewedDto);
     }
 

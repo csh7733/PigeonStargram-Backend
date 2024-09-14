@@ -1,7 +1,5 @@
 package com.pigeon_stargram.sns_clone.dto.story;
 
-import com.pigeon_stargram.sns_clone.domain.story.Story;
-import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.story.internal.GetRecentStoriesDto;
 import com.pigeon_stargram.sns_clone.dto.story.internal.MarkStoryAsViewedDto;
 import com.pigeon_stargram.sns_clone.dto.story.internal.UploadStoryDto;
@@ -20,7 +18,7 @@ public class StoryDtoConvertor {
      * @param imageUrl 업로드된 이미지의 URL
      * @return 변환된 UploadStoryDto
      */
-    public static UploadStoryDto buildUploadStoryDto(Long userId, String content, String imageUrl) {
+    public static UploadStoryDto toUploadStoryDto(Long userId, String content, String imageUrl) {
         return UploadStoryDto.builder()
                 .userId(userId)
                 .content(content)
@@ -36,7 +34,7 @@ public class StoryDtoConvertor {
      * @param userId 스토리를 조회한 사용자의 ID
      * @return 변환된 MarkStoryAsViewedDto
      */
-    public static MarkStoryAsViewedDto buildMarkStoryAsViewedDto(Long storyId, Long userId) {
+    public static MarkStoryAsViewedDto toMarkStoryAsViewedDto(Long storyId, Long userId) {
         return MarkStoryAsViewedDto.builder()
                 .storyId(storyId)
                 .userId(userId)
@@ -50,7 +48,7 @@ public class StoryDtoConvertor {
      * @param currentMemberId 현재 로그인한 사용자의 ID
      * @return 변환된 GetRecentStoriesDto
      */
-    public static GetRecentStoriesDto buildGetRecentStoriesDto(Long userId, Long currentMemberId) {
+    public static GetRecentStoriesDto toGetRecentStoriesDto(Long userId, Long currentMemberId) {
         return GetRecentStoriesDto.builder()
                 .userId(userId)
                 .currentMemberId(currentMemberId)
