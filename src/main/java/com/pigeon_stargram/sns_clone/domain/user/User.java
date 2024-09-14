@@ -14,7 +14,6 @@ import java.util.List;
 @Entity
 @Table(name = "user_entity")
 @Getter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(exclude = {"followers", "followings"})
@@ -33,8 +32,7 @@ public class User extends UserBaseTimeEntity {
     @JsonIgnore                     // 비밀번호가 캐시되지 않도록 JSON 직렬화 대상에서 제외
     private String password;
     @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private Role role = Role.USER;  // API 접근 권한을 결정하는 필드
+    private Role role;              // API 접근 권한을 결정하는 필드
 
     /**
      * 사용자 프로필 정보
@@ -58,6 +56,22 @@ public class User extends UserBaseTimeEntity {
     @OneToMany(mappedBy = "sender")
     @JsonIgnore
     private List<Follow> followings;    // 내가 팔로우중인 유저에 대한 Join Table의 엔티티
+
+    @Builder
+    public User(String workEmail, String password, Role role, String name, String company, String avatar, String personalPhone, String workPhone, String personalEmail, String location, String birthdayText, String onlineStatus) {
+        this.workEmail = workEmail;
+        this.password = password;
+        this.role = role;
+        this.name = name;
+        this.company = company;
+        this.avatar = avatar;
+        this.personalPhone = personalPhone;
+        this.workPhone = workPhone;
+        this.personalEmail = personalEmail;
+        this.location = location;
+        this.birthdayText = birthdayText;
+        this.onlineStatus = onlineStatus;
+    }
 
     public void updatePassword(String password) {
         this.password = password;

@@ -1,232 +1,137 @@
 package com.pigeon_stargram.sns_clone.service.follow;
 
-import com.pigeon_stargram.sns_clone.domain.follow.Follow;
-import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.Follow.internal.AddFollowDto;
-import com.pigeon_stargram.sns_clone.dto.Follow.internal.DeleteFollowDto;
+import com.pigeon_stargram.sns_clone.dto.Follow.internal.*;
 import com.pigeon_stargram.sns_clone.dto.Follow.response.ResponseFollowerDto;
-import com.pigeon_stargram.sns_clone.dto.Follow.internal.FindFollowersDto;
-import com.pigeon_stargram.sns_clone.dto.Follow.internal.FindFollowingsDto;
-import com.pigeon_stargram.sns_clone.dto.Follow.internal.GetNotificationEnabledDto;
-import com.pigeon_stargram.sns_clone.dto.Follow.internal.ToggleNotificationEnabledDto;
-import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseUserChatDto;
-import com.pigeon_stargram.sns_clone.exception.follow.FollowExistException;
-import com.pigeon_stargram.sns_clone.service.chat.ChatService;
-import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
-import com.pigeon_stargram.sns_clone.service.story.StoryService;
-import com.pigeon_stargram.sns_clone.service.user.UserService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static com.pigeon_stargram.sns_clone.constant.FollowConstants.*;
-import static com.pigeon_stargram.sns_clone.dto.user.UserDtoConverter.*;
-import static com.pigeon_stargram.sns_clone.service.follow.FollowBuilder.*;
+public interface FollowService {
 
-@Service
-@Transactional
-@RequiredArgsConstructor
-@Slf4j
-public class FollowService {
+    /**
+     * 주어진 사용자 ID를 기준으로 팔로워 목록을 조회합니다.
+     *
+     * @param dto 팔로워 조회를 위한 DTO
+     * @return 팔로워 목록
+     */
+    List<ResponseFollowerDto> findFollowers(FindFollowersDto dto);
 
-    private final FollowCrudService followCrudService;
+    /**
+     * 주어진 사용자 ID를 기준으로 팔로잉 목록을 조회합니다.
+     *
+     * @param dto 팔로잉 조회를 위한 DTO
+     * @return 팔로잉 목록
+     */
+    List<ResponseFollowerDto> findFollowings(FindFollowingsDto dto);
 
-    private final UserService userService;
-    private final ChatService chatService;
-    private final NotificationService notificationService;
-    private final StoryService storyService;
+    /**
+     * 사용자 ID로 팔로잉 목록을 조회합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 팔로잉 목록
+     */
+    List<ResponseFollowerDto> findFollowings(Long userId);
 
-    public void createFollow(AddFollowDto dto) {
-        Long senderId = dto.getSenderId();
-        Long recipientId = dto.getRecipientId();
+    /**
+     * 사용자 ID로 팔로워 ID 목록을 조회합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 팔로워 ID 목록
+     */
+    List<Long> getFollowerIds(Long userId);
 
-        if (followCrudService.findFollowerIds(recipientId).contains(senderId)) {
-            throw new FollowExistException("이미 팔로우 중입니다.");
-        }
+    /**
+     * 알림이 활성화된 팔로워 ID 목록을 조회합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 알림이 활성화된 팔로워 ID 목록
+     */
+    List<Long> findNotificationEnabledFollowerIds(Long userId);
 
-        User sender = userService.getUserById(senderId);
-        User recipient = userService.getUserById(recipientId);
-        log.info("sender ={}, recipient = {}",sender.getId(),recipient.getId());
+    /**
+     * 주어진 대상 사용자에 대해 알림 설정 여부를 확인합니다.
+     *
+     * @param dto 알림 설정 조회를 위한 DTO
+     * @return 알림 설정 여부 (true: 설정됨, false: 설정되지 않음)
+     */
+    Boolean getNotificationEnabled(GetNotificationEnabledDto dto);
 
-        Follow follow = buildFollow(sender, recipient);
-        followCrudService.save(follow);
+    /**
+     * 사용자 ID로 팔로잉 수를 조회합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 팔로잉 수
+     */
+    Long countFollowings(Long userId);
 
-        dto.setSenderName(sender.getName());
-        notificationService.sendToSplitWorker(dto);
-    }
+    /**
+     * 사용자 ID로 팔로워 수를 조회합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 팔로워 수
+     */
+    Long countFollowers(Long userId);
 
-    public void deleteFollow(DeleteFollowDto dto){
-        Long senderId = dto.getSenderId();
-        Long recipientId = dto.getRecipientId();
+    /**
+     * 주어진 대상이 팔로잉 상태인지 확인합니다.
+     *
+     * @param sourceId 팔로우 요청자 ID
+     * @param targetId 팔로우 대상자 ID
+     * @return 팔로우 여부 (true: 팔로우 중, false: 팔로우 중 아님)
+     */
+    Boolean isFollowing(Long sourceId, Long targetId);
 
-        followCrudService.deleteFollowBySenderIdAndRecipientId(senderId, recipientId);
-    }
+    /**
+     * 주어진 사용자가 유명 사용자(famous user)인지 여부를 확인합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 유명 사용자 여부 (true: 유명 사용자, false: 일반 사용자)
+     */
+    Boolean isFamousUser(Long userId);
 
-    public List<ResponseFollowerDto> findFollowings(Long userId) {
-        return followCrudService.findFollowingIds(userId).stream()
-                .map(userService::getUserById)
-                .map(recipient -> new ResponseFollowerDto(recipient, 1))
-                .collect(Collectors.toList());
-    }
+    /**
+     * 팔로우 요청을 처리하고 알림을 전송합니다.
+     *
+     * @param dto 팔로우 요청 DTO
+     */
+    void createFollow(AddFollowDto dto);
 
-    public List<Long> getFollowerIds(Long userId) {
-        return followCrudService.findFollowerIds(userId);
-    }
+    /**
+     * 팔로워 알림 설정을 토글합니다 (켜기/끄기).
+     *
+     * @param dto 알림 설정 토글을 위한 DTO
+     */
+    void toggleNotificationEnabled(ToggleNotificationEnabledDto dto);
 
-    public List<ResponseFollowerDto> findFollowers(FindFollowersDto dto) {
-        Set<Long> targetUserFollowerIdSet =
-                followCrudService.findFollowerIds(dto.getUserId())
-                        .stream().collect(Collectors.toSet());
-        Set<Long> loginUserFollowingIdSet =
-                followCrudService.findFollowingIds(dto.getLoginUserId())
-                        .stream().collect(Collectors.toSet());
+    /**
+     * 팔로우 관계를 삭제합니다.
+     *
+     * @param dto 팔로우 삭제를 위한 DTO
+     */
+    void deleteFollow(DeleteFollowDto dto);
 
-        // 타겟유저를 팔로우 하는 사람 중, 내가 팔로우중인 사람
-        return getResponseFollowerDtos(loginUserFollowingIdSet, targetUserFollowerIdSet);
-    }
+    /**
+     * 채팅을 할 수 있는 팔로우 대상 목록을 조회합니다.
+     *
+     * @param loginUserId 현재 로그인된 사용자 ID
+     * @return 채팅 가능한 대상 목록
+     */
+    List<ResponseUserChatDto> findPartnersForChat(Long loginUserId);
 
+    /**
+     * 사용자의 스토리와 팔로잉의 최근 스토리가 있는 사람들을 함께 조회합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 최근 스토리가 있는 팔로잉 목록 및 사용자 정보
+     */
+    List<ResponseFollowerDto> findMeAndFollowingsWithRecentStories(Long userId);
 
-    public List<ResponseFollowerDto> findFollowings(FindFollowingsDto dto) {
-        Set<Long> targetUserFollowingIdSet =
-                followCrudService.findFollowingIds(dto.getUserId())
-                        .stream().collect(Collectors.toSet());
-        Set<Long> loginUserFollowingIdSet =
-                followCrudService.findFollowingIds(dto.getLoginUserId())
-                        .stream().collect(Collectors.toSet());
-
-        return getResponseFollowerDtos(loginUserFollowingIdSet, targetUserFollowingIdSet);
-    }
-
-    private List<ResponseFollowerDto> getResponseFollowerDtos(Set<Long> loginUserFollowingIdSet,
-                                                              Set<Long> targetUserFollowingIdSet) {
-        Set<Long> intersection = new HashSet<>(loginUserFollowingIdSet);
-        Set<Long> disjoint = new HashSet<>(targetUserFollowingIdSet);
-
-        // 타겟유저에 대한 팔로우 유저 중, 로그인 유저가 팔로우중인 사람
-        intersection.retainAll(targetUserFollowingIdSet);
-        List<ResponseFollowerDto> followIntersection =
-                convertUserIdSetToFollowerDtoList(intersection, FOLLOWING);
-
-        // 타겟유저에 대한 팔로우 유저 중, 로그인 유저가 팔로우 하지 않은 사람
-        disjoint.removeAll(intersection);
-        List<ResponseFollowerDto> followDisjoint =
-                convertUserIdSetToFollowerDtoList(disjoint, NOT_FOLLOWING);
-
-        return Stream.concat(followIntersection.stream(), followDisjoint.stream())
-                .collect(Collectors.toList());
-    }
-
-    private List<ResponseFollowerDto> convertUserIdSetToFollowerDtoList(Set<Long> userIdSet,
-                                                                        int follow) {
-        return userIdSet.stream()
-                .map(userId -> {
-                    User user = userService.getUserById(userId);
-                    return buildResponseFollowerDto(user, follow);
-                }).collect(Collectors.toList());
-    }
-
-    public Boolean isFollowing(Long sourceId, Long targetId) {
-        return followCrudService.findFollowerIds(targetId)
-                .contains(sourceId);
-    }
-
-    public List<Long> findFollows(Long userId) {
-        return followCrudService.findNotificationEnabledIds(userId);
-    }
-
-    public List<ResponseUserChatDto> findPartnersForChat(Long currentUserId) {
-        List<Long> followerIds = followCrudService.findFollowerIds(currentUserId);
-        List<Long> followingIds = followCrudService.findFollowingIds(currentUserId);
-
-        return Stream.concat(followerIds.stream(), followingIds.stream())
-                .distinct()
-                .map(userId -> {
-                    Integer unreadChatCount = chatService.getUnreadChatCount(currentUserId, userId);
-                    LastMessageDto lastMessage = chatService.getLastMessage(currentUserId, userId);
-
-                    Integer state;
-                    boolean isFollowing = followingIds.contains(userId);
-                    boolean isFollowedBy = followerIds.contains(userId);
-
-                    if (isFollowing && isFollowedBy) {
-                        state = BOTH_FOLLOWING;
-                    } else if (isFollowing) {
-                        state = FOLLOWING_ONLY;
-                    } else {
-                        state = FOLLOWED_ONLY;
-                    }
-
-                    User user = userService.getUserById(userId);
-                    return toResponseUserChatDto(user, unreadChatCount, lastMessage, state);
-                })
-                .sorted(Comparator.comparing(
-                        ResponseUserChatDto::getLastMessage,
-                        Comparator.nullsLast(Comparator.reverseOrder())))
-                .collect(Collectors.toList());
-    }
-
-    public Long countFollowings(Long userId) {
-        return (long) followCrudService.findFollowingIds(userId).size();
-    }
-
-    public Long countFollowers(Long userId) {
-        return (long) followCrudService.findFollowerIds(userId).size();
-    }
-
-    public void toggleNotificationEnabled(ToggleNotificationEnabledDto dto) {
-       followCrudService.toggleNotificationEnabled(dto.getLoginUserId(), dto.getTargetUserId());
-    }
-
-    public Boolean getNotificationEnabled(GetNotificationEnabledDto dto) {
-        return followCrudService.findNotificationEnabledIds(dto.getTargetUserId())
-                .contains(dto.getLoginUserId());
-    }
-
-    public List<ResponseFollowerDto> findMeAndFollowingsWithRecentStories(Long userId) {
-        log.info("followings={}", findFollowings(userId));
-        List<ResponseFollowerDto> followingsWithRecentStories = findFollowings(userId).stream()
-                .filter(following -> storyService.hasRecentStory(following.getId()))
-                .peek(following -> {
-                    boolean hasUnreadStories = storyService.hasUnreadStories(following.getId(), userId);
-                    following.setHasUnreadStories(hasUnreadStories);
-                })
-                .collect(Collectors.toList());
-
-        // 현재 사용자가 최근 스토리가 있는지 확인
-        boolean currentUserHasRecentStory = storyService.hasRecentStory(userId);
-        if (currentUserHasRecentStory) {
-            boolean currentUserHasUnreadStories = storyService.hasUnreadStories(userId, userId);
-            ResponseFollowerDto currentUserDto = new ResponseFollowerDto(userService.getUserById(userId), FOLLOWING);
-            currentUserDto.setHasUnreadStories(currentUserHasUnreadStories);
-            followingsWithRecentStories.add(currentUserDto);
-        }
-
-        return followingsWithRecentStories;
-    }
-
-    // 유명 사용자 여부를 판별하는 메서드
-    public Boolean isFamousUser(Long userId) {
-        Long followerCount = countFollowers(userId);
-        return followerCount >= FAMOUS_USER_THRESHOLD;
-    }
-
-    public List<Long> findFollowingsWhoFollowTarget(Long sourceId, Long targetId) {
-        // sourceId의 팔로잉 목록을 가져옴
-        List<Long> followingIds = followCrudService.findFollowingIds(sourceId);
-
-        // 팔로잉 중에서 targetId를 팔로우하는 사람들을 필터링
-        return followingIds.stream()
-                .filter(followingId -> isFollowing(followingId, targetId))  // 해당 사용자가 targetId를 팔로우하는지 확인
-                .collect(Collectors.toList());
-    }
-
+    /**
+     * 주어진 사용자가 팔로우하는 사람들 중에서 대상 사용자를 팔로우하는 사용자 목록을 조회합니다.
+     *
+     * @param sourceId 팔로우하는 사람의 ID
+     * @param targetId 대상 사용자의 ID
+     * @return 대상 사용자를 팔로우하는 팔로잉 목록
+     */
+    List<Long> findFollowingsWhoFollowTarget(Long sourceId, Long targetId);
 }

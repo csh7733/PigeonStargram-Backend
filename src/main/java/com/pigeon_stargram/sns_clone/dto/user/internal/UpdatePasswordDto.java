@@ -4,10 +4,11 @@ import lombok.*;
 
 @Getter
 @Builder
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class UpdatePasswordDto {
+
     private Long userId;
     private String password;
 }

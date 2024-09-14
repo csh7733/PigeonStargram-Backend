@@ -4,7 +4,7 @@ import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseUserChatDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
-import com.pigeon_stargram.sns_clone.dto.user.UserDto;
+import com.pigeon_stargram.sns_clone.UserDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDtoConverter;
 import com.pigeon_stargram.sns_clone.dto.user.internal.UpdateOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.user.internal.UpdatePasswordDto;
@@ -28,8 +28,6 @@ import java.util.stream.Stream;
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
 import static com.pigeon_stargram.sns_clone.dto.user.UserDtoConverter.*;
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
-import static com.pigeon_stargram.sns_clone.util.LogUtil.*;
-import static com.pigeon_stargram.sns_clone.util.RedisUtil.combineHashKeyAndFieldKey;
 
 
 // 사용자 정보에 대한 캐싱을 적용한 UserService 구현체

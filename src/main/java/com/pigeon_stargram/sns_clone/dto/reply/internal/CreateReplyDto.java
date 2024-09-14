@@ -30,19 +30,6 @@ public class CreateReplyDto implements NotificationConvertable {
     private List<Long> taggedUserIds;
 
     @Override
-    public Notification toNotification(User sender, User recipient) {
-        return Notification.builder()
-                .recipient(recipient)
-                .sender(sender)
-                .type(NotificationType.MY_COMMENT_REPLY)
-                .isRead(false)
-                .message(generateMessage())
-                .sourceId(postUserId)
-                .sourceId2(postId)
-                .build();
-    }
-
-    @Override
     public NotificationBatchDto toNotificationBatchDto(Long senderId,
                                                        List<Long> batchRecipientIds,
                                                        Long contentId) {

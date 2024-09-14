@@ -15,7 +15,7 @@ import com.pigeon_stargram.sns_clone.repository.comment.CommentRepository;
 import com.pigeon_stargram.sns_clone.repository.post.PostLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.post.PostRepository;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
-import com.pigeon_stargram.sns_clone.service.follow.FollowService;
+import com.pigeon_stargram.sns_clone.service.follow.FollowServiceV2;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +48,7 @@ class PostServiceTest {
     @Mock
     CommentService commentService;
     @Mock
-    FollowService followService;
+    FollowServiceV2 followService;
     @Mock
     NotificationService notificationService;
 
@@ -219,7 +219,7 @@ class PostServiceTest {
         //given
         CreatePostDto createPostDto = new CreatePostDto(user, "content");
         List<Long> recipientIds = List.of(1L, 2L, 3L);
-        when(followService.findFollows(anyLong()))
+        when(followService.findNotificationEnabledFollowerIds(anyLong()))
                 .thenReturn(recipientIds);
         when(notificationService.sendToSplitWorker(createPostDto))
                 .thenReturn(List.of());

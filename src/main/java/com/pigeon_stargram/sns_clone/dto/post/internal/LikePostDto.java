@@ -24,19 +24,6 @@ public class LikePostDto implements NotificationConvertable {
     private Long writerId;
 
     @Override
-    public Notification toNotification(User sender, User recipient) {
-        return Notification.builder()
-                .message(generateMessage())
-                .isRead(false)
-                .sender(sender)
-                .recipient(recipient)
-                .type(NotificationType.MY_POST_LIKE)
-                .sourceId(writerId)
-                .sourceId2(postId)
-                .build();
-    }
-
-    @Override
     public NotificationBatchDto toNotificationBatchDto(Long senderId,
                                                        List<Long> batchRecipientIds,
                                                        Long contentId) {

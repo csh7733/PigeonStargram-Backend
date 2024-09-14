@@ -1,5 +1,6 @@
 package com.pigeon_stargram.sns_clone.dto.login.request;
 
+import com.pigeon_stargram.sns_clone.domain.user.Role;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import lombok.*;
 
@@ -23,6 +24,7 @@ public class RequestRegisterDto {
         return User.builder()
                 .workEmail(email)
                 .password(password)
+                .role(Role.USER)
                 .name(username)
                 .company(company)
                 .personalPhone(personalPhone)

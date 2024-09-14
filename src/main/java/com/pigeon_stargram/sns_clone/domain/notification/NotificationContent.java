@@ -6,13 +6,13 @@ import com.pigeon_stargram.sns_clone.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+@Entity
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @ToString
 @EqualsAndHashCode
-@Getter
-@NoArgsConstructor
-@Entity
-@Builder
-@AllArgsConstructor
 public class NotificationContent {
 
     @Id
