@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.dto.user;
+package com.pigeon_stargram.sns_clone;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,6 +6,7 @@ import com.pigeon_stargram.sns_clone.domain.user.Role;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import lombok.*;
 
+// initdata에서만 사용
 @Getter
 @Setter
 @AllArgsConstructor

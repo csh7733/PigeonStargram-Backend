@@ -29,28 +29,6 @@ public class CreateCommentDto implements NotificationConvertable {
     private String content;
     private List<Long> taggedUserIds;
 
-    public CreateCommentDto(Long loginUserId, Long postId, Long postUserId, String content, List<Long> taggedUserIds) {
-        this.loginUserId = loginUserId;
-        this.postId = postId;
-        this.postUserId = postUserId;
-        this.content = content;
-        this.taggedUserIds = taggedUserIds;
-    }
-
-    @Override
-    public Notification toNotification(User sender,
-                                       User recipient) {
-        return Notification.builder()
-                .type(NotificationType.MY_POST_COMMENT)
-                .message(generateMessage())
-                .isRead(false)
-                .recipient(recipient)
-                .sender(sender)
-                .sourceId(postUserId)
-                .sourceId2(postId)
-                .build();
-    }
-
     @Override
     public NotificationBatchDto toNotificationBatchDto(Long senderId,
                                                        List<Long> batchRecipientIds,

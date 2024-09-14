@@ -2,11 +2,12 @@ package com.pigeon_stargram.sns_clone.dto.Follow.internal;
 
 import lombok.*;
 
-@ToString
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class DeleteFollowDto {
 
     private Long senderId;

@@ -25,45 +25,10 @@ public class FollowBuilder {
                 .build();
     }
 
-    public static FindFollowersDto buildFindFollowersDto(Long loginUserId,
-                                                         Long userId) {
-        return FindFollowersDto.builder()
-                .loginUserId(loginUserId)
-                .userId(userId)
-                .build();
-    }
 
-    public static AddFollowDto buildAddFollowDto(Long senderId,
-                                                 Long recipientId) {
-        return AddFollowDto.builder()
-                .senderId(senderId)
-                .recipientId(recipientId)
-                .build();
-    }
 
-    public static DeleteFollowDto buildDeleteFollowDto(Long senderId,
-                                                       Long recipientId) {
-        return DeleteFollowDto.builder()
-                .senderId(senderId)
-                .recipientId(recipientId)
-                .build();
-    }
 
-    public static GetNotificationEnabledDto buildGetNotificationEnabledDto(Long loginUserId,
-                                                                           Long targetUserId) {
-        return GetNotificationEnabledDto.builder()
-                .loginUserId(loginUserId)
-                .targetUserId(targetUserId)
-                .build();
-    }
 
-    public static ToggleNotificationEnabledDto buildToggleNotificationEnabledDto(Long loginUserId,
-                                                                                 Long targetUserId) {
-        return ToggleNotificationEnabledDto.builder()
-                .loginUserId(loginUserId)
-                .targetUserId(targetUserId)
-                .build();
-    }
 
     public static Follow buildFollow(User sender,
                                      User recipient) {
@@ -81,16 +46,6 @@ public class FollowBuilder {
                 .sender(sender)
                 .recipient(recipient)
                 .isNotificationEnabled(isNotificationEnabled)
-                .build();
-    }
-
-    public static ResponseFollowerDto buildResponseFollowerDto(User user) {
-        return ResponseFollowerDto.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .avatar(user.getAvatar())
-                .location(user.getLocation())
-                .follow(1)
                 .build();
     }
 

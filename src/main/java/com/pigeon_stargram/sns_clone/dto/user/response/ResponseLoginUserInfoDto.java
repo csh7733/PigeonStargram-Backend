@@ -10,7 +10,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-@EqualsAndHashCode
 public class ResponseLoginUserInfoDto {
 
     private Long user;          // 사용자 ID

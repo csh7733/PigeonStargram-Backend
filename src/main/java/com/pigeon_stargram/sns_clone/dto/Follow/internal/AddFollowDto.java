@@ -15,42 +15,17 @@ import java.util.List;
 
 import static com.pigeon_stargram.sns_clone.domain.notification.NotificationType.*;
 
-@Slf4j
-@ToString
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class AddFollowDto implements NotificationConvertable {
+
     private Long senderId;
     private String senderName;
     private Long recipientId;
-
-    public AddFollowDto(Long senderId, Long recipientId) {
-        this.senderId = senderId;
-        this.recipientId = recipientId;
-    }
-
-    public Follow toEntity(User sender, User recipient){
-        return Follow.builder()
-                .sender(sender)
-                .recipient(recipient)
-                .isNotificationEnabled(false)
-                .build();
-    }
-
-    @Override
-    public Notification toNotification(User sender, User recipient){
-        return Notification.builder()
-                .sender(sender)
-                .recipient(recipient)
-                .isRead(false)
-                .type(FOLLOW)
-                .message(generateMessage())
-                .sourceId(senderId)
-                .build();
-    }
 
     @Override
     public NotificationBatchDto toNotificationBatchDto(Long senderId,

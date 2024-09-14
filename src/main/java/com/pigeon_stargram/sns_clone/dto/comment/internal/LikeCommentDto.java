@@ -26,20 +26,6 @@ public class LikeCommentDto implements NotificationConvertable {
     private Long postId;
 
     @Override
-    public Notification toNotification(User sender,
-                                       User recipient) {
-        return Notification.builder()
-                .type(NotificationType.MY_COMMENT_LIKE)
-                .message(generateMessage())
-                .isRead(false)
-                .sender(sender)
-                .recipient(recipient)
-                .sourceId(postUserId)
-                .sourceId2(postId)
-                .build();
-    }
-
-    @Override
     public NotificationBatchDto toNotificationBatchDto(Long senderId,
                                                        List<Long> batchRecipientIds,
                                                        Long contentId) {

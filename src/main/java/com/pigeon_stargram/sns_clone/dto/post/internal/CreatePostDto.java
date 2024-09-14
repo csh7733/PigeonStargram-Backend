@@ -39,18 +39,6 @@ public class CreatePostDto implements NotificationConvertable {
     }
 
     @Override
-    public Notification toNotification(User sender, User recipient) {
-        return Notification.builder()
-                .recipient(recipient)
-                .sender(sender)
-                .type(NotificationType.FOLLOWING_POST)
-                .isRead(false)
-                .message(generateMessage())
-                .sourceId(loginUserId)
-                .build();
-    }
-
-    @Override
     public NotificationBatchDto toNotificationBatchDto(Long senderId,
                                                        List<Long> batchRecipientIds,
                                                        Long contentId) {

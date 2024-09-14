@@ -7,14 +7,14 @@ import java.util.List;
 
 public interface NotificationConvertable {
 
-    Notification toNotification(User sender,
-                                User recipient);
-    NotificationBatchDto toNotificationBatchDto(Long senderId,
-                                                List<Long> batchRecipientIds,
-                                                Long contentId);
+    NotificationBatchDto toNotificationBatchDto(Long senderId, List<Long> batchRecipientIds, Long contentId);
+
     NotificationContent toNotificationContent();
+
     Long getSenderId();
+
     List<Long> toRecipientIds();
+
     String generateMessage();
 
 }

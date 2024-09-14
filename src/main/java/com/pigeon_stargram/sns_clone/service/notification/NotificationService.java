@@ -52,14 +52,6 @@ public class NotificationService {
         });
     }
 
-    private List<Notification> convertDtoToNotifications(NotificationConvertable dto, Long senderId, User sender) {
-        return dto.toRecipientIds().stream()
-                .filter(recipientId -> !recipientId.equals(senderId))
-                .map(userService::getUserById)
-                .map(recipient -> dto.toNotification(sender, recipient))
-                .collect(Collectors.toList());
-    }
-
     public List<ResponseNotificationDto> findByUserId(Long userId) {
         List<NotificationV2> notifications = notificationCrudService.findNotificationByRecipientId(userId);
 

@@ -8,10 +8,11 @@ import lombok.*;
 import java.util.List;
 
 @Getter
-@Builder
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class NotificationBatchDto {
 
     private Long senderId;
