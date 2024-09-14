@@ -10,13 +10,12 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-@EqualsAndHashCode
 public class ResponseLoginUserInfoDto {
 
     private Long user;          // 사용자 ID
     private String name;
     private String company;
     private String avatar;
-    private boolean isLoggedIn;
+    private Boolean isLoggedIn;
 
 }

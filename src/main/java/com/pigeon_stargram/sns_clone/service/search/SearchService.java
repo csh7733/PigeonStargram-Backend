@@ -1,171 +1,68 @@
 package com.pigeon_stargram.sns_clone.service.search;
 
-import com.pigeon_stargram.sns_clone.domain.search.SearchHistory;
-import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.search.internal.DeleteSearchHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.search.internal.SaveSearchHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.search.response.ResponseSearchHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.search.response.ResponseTopSearchDto;
-import com.pigeon_stargram.sns_clone.dto.user.UserDtoConverter;
 import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
-import com.pigeon_stargram.sns_clone.repository.search.SearchHistoryRepository;
-import com.pigeon_stargram.sns_clone.service.redis.RedisService;
-import com.pigeon_stargram.sns_clone.service.user.UserService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
-import static com.pigeon_stargram.sns_clone.service.search.SearchBuilder.*;
-import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentTimeMillis;
-import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
+/**
+ * 검색 기능과 관련된 비즈니스 로직을 처리하는 Service 인터페이스입니다.
+ * 검색어 자동 완성, 검색 기록 조회 및 삭제, 검색어 저장 등 다양한 기능을 제공합니다.
+ */
+public interface SearchService {
 
-@Service
-@RequiredArgsConstructor
-@Transactional
-public class SearchService {
+    /**
+     * 특정 접두사(prefix)를 기준으로 상위 검색어를 가져옵니다.
+     *
+     * @param prefix 검색어 접두사
+     * @return 상위 검색어 목록
+     */
+    List<ResponseTopSearchDto> getTopSearchTermsByPrefix(String prefix);
 
-    private final UserService userService;
-    private final RedisService redisService;
+    /**
+     * 사용자의 최근 검색 기록을 조회합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 최근 검색 기록 목록
+     */
+    List<ResponseSearchHistoryDto> getTopSearchHistory(Long userId);
 
-    private final SearchHistoryRepository searchHistoryRepository;
+    /**
+     * 특정 검색 기록을 삭제합니다.
+     *
+     * @param dto 삭제할 검색 기록 정보가 담긴 DTO
+     */
+    void deleteSearchHistory(DeleteSearchHistoryDto dto);
 
-    public List<ResponseTopSearchDto> getTopSearchTermsByPrefix(String prefix) {
-        // 캐시 키 생성
-        String searchKey = cacheKeyGenerator(SEARCH_TERM_SCORES, prefix);
+    /**
+     * 사용자의 모든 검색 기록을 삭제합니다.
+     *
+     * @param userId 사용자 ID
+     */
+    void deleteAllSearchHistory(Long userId);
 
-        // Redis에서 상위 5개의 검색어를 점수순으로 가져옴
-        List<String> topSearchTerms = redisService.getTopNFromSortedSet(searchKey, 5, String.class);
+    /**
+     * 검색 기록을 저장합니다.
+     *
+     * @param dto 저장할 검색 기록 정보가 담긴 DTO
+     */
+    void saveSearchHistory(SaveSearchHistoryDto dto);
 
-        // 검색어 목록을 DTO로 변환하여 반환
-        return topSearchTerms.stream()
-                .filter(term -> !term.equalsIgnoreCase(prefix)) // prefix와 동일하지 않은 검색어만 필터링
-                .map(SearchBuilder::buildResponseTopSearchDto)  // ResponseTopSearchDto로 변환
-                .collect(Collectors.toList());
-    }
+    /**
+     * 검색어의 점수를 업데이트합니다.
+     *
+     * @param term 검색어
+     */
+    void updateSearchTermScores(String term);
 
-
-    public List<ResponseSearchHistoryDto> getTopSearchHistory(Long userId) {
-        // 캐시 키 생성
-        String cacheKey = cacheKeyGenerator(SEARCH_HISTORY, USER_ID, userId.toString());
-
-        // Redis에서 해당 Sorted Set이 존재하는지 확인
-        if (redisService.isSortedSetExists(cacheKey)) {
-            // Sorted Set이 존재하면 상위 5개의 검색 기록을 가져옴 (캐시 히트)
-            List<Object> cachedSearchHistory = redisService.getTopNFromSortedSet(cacheKey, 5, Object.class);
-
-            // 캐시에서 가져온 검색 기록을 DTO로 변환하여 반환
-            return cachedSearchHistory.stream()
-                    .map(searchQuery -> {
-                        Double score = redisService.getScoreFromSortedSet(cacheKey, searchQuery, Double.class); // 해당 검색어의 타임스탬프 가져오기
-                        return buildResponseSearchHistoryDto(searchQuery.toString(), score);
-                    })
-                    .collect(Collectors.toList());
-        }
-
-        // Redis에 데이터가 없을 경우 (캐시 미스)
-        User user = userService.getUserById(userId);
-        List<SearchHistory> searchHistories = searchHistoryRepository.findTop5ByUserOrderByScoreDesc(user);
-
-        // DB에서 가져온 검색 기록을 Redis에 저장
-        // 검색기록 TTL은 3일로 설정
-        for (SearchHistory searchHistory : searchHistories) {
-            redisService.addToSortedSet(cacheKey, searchHistory.getScore(), searchHistory.getSearchQuery(),3 * ONE_DAY_TTL);
-        }
-
-        // DB에서 가져온 검색 기록을 Response DTO로 변환하여 반환
-        return searchHistories.stream()
-                .map(SearchBuilder::buildResponseSearchHistoryDto)
-                .collect(Collectors.toList());
-    }
-
-
-    public void deleteSearchHistory(DeleteSearchHistoryDto dto) {
-        Long userId = dto.getUserId();
-        String searchQuery = dto.getQuery();
-
-        // 캐시 키 생성
-        String searchKey = cacheKeyGenerator(SEARCH_HISTORY, USER_ID, userId.toString());
-
-        // Redis에서 특정 검색 기록 삭제
-        redisService.removeFromSortedSet(searchKey, searchQuery);
-
-        // DB에서 특정 검색 기록 삭제
-        searchHistoryRepository.findByUserIdAndSearchQuery(userId, searchQuery)
-                .ifPresent(searchHistoryRepository::delete);
-    }
-
-
-    public void deleteAllSearchHistory(Long userId) {
-        // 캐시 키 생성
-        String searchKey = cacheKeyGenerator(SEARCH_HISTORY, USER_ID, userId.toString());
-
-        // Redis에서 검색 기록 삭제
-        redisService.removeSortedSet(searchKey);
-
-        // DB에서 검색 기록 삭제
-        List<SearchHistory> histories = searchHistoryRepository.findByUserId(userId);
-        searchHistoryRepository.deleteAll(histories);
-    }
-
-
-    public void saveSearchHistory(SaveSearchHistoryDto dto) {
-        Long userId = dto.getUserId();
-        String searchQuery = dto.getSearchQuery();
-
-        // DB에서 사용자 정보 조회
-        User user = userService.getUserById(userId);
-
-        // 캐시 키 생성
-        String searchKey = cacheKeyGenerator(SEARCH_HISTORY, USER_ID, userId.toString());
-
-        // Write-back Sorted Set에 추가
-        redisService.pushToWriteBackSortedSet(searchKey);
-
-        // Score를 위한 Double형태의 현재 시간값을 가져옴
-        Double currentTimestamp = getCurrentTimeMillis();
-
-        // Redis에 검색 기록 추가 (Sorted Set에 추가)
-        // 검색기록 TTL은 3일로 설정
-        redisService.addToSortedSet(searchKey, currentTimestamp, searchQuery, 3 * ONE_DAY_TTL);
-
-        // 검색어 점수 업데이트
-        updateSearchTermScores(searchQuery);
-    }
-
-
-
-    public void updateSearchTermScores(String term) {
-        // 검색어의 prefix 생성
-        List<String> prefixes = generatePrefixes(term);
-
-        // 각 prefix에 대해 term을 값으로 하여 점수 업데이트
-        prefixes.forEach(prefix -> {
-            // 캐시 키 생성
-            String searchKey = cacheKeyGenerator(SEARCH_TERM_SCORES, prefix);
-            // 각 prefix를 키로 사용하고, term을 값으로 점수를 증가시킴
-            redisService.incrementScoreInSortedSet(searchKey, term, 1.0);
-        });
-    }
-
-
-    private List<String> generatePrefixes(String term) {
-        List<String> prefixes = new ArrayList<>();
-        for (int i = 1; i <= term.length(); i++) {
-            prefixes.add(term.substring(0, i));
-        }
-        return prefixes;
-    }
-
-    public List<ResponseUserInfoDto> getUserSearchResults(String searchQuery){
-
-        return userService.findBySearchQuery(searchQuery).stream()
-                .map(UserDtoConverter::toResponseUserInfoDto)
-                .collect(Collectors.toList());
-    }
-
+    /**
+     * 특정 검색어에 대한 사용자 검색 결과를 반환합니다.
+     *
+     * @param searchQuery 검색어
+     * @return 검색된 사용자 정보 리스트
+     */
+    List<ResponseUserInfoDto> getUserSearchResults(String searchQuery);
 }

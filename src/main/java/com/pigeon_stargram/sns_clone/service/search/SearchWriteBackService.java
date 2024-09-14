@@ -13,9 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static com.pigeon_stargram.sns_clone.service.follow.FollowBuilder.buildFollow;
-import static com.pigeon_stargram.sns_clone.service.search.SearchBuilder.buildSearchHistory;
-import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
+import static com.pigeon_stargram.sns_clone.domain.search.SearchFactory.createSearchHistory;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -26,34 +24,40 @@ public class SearchWriteBackService {
     private final RedisService redisService;
     private final UserService userService;
     private final SearchHistoryRepository searchHistoryRepository;
+
+    /**
+     * Redis 캐시된 검색 기록을 데이터베이스와 동기화합니다.
+     *
+     * @param key 사용자 검색 기록이 저장된 Redis 키
+     */
     public void syncSearchHistory(String key) {
         Long userId = RedisUtil.parseSuffix(key);
-        log.info("WriteBack key={}", key);
-
-        // userId로 사용자 조회
         User user = userService.getUserById(userId);
 
         // 캐시에서 검색 기록 모두 가져오기
         List<String> searchQueries = redisService.getAllFromSortedSet(key, String.class);
+        syncSearchHistoryToDB(user, key, searchQueries);
+    }
 
-        // 캐시에서 가져온 검색 기록을 DB와 동기화
+    private void syncSearchHistoryToDB(User user, String redisKey, List<String> searchQueries) {
         for (String searchQuery : searchQueries) {
-            // DB에서 userId와 searchQuery로 검색 기록 찾기, 없으면 새로 생성
-            SearchHistory searchHistory = searchHistoryRepository.findByUserIdAndSearchQuery(userId, searchQuery)
-                    .map(history -> {
-                        // 존재하면 수정 시간 업데이트
-                        Double score = redisService.getScoreFromSortedSet(key, searchQuery, Double.class);
-                        history.updateScore(score);
-                        return history;
-                    })
-                    .orElseGet(() -> buildSearchHistory(user, searchQuery)); // 존재하지 않으면 새로 생성
+            // Redis에서 검색 기록의 Score(검색 날짜가 수치화된 값)을 가져옴
+            Double score = redisService.getScoreFromSortedSet(redisKey, searchQuery, Double.class);
+            
+            // DB에서 기존 기록을 찾거나 새로 생성
+            SearchHistory searchHistory = searchHistoryRepository.findByUserIdAndSearchQuery(user.getId(), searchQuery)
+                    .map(history -> updateSearchHistoryScore(history, score))  // 기존 기록 업데이트
+                    .orElseGet(() -> createSearchHistory(user, searchQuery, score));  // 없으면 새로 생성
 
             // DB에 저장
             searchHistoryRepository.save(searchHistory);
         }
     }
 
-
-
+    private SearchHistory updateSearchHistoryScore(SearchHistory searchHistory, Double score) {
+        // 최신 점수로 검색 기록의 점수 업데이트
+        searchHistory.updateScore(score);
+        return searchHistory;
+    }
 
 }
