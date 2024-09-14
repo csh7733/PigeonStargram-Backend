@@ -3,16 +3,11 @@ package com.pigeon_stargram.sns_clone.service.file;
 import com.pigeon_stargram.sns_clone.dto.file.internal.FileUploadResultDto;
 import com.pigeon_stargram.sns_clone.exception.file.FileLoadException;
 import com.pigeon_stargram.sns_clone.exception.file.FileUploadException;
-import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.worker.FileUploadWorker;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpMethod;
-import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -25,24 +20,19 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import static com.pigeon_stargram.sns_clone.constant.RedisQueueConstants.FILE_UPLOAD_QUEUE;
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
 
-@Slf4j
-@RequiredArgsConstructor
-@Transactional
 @Service
+@Transactional
+@RequiredArgsConstructor
+@Slf4j
 @Profile("local-s3")
-public class S3FileService implements FileService{
+public class FileServiceV2 implements FileService{
 
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
@@ -53,32 +43,42 @@ public class S3FileService implements FileService{
 
     @Override
     public FileUploadResultDto saveFiles(List<MultipartFile> files) {
+        // 파일 리스트가 null인 경우 빈 결과를 반환
         if (files == null) return new FileUploadResultDto();
 
+        // 고유한 필드 키 생성
         String fieldKey = generateFieldKey();
         int totalFiles = files.size();
         List<String> fileNames = new ArrayList<>();
 
+        // 각 파일에 대해 비동기 업로드 처리
         for (MultipartFile file : files) {
             String fileName = getFilename(file);
             fileNames.add(fileName);
+            // 비동기 방식으로 파일 업로드
             fileUploadWorker.uploadFileAsync(file, fileName, fieldKey, totalFiles);
         }
 
+        // 업로드된 파일들의 이름과 필드 키를 포함한 결과 반환
         return new FileUploadResultDto(fileNames, fieldKey);
     }
+
     @Override
     public String saveFile(MultipartFile file) {
+        // 파일 이름을 생성
         String filename = getFilename(file);
 
         try {
+            // S3에 파일을 업로드하기 위한 요청 생성
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(filename)
                     .build();
 
+            // S3에 파일 업로드
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
+            // 업로드된 파일의 이름 반환
             return filename;
 
         } catch (IOException e) {

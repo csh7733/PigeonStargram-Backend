@@ -6,7 +6,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.pigeon_stargram.sns_clone.exception.file.FileUploadException;
-import com.pigeon_stargram.sns_clone.service.file.S3FileService;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,9 +20,9 @@ import static com.pigeon_stargram.sns_clone.constant.RedisPostConstants.UPLOADIN
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.FILE_UPLOAD_FAIL;
 
 
-@Slf4j
-@RequiredArgsConstructor
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class FileUploadWorker {
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(5);
@@ -35,56 +34,62 @@ public class FileUploadWorker {
     @Value("${aws.s3.bucketName}")
     private String bucketName;
 
+    /**
+     * 파일을 비동기적으로 S3에 업로드하는 메서드
+     *
+     * @param file        업로드할 파일
+     * @param filename    S3에 저장될 파일 이름
+     * @param fieldKey    업로드 작업을 구분하는 고유 키
+     * @param totalFiles  총 업로드할 파일 수
+     */
     public void uploadFileAsync(MultipartFile file, String filename, String fieldKey, int totalFiles) {
         // 파일 데이터를 미리 메모리로 로드
         byte[] fileData;
         try {
-            log.info("미리 로드");
             fileData = file.getBytes();
         } catch (IOException e) {
-            log.error("파일 데이터 로드 실패 - {}", filename, e);
-            throw new FileUploadException(FILE_UPLOAD_FAIL, e);
+            throw new FileUploadException(FILE_UPLOAD_FAIL, e); // 파일 로드 실패 시 예외 처리
         }
 
-        // 업로드 시작 시 총 파일 수를 맵에 저장
+        // 업로드 시작 시 총 파일 수를 맵에 저장, 초기 완료 상태는 false
         uploadProgressMap.putIfAbsent(fieldKey, totalFiles);
-        uploadCompletionMap.putIfAbsent(fieldKey, false);  // 초기값은 false
+        uploadCompletionMap.putIfAbsent(fieldKey, false);
 
+
+        // 비동기 작업으로 S3에 파일 업로드 처리
         executorService.submit(() -> {
-            log.info("비동기 중: 파일 업로드 시작 - {}", filename);
-
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(filename)
                     .build();
 
-            s3Client.putObject(putObjectRequest, RequestBody.fromBytes(fileData));
-            log.info("비동기 중: 파일 업로드 완료 - {}", filename);
 
-            // 업로드가 완료된 후 맵에서 카운트를 감소시킴
+            // S3에 파일 업로드
+            s3Client.putObject(putObjectRequest, RequestBody.fromBytes(fileData));
+
+            // 업로드가 완료된 후 남은 파일 수를 감소시킴
             int remainingFiles = uploadProgressMap.merge(fieldKey, -1, Integer::sum);
 
-            // 남은 파일이 0이면 마지막 파일이 업로드된 것으로 간주하고 isLast 처리
+            // 남은 파일이 0이면 모든 파일이 업로드된 것으로 간주
             if (remainingFiles == 0) {
-                log.info("비동기 중: 모든 파일 업로드 완료 - {}", fieldKey);
-
-                // Redis Hash에서 fieldKey에 해당하는 postId 가져오기
+                // Redis에서 fieldKey에 해당하는 postId를 가져옴
                 Long postId = redisService.getValueFromHash("UPLOADING_POSTS_HASH", fieldKey, Long.class);
 
                 if (postId != null) {
-                    // Redis Set에서 해당 postId 제거
+                    // Redis의 업로드 진행 Set에서 해당 postId 제거
                     redisService.removeFromSet(UPLOADING_POSTS_SET, postId);
-                    log.info("비동기 중: Redis에서 업로드 중인 Set에서 postId 제거 - {}", postId);
                 }
 
-                // 작업 완료 후 맵에서 해당 키 제거
+                // 모든 파일이 업로드 완료되었으면 진행 상황 맵에서 제거하고 완료 상태로 설정
                 uploadProgressMap.remove(fieldKey);
-                uploadCompletionMap.put(fieldKey, true);  // 업로드 완료 상태로 설정
+                uploadCompletionMap.put(fieldKey, true);
             }
         });
     }
 
-    // 업로드가 완료되었는지 확인하는 메서드
+    /**
+     * 주어진 fieldKey에 해당하는 업로드 작업이 완료되었는지 확인하는 메서드
+     */
     public Boolean isUploadComplete(String fieldKey) {
         return uploadCompletionMap.getOrDefault(fieldKey, false);
     }
