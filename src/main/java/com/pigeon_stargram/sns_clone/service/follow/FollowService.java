@@ -11,9 +11,7 @@ import com.pigeon_stargram.sns_clone.dto.Follow.internal.GetNotificationEnabledD
 import com.pigeon_stargram.sns_clone.dto.Follow.internal.ToggleNotificationEnabledDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseUserChatDto;
-import com.pigeon_stargram.sns_clone.dto.user.UserDtoConverter;
 import com.pigeon_stargram.sns_clone.exception.follow.FollowExistException;
-import com.pigeon_stargram.sns_clone.repository.follow.FollowRepository;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.story.StoryService;

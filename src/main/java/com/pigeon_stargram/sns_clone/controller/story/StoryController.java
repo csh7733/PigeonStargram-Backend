@@ -2,18 +2,14 @@ package com.pigeon_stargram.sns_clone.controller.story;
 
 import com.pigeon_stargram.sns_clone.config.auth.annotation.LoginUser;
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
-import com.pigeon_stargram.sns_clone.domain.story.Story;
-import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.story.internal.GetRecentStoriesDto;
 import com.pigeon_stargram.sns_clone.dto.story.internal.MarkStoryAsViewedDto;
 import com.pigeon_stargram.sns_clone.dto.story.internal.UploadStoryDto;
 import com.pigeon_stargram.sns_clone.dto.story.request.RequestAddStoryDto;
 import com.pigeon_stargram.sns_clone.dto.story.response.ResponseStoriesDto;
-import com.pigeon_stargram.sns_clone.dto.story.response.ResponseStoryDto;
 import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
 import com.pigeon_stargram.sns_clone.service.file.FileService;
 import com.pigeon_stargram.sns_clone.service.story.StoryService;
-import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -21,12 +17,16 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-import static com.pigeon_stargram.sns_clone.service.story.StoryBuilder.*;
+import static com.pigeon_stargram.sns_clone.dto.story.StoryDtoConvertor.*;
 
-@Slf4j
-@RequiredArgsConstructor
-@RequestMapping("/api/stories")
+/**
+ * 스토리와 관련된 API 요청을 처리하는 Controller 클래스입니다.
+ * 사용자가 스토리를 업로드, 삭제하거나, 스토리 조회와 관련된 작업을 수행할 수 있습니다.
+ */
 @RestController
+@RequestMapping("/api/stories")
+@RequiredArgsConstructor
+@Slf4j
 public class StoryController {
 
     private final StoryService storyService;
