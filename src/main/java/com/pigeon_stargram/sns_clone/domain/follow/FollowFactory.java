@@ -12,4 +12,14 @@ public class FollowFactory {
                 .recipient(recipient)
                 .build();
     }
+
+    public static Follow createFollow(User sender,
+                                      User recipient,
+                                      Boolean isNotificationEnabled) {
+        return Follow.builder()
+                .isNotificationEnabled(isNotificationEnabled)
+                .sender(sender)
+                .recipient(recipient)
+                .build();
+    }
 }

@@ -15,7 +15,7 @@ import com.pigeon_stargram.sns_clone.repository.post.ImageRepository;
 import com.pigeon_stargram.sns_clone.service.comment.CommentCrudService;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowCrudService;
-import com.pigeon_stargram.sns_clone.service.follow.FollowService;
+import com.pigeon_stargram.sns_clone.service.follow.FollowServiceV2;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -46,7 +46,7 @@ public class PostService {
     private final PostCrudService postCrudService;
     private final PostLikeCrudService postLikeCrudService;
     private final CommentService commentService;
-    private final FollowService followService;
+    private final FollowServiceV2 followService;
     private final FollowCrudService followCrudService;
     private final NotificationService notificationService;
 
@@ -208,8 +208,9 @@ public class PostService {
     }
 
     private void notifyFollowers(CreatePostDto dto) {
-        List<Long> notificationRecipientIds = followService.findFollows(dto.getLoginUserId());
-        dto.setNotificationRecipientIds(notificationRecipientIds);
+        List<Long> recipientIds =
+                followService.findNotificationEnabledFollowerIds(dto.getLoginUserId());
+        dto.setNotificationRecipientIds(recipientIds);
 
         notificationService.sendToSplitWorker(dto);
     }

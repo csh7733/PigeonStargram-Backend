@@ -13,9 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static com.pigeon_stargram.sns_clone.service.follow.FollowBuilder.buildFollow;
 import static com.pigeon_stargram.sns_clone.service.search.SearchBuilder.buildSearchHistory;
-import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 
 @Slf4j
 @RequiredArgsConstructor

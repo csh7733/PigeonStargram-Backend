@@ -1,6 +1,7 @@
 package com.pigeon_stargram.sns_clone.service.follow;
 
 import com.pigeon_stargram.sns_clone.domain.follow.Follow;
+import com.pigeon_stargram.sns_clone.domain.follow.FollowFactory;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.repository.follow.FollowRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
@@ -15,59 +16,45 @@ import java.util.List;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.NOTIFICATION_ENABLED_IDS;
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.USER_ID;
-import static com.pigeon_stargram.sns_clone.service.follow.FollowBuilder.buildFollow;
+import static com.pigeon_stargram.sns_clone.domain.follow.FollowFactory.*;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 
-@Slf4j
-@RequiredArgsConstructor
-@Transactional
 @Service
+@Transactional
+@RequiredArgsConstructor
+@Slf4j
 public class FollowWriteBackService {
 
     private final RedisService redisService;
     private final UserService userService;
+
     private final FollowRepository followRepository;
+
     public void syncFollowingIds(String key) {
         Long senderId = RedisUtil.parseSuffix(key);
         log.info("WriteBack key={}", key);
 
-        // Sender 찾기
-        User sender = userService.getUserById(senderId);
-
-        // followingIds 리스트 가져오기 (Dummy 제외)
         List<Long> followingIds = redisService.getSetAsLongListExcludeDummy(key);
 
         for (Long recipientId : followingIds) {
             // 중복 여부 확인
             if (!followRepository.existsBySenderIdAndRecipientId(senderId, recipientId)) {
-                User recipient = userService.getUserById(recipientId);
-                log.info("sender = {},recipient = {}",senderId,recipientId);
-                // Follow 객체 생성 및 저장
-                // 알림 신청 여부에 따라 저장한다
-                Boolean isEnabled = getisEnabled(senderId, recipientId);
-                Follow follow = buildFollow(sender, recipient, isEnabled);
+                Follow follow = getFollow(senderId, recipientId);
                 followRepository.save(follow);
             }
         }
     }
+
     public void syncFollowerIds(String key) {
         Long recipientId = RedisUtil.parseSuffix(key);
         log.info("WriteBack key={}", key);
 
-        // Recipient 찾기
-        User recipient = userService.getUserById(recipientId);
-
-        // followerIds 리스트 가져오기 (Dummy 제외)
         List<Long> followerIds = redisService.getSetAsLongListExcludeDummy(key);
 
         for (Long senderId : followerIds) {
             // 중복 여부 확인
             if (!followRepository.existsBySenderIdAndRecipientId(senderId, recipientId)) {
-                User sender = userService.getUserById(senderId);
-                // Follow 객체 생성 및 저장
-                // 알림 신청 여부에 따라 저장한다
-                Boolean isEnabled = getisEnabled(senderId, recipientId);
-                Follow follow = buildFollow(sender, recipient, isEnabled);
+                Follow follow = getFollow(senderId, recipientId);
                 followRepository.save(follow);
             }
         }
@@ -93,7 +80,6 @@ public class FollowWriteBackService {
                 follow.toggleNotificationEnabled();
                 followRepository.save(follow);
             }
-
             // 캐시에 senderId가 없고, DB에서 알림이 활성화된 경우 -> 알림 비활성화
             else if (!enableFollowingIds.contains(senderId) && follow.getIsNotificationEnabled()) {
                 // DB 알림 활성화 -> 비활성화
@@ -104,11 +90,20 @@ public class FollowWriteBackService {
 
     }
 
-    private Boolean getisEnabled(Long senderId, Long recipientId) {
+    private Boolean getisEnabled(Long senderId,
+                                 Long recipientId) {
         String cacheKey = cacheKeyGenerator(NOTIFICATION_ENABLED_IDS, USER_ID, recipientId.toString());
-        Boolean isEnabled = redisService.hasKey(cacheKey) && redisService.isMemberOfSet(cacheKey, senderId);
-        return isEnabled;
+
+        return redisService.hasKey(cacheKey) && redisService.isMemberOfSet(cacheKey, senderId);
     }
 
+    private Follow getFollow(Long senderId,
+                             Long recipientId) {
+        User sender = userService.getUserById(senderId);
+        User recipient = userService.getUserById(recipientId);
+        Boolean isEnabled = getisEnabled(senderId, recipientId);
+
+        return createFollow(sender, recipient, isEnabled);
+    }
 
 }

@@ -2,7 +2,6 @@ package com.pigeon_stargram.sns_clone.service.follow;
 
 import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.exception.follow.FollowNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.follow.FollowRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import lombok.RequiredArgsConstructor;
@@ -14,92 +13,100 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
-import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 
-@Slf4j
-@RequiredArgsConstructor
-@Transactional
+
+// 팔로우 관련 CRUD 연산을 처리하는 서비스 클래스입니다.
+// Redis 캐시와 데이터베이스를 활용하여 팔로우 정보의 조회 및 업데이트를 수행합니다.
+// Value        | Structure | Key
+// ------------ | --------- | ---------------
+// followerIds  | Set       | FOLLOWER_IDS
+// followingIds | Set       | FOLLOWING_IDS
+// userIds      | Set       | NOTIFICATION_ENABLED_IDS
 @Service
+@Transactional
+@RequiredArgsConstructor
+@Slf4j
 public class FollowCrudService {
 
     private final RedisService redisService;
-
     private final FollowRepository repository;
 
+    /**
+     * 주어진 사용자 ID를 기준으로 팔로워 ID 목록을 조회합니다.
+     * Redis 캐시를 우선적으로 사용하고, 캐시가 없을 경우 데이터베이스에서 조회합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 해당 사용자의 팔로워 ID 목록
+     */
     public List<Long> findFollowerIds(Long userId) {
         String cacheKey = cacheKeyGenerator(FOLLOWER_IDS, USER_ID, userId.toString());
 
         if (redisService.hasKey(cacheKey)) {
-            log.info("findFollowerIds(userId = {}) 캐시 히트", userId);
-
             return redisService.getSetAsLongListExcludeDummy(cacheKey);
         }
-
-        log.info("findFollowerIds(userId = {}) 캐시 미스", userId);
 
         return getFollowerIdsFromDB(userId, cacheKey);
     }
 
+    /**
+     * 주어진 사용자 ID를 기준으로 팔로잉 ID 목록을 조회합니다.
+     * Redis 캐시를 우선적으로 사용하고, 캐시가 없을 경우 데이터베이스에서 조회합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 해당 사용자의 팔로잉 ID 목록
+     */
     public List<Long> findFollowingIds(Long userId) {
         String cacheKey = cacheKeyGenerator(FOLLOWING_IDS, USER_ID, userId.toString());
 
         if (redisService.hasKey(cacheKey)) {
-            log.info("findFollowingIds(userId = {}) 캐시 히트", userId);
-
             return redisService.getSetAsLongListExcludeDummy(cacheKey);
         }
-
-        log.info("findFollowingIds(userId = {}) 캐시 미스", userId);
 
         return getFollowingIdsFromDB(userId, cacheKey);
     }
 
+    /**
+     * 주어진 사용자 ID를 기준으로 알림이 활성화된 사용자 ID 목록을 조회합니다.
+     * Redis 캐시를 우선적으로 사용하고, 캐시가 없을 경우 데이터베이스에서 조회합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 알림이 활성화된 사용자 ID 목록
+     */
     public List<Long> findNotificationEnabledIds(Long userId) {
         String cacheKey = cacheKeyGenerator(NOTIFICATION_ENABLED_IDS, USER_ID, userId.toString());
 
         if (redisService.hasKey(cacheKey)) {
-            log.info("findNotificationEnabledIds(userId = {}) 캐시 히트", userId);
-
             return redisService.getSetAsLongListExcludeDummy(cacheKey);
         }
-
-        log.info("findNotificationEnabledIds(userId = {}) 캐시 미스", userId);
 
         return getNotificationEnabledIdsFromDB(userId, cacheKey);
     }
 
+    /**
+     * 팔로우 관계를 저장하고 관련된 캐시를 업데이트합니다.
+     *
+     * @param follow 저장할 팔로우 객체
+     */
     public void save(Follow follow) {
         Long senderId = follow.getSender().getId();
         Long recipientId = follow.getRecipient().getId();
 
-        // Follower Ids 관련 처리
-        String followerIds = cacheKeyGenerator(FOLLOWER_IDS, USER_ID, recipientId.toString());
-        // Write-back Sorted Set에 추가
-        redisService.pushToWriteBackSortedSet(followerIds);
+        // Follower Ids 관련 캐시 처리
+        String followerIdsKey = cacheKeyGenerator(FOLLOWER_IDS, USER_ID, recipientId.toString());
+        handleFollowerCache(followerIdsKey, recipientId, senderId);
 
-        // 캐시가 존재하지 않으면 DB에서 가져온다
-        if (!redisService.hasKey(followerIds)) {
-            getFollowerIdsFromDB(recipientId, followerIds);
-        }
-
-        // 캐시에 follower ID 추가
-        redisService.addToSet(followerIds, senderId, ONE_DAY_TTL);
-
-        // Following Ids 관련 처리
-        String followingIds = cacheKeyGenerator(FOLLOWING_IDS, USER_ID, senderId.toString());
-        // Write-back Sorted Set에 추가
-        redisService.pushToWriteBackSortedSet(followingIds);
-
-        // 캐시가 존재하지 않으면 DB에서 가져온다
-        if (!redisService.hasKey(followingIds)) {
-            getFollowingIdsFromDB(senderId, followingIds);
-        }
-
-        // 캐시에 following ID 추가
-        redisService.addToSet(followingIds, recipientId, ONE_DAY_TTL);
+        // Following Ids 관련 캐시 처리
+        String followingIdsKey = cacheKeyGenerator(FOLLOWING_IDS, USER_ID, senderId.toString());
+        handleFollowingCache(followingIdsKey, senderId, recipientId);
     }
 
+    /**
+     * 특정 사용자의 알림 설정을 토글합니다 (켜기/끄기).
+     *
+     * @param senderId   알림 설정을 변경할 사용자 ID
+     * @param recipientId 알림을 받을 대상 사용자 ID
+     */
     public void toggleNotificationEnabled(Long senderId, Long recipientId) {
         // 캐시 키 생성 (recipientId를 기준으로 Notification Enabled 상태를 관리)
         String cacheKey = cacheKeyGenerator(NOTIFICATION_ENABLED_IDS, USER_ID, recipientId.toString());
@@ -121,39 +128,26 @@ public class FollowCrudService {
         }
     }
 
-
-//    Follow follow = repository.findBySenderIdAndRecipientId(senderId, recipientId)
-//            .orElseThrow(() -> new FollowNotFoundException(FOLLOW_NOT_FOUND));
-//        follow.toggleNotificationEnabled();
+    /**
+     * 특정 팔로우 관계를 삭제하고 관련 캐시를 업데이트합니다.
+     *
+     * @param senderId   팔로우를 삭제할 사용자 ID
+     * @param recipientId 팔로우 대상 사용자 ID
+     */
     public void deleteFollowBySenderIdAndRecipientId(Long senderId,
                                                      Long recipientId) {
         repository.deleteBySenderIdAndRecipientId(senderId, recipientId);
 
-        String followerIds =
-                cacheKeyGenerator(FOLLOWER_IDS, USER_ID, recipientId.toString());
-        if (redisService.hasKey(followerIds)) {
-            log.info("follow 삭제후 recipient 에 대한 senderId 캐시 삭제 recipientId = {}, senderId = {}",
-                    recipientId, senderId);
-            redisService.removeFromSet(followerIds, senderId);
-        }
-
-        String followingIds =
-                cacheKeyGenerator(FOLLOWING_IDS, USER_ID, senderId.toString());
-        if (redisService.hasKey(followingIds)) {
-            log.info("follow 삭제후 senderId 에 대한 recipientId 캐시 삭제 senderId = {}, recipientId = {}",
-                    senderId, recipientId);
-            redisService.removeFromSet(followingIds, recipientId);
-        }
-
-        String notificationEnabledIds =
-                cacheKeyGenerator(NOTIFICATION_ENABLED_IDS, USER_ID, recipientId.toString());
-        if (redisService.hasKey(notificationEnabledIds)) {
-            log.info("follow 삭제후 recipientId 에 대한 notificationEnabledId 캐시 삭제 notificationEnabledId = {}, recipientId = {}",
-                    senderId, recipientId);
-            redisService.removeFromSet(notificationEnabledIds, senderId);
-        }
+        handleDeleteFollowCache(senderId, recipientId);
     }
 
+    /**
+     * 데이터베이스에서 팔로워 ID 목록을 조회하고 Redis 캐시에 저장합니다.
+     *
+     * @param userId    사용자 ID
+     * @param cacheKey  캐시 키
+     * @return 해당 사용자의 팔로워 ID 목록
+     */
     private List<Long> getFollowerIdsFromDB(Long userId, String cacheKey) {
         List<Long> followerIds = repository.findByRecipientId(userId).stream()
                 .map(Follow::getSender)
@@ -163,6 +157,13 @@ public class FollowCrudService {
         return redisService.cacheListToSetWithDummy(followerIds, cacheKey, ONE_DAY_TTL);
     }
 
+    /**
+     * 데이터베이스에서 팔로잉 ID 목록을 조회하고 Redis 캐시에 저장합니다.
+     *
+     * @param userId    사용자 ID
+     * @param cacheKey  캐시 키
+     * @return 해당 사용자의 팔로잉 ID 목록
+     */
     private List<Long> getFollowingIdsFromDB(Long userId, String cacheKey) {
         List<Long> followingIds = repository.findBySenderId(userId).stream()
                 .map(Follow::getRecipient)
@@ -172,6 +173,13 @@ public class FollowCrudService {
         return redisService.cacheListToSetWithDummy(followingIds, cacheKey, ONE_DAY_TTL);
     }
 
+    /**
+     * 데이터베이스에서 알림이 활성화된 사용자 ID 목록을 조회하고 Redis 캐시에 저장합니다.
+     *
+     * @param userId    사용자 ID
+     * @param cacheKey  캐시 키
+     * @return 알림이 활성화된 사용자 ID 목록
+     */
     private List<Long> getNotificationEnabledIdsFromDB(Long userId, String cacheKey) {
         List<Long> notificationEnabledUserIds = repository.findByRecipientId(userId).stream()
                 .filter(Follow::getIsNotificationEnabled)
@@ -182,7 +190,74 @@ public class FollowCrudService {
         return redisService.cacheListToSetWithDummy(notificationEnabledUserIds, cacheKey, ONE_DAY_TTL);
     }
 
+    /**
+     * 팔로잉 관련 캐시를 업데이트합니다.
+     *
+     * @param followingIds 캐시 키
+     * @param senderId     팔로우 요청자 ID
+     * @param recipientId  팔로우 대상자 ID
+     */
+    private void handleFollowingCache(String followingIds,
+                                      Long senderId,
+                                      Long recipientId) {
+        // Write-back Sorted Set에 추가
+        redisService.pushToWriteBackSortedSet(followingIds);
 
+        // 캐시가 존재하지 않으면 DB에서 가져온다
+        if (!redisService.hasKey(followingIds)) {
+            getFollowingIdsFromDB(senderId, followingIds);
+        }
 
+        // 캐시에 following ID 추가
+        redisService.addToSet(followingIds, recipientId, ONE_DAY_TTL);
+    }
 
+    /**
+     * 팔로우 관계 삭제에 따른 캐시 업데이트를 수행합니다.
+     *
+     * @param senderId     팔로우 요청자 ID
+     * @param recipientId  팔로우 대상자 ID
+     */
+    private void handleDeleteFollowCache(Long senderId,
+                                         Long recipientId) {
+        String followerIdsKey =
+                cacheKeyGenerator(FOLLOWER_IDS, USER_ID, recipientId.toString());
+        if (redisService.hasKey(followerIdsKey)) {
+            redisService.removeFromSet(followerIdsKey, senderId);
+        }
+
+        String followingIdsKey =
+                cacheKeyGenerator(FOLLOWING_IDS, USER_ID, senderId.toString());
+        if (redisService.hasKey(followingIdsKey)) {
+            redisService.removeFromSet(followingIdsKey, recipientId);
+        }
+
+        String notificationEnabledIdsKey =
+                cacheKeyGenerator(NOTIFICATION_ENABLED_IDS, USER_ID, recipientId.toString());
+        if (redisService.hasKey(notificationEnabledIdsKey)) {
+            redisService.removeFromSet(notificationEnabledIdsKey, senderId);
+        }
+    }
+
+    /**
+     * 팔로워 관련 캐시를 업데이트합니다.
+     *
+     * @param followerIdsKey  캐시 키
+     * @param recipientId  팔로우 대상자 ID
+     * @param senderId     팔로우 요청자 ID
+     */
+    private void handleFollowerCache(String followerIdsKey,
+                                     Long recipientId,
+                                     Long senderId) {
+        // Write-back Sorted Set에 추가
+        redisService.pushToWriteBackSortedSet(followerIdsKey);
+
+        // 캐시가 존재하지 않으면 DB에서 가져온다
+        if (!redisService.hasKey(followerIdsKey)) {
+            getFollowerIdsFromDB(recipientId, followerIdsKey);
+        }
+
+        // 캐시에 follower ID 추가
+        redisService.addToSet(followerIdsKey, senderId, ONE_DAY_TTL);
+    }
 }

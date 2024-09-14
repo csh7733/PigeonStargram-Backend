@@ -3,10 +3,9 @@ package com.pigeon_stargram.sns_clone.service.timeline;
 import com.pigeon_stargram.sns_clone.dto.Follow.response.ResponseFollowerDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.dto.redis.ScoreWithValue;
-import com.pigeon_stargram.sns_clone.service.follow.FollowService;
+import com.pigeon_stargram.sns_clone.service.follow.FollowServiceV2;
 import com.pigeon_stargram.sns_clone.service.post.PostService;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
-import com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,7 +29,7 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 public class TimelineService {
 
     private final PostService postService;
-    private final FollowService followService;
+    private final FollowServiceV2 followService;
     private final RedisService redisService;
 
     public List<ResponsePostDto> getFollowingUsersRecentPosts(Long userId) {
