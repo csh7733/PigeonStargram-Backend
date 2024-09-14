@@ -18,7 +18,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -83,7 +82,7 @@ public class RedisNotificationWorker implements NotificationWorker {
         NotificationContent content =
                 notificationCrudService.findContentById(batch.getContentId());
 
-        User sender = userService.findById(content.getSenderId());
+        User sender = userService.getUserById(content.getSenderId());
 
         List<NotificationV2> notifications = batch.getBatchRecipientIds().stream()
                 .map(recipientId -> buildNotification(recipientId, content))

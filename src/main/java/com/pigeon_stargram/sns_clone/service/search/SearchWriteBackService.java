@@ -1,9 +1,7 @@
 package com.pigeon_stargram.sns_clone.service.search;
 
-import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.search.SearchHistory;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.repository.follow.FollowRepository;
 import com.pigeon_stargram.sns_clone.repository.search.SearchHistoryRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -14,11 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import static com.pigeon_stargram.sns_clone.constant.CacheConstants.NOTIFICATION_ENABLED_IDS;
-import static com.pigeon_stargram.sns_clone.constant.CacheConstants.USER_ID;
 import static com.pigeon_stargram.sns_clone.service.follow.FollowBuilder.buildFollow;
 import static com.pigeon_stargram.sns_clone.service.search.SearchBuilder.buildSearchHistory;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
@@ -37,7 +31,7 @@ public class SearchWriteBackService {
         log.info("WriteBack key={}", key);
 
         // userId로 사용자 조회
-        User user = userService.findById(userId);
+        User user = userService.getUserById(userId);
 
         // 캐시에서 검색 기록 모두 가져오기
         List<String> searchQueries = redisService.getAllFromSortedSet(key, String.class);

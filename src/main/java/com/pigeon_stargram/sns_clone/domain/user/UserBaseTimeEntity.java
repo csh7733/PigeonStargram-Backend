@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.domain;
+package com.pigeon_stargram.sns_clone.domain.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.EntityListeners;
@@ -10,9 +10,12 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
-@Getter
+/**
+ * 사용자 엔티티의 생성, 수정시각 정보
+ */
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
+@Getter
 public abstract class UserBaseTimeEntity {
 
     @CreatedDate
@@ -23,7 +26,4 @@ public abstract class UserBaseTimeEntity {
     @JsonIgnore
     private LocalDateTime modifiedDate;
 
-    protected void setModifiedDate(LocalDateTime modifiedDate) {
-        this.modifiedDate = modifiedDate;
-    }
 }

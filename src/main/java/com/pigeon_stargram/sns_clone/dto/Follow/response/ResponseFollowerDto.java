@@ -1,16 +1,13 @@
 package com.pigeon_stargram.sns_clone.dto.Follow.response;
 
-import com.pigeon_stargram.sns_clone.domain.follow.Follow;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import lombok.*;
 
-@EqualsAndHashCode
-@ToString
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class ResponseFollowerDto {
 
     private Long id;
@@ -18,7 +15,11 @@ public class ResponseFollowerDto {
     private String name;
     private String location;
     private Integer follow;
-    private Boolean hasUnreadStories;
+    private boolean hasUnreadStories;
+
+    public void setHasUnreadStories(boolean hasUnreadStories) {
+        this.hasUnreadStories = hasUnreadStories;
+    }
 
     public ResponseFollowerDto(User user, Integer follow) {
         this.id = user.getId();
@@ -26,23 +27,5 @@ public class ResponseFollowerDto {
         this.name = user.getName();
         this.location = user.getCompany();
         this.follow = follow;
-    }
-
-    // temporary
-    public User toUser() {
-        return User.builder()
-                .id(this.id)
-                .avatar(this.avatar)
-                .name(this.name)
-                .company(this.location)
-                .build();
-    }
-
-    // temporary
-    public Follow toEntity(User user) {
-        return Follow.builder()
-                .sender(user)
-                .recipient(user)
-                .build();
     }
 }

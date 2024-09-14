@@ -8,8 +8,6 @@ import com.pigeon_stargram.sns_clone.dto.story.internal.UploadStoryDto;
 import com.pigeon_stargram.sns_clone.dto.story.response.ResponseStoriesDto;
 import com.pigeon_stargram.sns_clone.dto.story.response.ResponseStoryDto;
 import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
-import com.pigeon_stargram.sns_clone.exception.story.StoryNotFoundException;
-import com.pigeon_stargram.sns_clone.repository.story.StoryRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -17,13 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
-import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.STORY_NOT_FOUND_ID;
 import static com.pigeon_stargram.sns_clone.service.story.StoryBuilder.buildStory;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getExpirationTime;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
@@ -39,7 +34,7 @@ public class StoryService {
     private final RedisService redisService;
 
     public Story uploadStory(UploadStoryDto dto) {
-        User user = userService.findById(dto.getUserId());
+        User user = userService.getUserById(dto.getUserId());
         Story story = buildStory(user, dto.getContent(), dto.getImageUrl());
 
         // 캐시와 동기화된 저장
@@ -71,7 +66,7 @@ public class StoryService {
     }
 
     public ResponseStoriesDto getRecentStories(GetRecentStoriesDto dto) {
-        User user = userService.findById(dto.getUserId());
+        User user = userService.getUserById(dto.getUserId());
 
         List<Story> recentStories = findRecentStories(user);
 
@@ -110,7 +105,7 @@ public class StoryService {
     }
 
     public Boolean hasRecentStory(Long userId) {
-        User user = userService.findById(userId);
+        User user = userService.getUserById(userId);
 
         // 유효한 스토리 ID를 가져옴
         List<Long> recentStoryIds = findRecentStoryIds(user);
@@ -120,7 +115,7 @@ public class StoryService {
     }
 
     public boolean hasUnreadStories(Long userId, Long currentMemberId) {
-        User user = userService.findById(userId);
+        User user = userService.getUserById(userId);
 
         // 유효한 스토리 ID를 가져옴
         List<Long> recentStoryIds = findRecentStoryIds(user);

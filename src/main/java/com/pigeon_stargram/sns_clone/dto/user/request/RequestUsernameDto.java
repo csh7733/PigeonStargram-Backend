@@ -4,9 +4,10 @@ import lombok.*;
 
 @Getter
 @Builder
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequestCurrentMemberDto {
+@ToString
+public class RequestUsernameDto {
+
     private String name;
 }

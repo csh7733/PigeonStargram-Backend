@@ -6,15 +6,10 @@ import com.pigeon_stargram.sns_clone.dto.login.internal.MailTask;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestLoginDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestResetPasswordDto;
-import com.pigeon_stargram.sns_clone.dto.user.internal.UpdateOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.user.internal.UpdatePasswordDto;
 import com.pigeon_stargram.sns_clone.exception.login.EmailMismatchException;
-import com.pigeon_stargram.sns_clone.exception.login.EmailNotSentException;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
-import com.pigeon_stargram.sns_clone.service.user.UserBuilder;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,18 +17,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.MailException;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 import static com.pigeon_stargram.sns_clone.constant.RedisQueueConstants.MAIL_QUEUE;
+import static com.pigeon_stargram.sns_clone.dto.user.UserDtoConverter.*;
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
 import static com.pigeon_stargram.sns_clone.service.login.LoginBuilder.buildSessionUser;
 import static com.pigeon_stargram.sns_clone.service.login.LoginBuilder.buildUserInfoDto;
-import static com.pigeon_stargram.sns_clone.service.user.UserBuilder.*;
+import static com.pigeon_stargram.sns_clone.util.LogUtil.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -53,17 +44,28 @@ public class LoginService {
         String email = request.getEmail();
         String password = request.getPassword();
 
-        return userService.findByWorkEmailAndPassword(email, password);
+        return userService.getUserByWorkEmailAndPassword(email, password);
     }
 
     public void logout() {
 
         httpSession.invalidate();
     }
-    
-    public void register(String email,RequestRegisterDto request) {
 
-        if(!email.equals(request.getEmail())) throw new EmailMismatchException(EMAIL_MISMATCH);
+    /**
+     * 사용자 등록을 처리합니다.
+     *
+     * @param email 사용자가 등록을 요청한 이메일 주소
+     * @param request 사용자 등록 요청에 대한 DTO 객체
+     */
+    public void register(String email,
+                         RequestRegisterDto request) {
+        logServiceMethod("register", email, request);
+
+        String registerEmail = request.getEmail();
+        if(!email.equals(registerEmail)){
+            throw new EmailMismatchException(EMAIL_MISMATCH);
+        }
 
         userService.save(request);
     }
@@ -71,7 +73,7 @@ public class LoginService {
     public void sendPasswordResetLink(String email) {
         log.info("email = {}", email);
 
-        userService.findByWorkEmail(email);
+        userService.getUserByWorkEmail(email);
 
         PasswordResetToken resetToken = passwordResetTokenService.createToken(email);
         String resetPasswordLink = resetPasswordBaseUrl + resetToken.getToken();
@@ -84,18 +86,26 @@ public class LoginService {
         // Redis 작업큐에 task를 추가
         redisService.pushTask(MAIL_QUEUE, mailTask);
     }
-    public User resetPassword(RequestResetPasswordDto dto) {
-        String token = dto.getToken();
-        String newPassword = dto.getNewPassword();
+
+    /**
+     * 비밀번호 재설정을 처리합니다.
+     *
+     * @param request 비밀번호 재설정 요청에 대한 DTO 객체
+     * @return 비밀번호가 성공적으로 재설정된 사용자 객체
+     */
+    public User resetPassword(RequestResetPasswordDto request) {
+        logServiceMethod("resetPassword", request);
+
+        String token = request.getToken();
+        String newPassword = request.getNewPassword();
 
         passwordResetTokenService.validateToken(token);
 
         String email = passwordResetTokenService.extractEmail(token);
-        User user = userService.findByWorkEmail(email);
-        UpdatePasswordDto updatePasswordDto =
-                buildUpdatePasswordDto(user.getId(), newPassword);
+        User user = userService.getUserByWorkEmail(email);
 
-        return userService.updatePassword(updatePasswordDto);
+        UpdatePasswordDto dto = toUpdatePasswordDto(user.getId(), newPassword);
+        return userService.updatePassword(dto);
     }
 
     public ResponseEntity<?> login(RequestLoginDto dto) {

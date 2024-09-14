@@ -32,7 +32,7 @@ import static com.pigeon_stargram.sns_clone.constant.RedisUserConstants.ACTIVE_U
 import static com.pigeon_stargram.sns_clone.service.chat.ChatBuilder.buildSendLastMessageDto;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.*;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
-import static com.pigeon_stargram.sns_clone.util.RedisUtil.hashWriteBackKeyGenerator;
+import static com.pigeon_stargram.sns_clone.util.RedisUtil.combineHashKeyAndFieldKey;
 
 @Service
 @RequiredArgsConstructor
@@ -121,7 +121,7 @@ public class ChatService {
         String fieldKey = toUserId.toString();
 
         // write back set에 추가
-        String dirtyKey = hashWriteBackKeyGenerator(cacheKey, fieldKey);
+        String dirtyKey = combineHashKeyAndFieldKey(cacheKey, fieldKey);
         redisService.pushToWriteBackSortedSet(dirtyKey);
 
         // Redis Hash에서 해당 값이 있는지 확인하고, 있으면 값을 증가시킵니다.
@@ -175,7 +175,7 @@ public class ChatService {
         String fieldKey = toUserId.toString();
 
         // write back set에 추가
-        String dirtyKey = hashWriteBackKeyGenerator(cacheKey, fieldKey);
+        String dirtyKey = combineHashKeyAndFieldKey(cacheKey, fieldKey);
         redisService.pushToWriteBackSortedSet(dirtyKey);
 
         // 캐시에서 값이 있는지 확인하고, 있다면 값을 0으로 업데이트 (캐시 히트 처리)
@@ -210,7 +210,7 @@ public class ChatService {
         String fieldKey = userIds[1].toString();
 
         // write back set에 추가
-        String dirtyKey = hashWriteBackKeyGenerator(hashKey, fieldKey);
+        String dirtyKey = combineHashKeyAndFieldKey(hashKey, fieldKey);
         redisService.pushToWriteBackSortedSet(dirtyKey);
 
         LastMessageDto lastMessageDto;

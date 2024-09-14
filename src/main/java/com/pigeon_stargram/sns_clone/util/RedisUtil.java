@@ -1,7 +1,5 @@
 package com.pigeon_stargram.sns_clone.util;
 
-import com.pigeon_stargram.sns_clone.constant.CacheConstants;
-
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
 
 public class RedisUtil {
@@ -24,12 +22,12 @@ public class RedisUtil {
     }
 
     /**
-     * Dirty Hash를 WriteBack Set에 추가할 수 있게 HashKey와 Field를 합친다.
-     * @param hashKey Dirty HashKey
-     * @param fieldKey Dirty FieldKey
+     * HashKey와 Field를 합친문자열을 반환한다.
+     * @param hashKey HashKey
+     * @param fieldKey FieldKey
      * @return 합쳐진 문자열
      */
-    public static String hashWriteBackKeyGenerator(String hashKey,
+    public static String combineHashKeyAndFieldKey(String hashKey,
                                                    String fieldKey) {
         return hashKey + SEPARATOR_3 + fieldKey;
     }

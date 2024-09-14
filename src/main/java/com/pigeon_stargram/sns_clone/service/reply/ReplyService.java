@@ -62,7 +62,7 @@ public class ReplyService {
     }
 
     public ResponseReplyDto createReply(CreateReplyDto dto) {
-        User loginUser = userService.findById(dto.getLoginUserId());
+        User loginUser = userService.getUserById(dto.getLoginUserId());
         Comment comment = commentCrudService.findById(dto.getCommentId());
 
         Reply reply = buildReply(dto, loginUser, comment);
@@ -90,7 +90,7 @@ public class ReplyService {
         Long loginUserId = dto.getLoginUserId();
         Long replyId = dto.getReplyId();
 
-        User loginUser = userService.findById(loginUserId);
+        User loginUser = userService.getUserById(loginUserId);
         dto.setLoginUserName(loginUser.getName());
 
         Reply reply = replyCrudService.findById(replyId);

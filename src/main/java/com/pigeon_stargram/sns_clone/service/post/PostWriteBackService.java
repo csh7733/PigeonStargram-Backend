@@ -53,7 +53,7 @@ public class PostWriteBackService {
 
     private PostLike getPostLike(Long postLikeUserId,
                                  Long postId) {
-        User postLikeUser = userService.findById(postLikeUserId);
+        User postLikeUser = userService.getUserById(postLikeUserId);
         Post post = postService.findById(postId);
 
         return buildPostLike(postLikeUser, post);

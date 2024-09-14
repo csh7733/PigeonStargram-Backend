@@ -51,7 +51,7 @@ public class ReplyWriteBackService {
 
     private ReplyLike getReplyLike(Long replyLikeUserId,
                                    Long replyId) {
-        User replyLikeUser = userService.findById(replyLikeUserId);
+        User replyLikeUser = userService.getUserById(replyLikeUserId);
         Reply reply = replyService.findById(replyId);
 
         return ReplyBuilder.buildReplyLike(replyLikeUser, reply);

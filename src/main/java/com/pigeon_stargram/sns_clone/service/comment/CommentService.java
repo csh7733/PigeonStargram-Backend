@@ -84,7 +84,7 @@ public class CommentService {
     }
 
     public ResponseCommentDto createComment(CreateCommentDto dto) {
-        User loginUser = userService.findById(dto.getLoginUserId());
+        User loginUser = userService.getUserById(dto.getLoginUserId());
         Post post = postCrudService.findById(dto.getPostId());
 
         Comment comment = buildComment(dto, loginUser, post);
@@ -136,7 +136,7 @@ public class CommentService {
         Long loginUserId = dto.getLoginUserId();
         Long commentId = dto.getCommentId();
 
-        User loginUser = userService.findById(loginUserId);
+        User loginUser = userService.getUserById(loginUserId);
         dto.setLoginUserName(loginUser.getName());
 
         Comment comment = commentCrudService.findById(commentId);

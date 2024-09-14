@@ -41,10 +41,10 @@ public class RecommendService {
 
                     // 랜덤으로 팔로우하는 사람 하나를 선택
                     Long randomFollowerId = followingsWhoFollowTarget.get(ThreadLocalRandom.current().nextInt(followingsWhoFollowTarget.size()));
-                    String randomRecommendName = userService.findById(randomFollowerId).getName();
+                    String randomRecommendName = userService.getUserById(randomFollowerId).getName();
 
                     // targetId의 사용자 정보 가져오기
-                    User targetUser = userService.findById(targetId);
+                    User targetUser = userService.getUserById(targetId);
 
                     // DTO 생성
                     return buildResponseRecommendUserInfoDto(targetUser,randomRecommendName,followingsWhoFollowTarget.size());

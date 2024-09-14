@@ -93,7 +93,7 @@ public class WriteBackScheduler {
         redisService.setValue(WRITE_BACK_BATCH_SIZE, WRITE_BACK_BATCH_SIZE_INIT);
     }
 
-    @Scheduled(fixedRate = 200)
+    @Scheduled(fixedRate = 10000)
     public void syncCacheToDB() {
         // 한 번에 몇개를 가져올지 확인
         Integer writeBackBatchSize = (Integer) redisService.getValue(WRITE_BACK_BATCH_SIZE);

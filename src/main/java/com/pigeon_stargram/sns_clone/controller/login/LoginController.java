@@ -11,6 +11,7 @@ import com.pigeon_stargram.sns_clone.dto.login.response.UserEmailInfoDto;
 import com.pigeon_stargram.sns_clone.dto.login.response.UserInfoDto;
 import com.pigeon_stargram.sns_clone.service.login.LoginBuilder;
 import com.pigeon_stargram.sns_clone.service.login.LoginService;
+import com.pigeon_stargram.sns_clone.util.LogUtil;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import static com.pigeon_stargram.sns_clone.service.login.LoginBuilder.*;
+import static com.pigeon_stargram.sns_clone.util.LogUtil.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -37,8 +39,9 @@ public class LoginController {
     @PostMapping("/register")
     public void register(@NewUserEmail String email,
                          @RequestBody RequestRegisterDto request){
+        logControllerMethod("register", email, request);
 
-        loginService.register(email,request);
+        loginService.register(email, request);
     }
 
     @PostMapping("/login")
@@ -63,6 +66,7 @@ public class LoginController {
 
     @PutMapping("/password")
     public void resetPassword(@RequestBody RequestResetPasswordDto request) {
+        logControllerMethod("resetPassword", request);
 
         loginService.resetPassword(request);
     }

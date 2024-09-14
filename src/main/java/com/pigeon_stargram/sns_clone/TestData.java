@@ -11,6 +11,7 @@ import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.post.PostService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
+import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
 import com.pigeon_stargram.sns_clone.util.JsonUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pigeon_stargram.sns_clone.dto.Follow.internal.AddFollowDto;
@@ -37,7 +38,7 @@ public class TestData {
     private final ReplyService replyService;
     private final JsonUtil jsonUtil;
 
-    private final UserService userService;
+    private final BasicUserService userService;
     private final FollowService followService;
     private final ChatService chatService;
 

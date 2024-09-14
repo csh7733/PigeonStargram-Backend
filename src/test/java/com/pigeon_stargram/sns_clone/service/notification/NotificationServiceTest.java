@@ -101,11 +101,11 @@ class NotificationServiceTest {
     @DisplayName("알림 저장 - 성공")
     void testSaveSuccess() {
         //given
-        lenient().when(userService.findById(1L)).thenReturn(user);
+        lenient().when(userService.getUserById(1L)).thenReturn(user);
         when(user.getName()).thenReturn("sender-name");
         for (long i = 2; i <= 4; i++) {
             User recipient = mock(User.class);
-            lenient().when(userService.findById(i)).thenReturn(recipient);
+            lenient().when(userService.getUserById(i)).thenReturn(recipient);
         }
 
         when(notificationRepository.saveAll(anyList()))
@@ -139,7 +139,7 @@ class NotificationServiceTest {
     @DisplayName("알림 저장 - 송신자 없을시 예외")
     void testSaveUserNotFound() {
         //given
-        when(userService.findById(1L)).thenThrow(UserNotFoundException.class);
+        when(userService.getUserById(1L)).thenThrow(UserNotFoundException.class);
 
         notificationConvertables.forEach(notificationConvertable -> {
             //when

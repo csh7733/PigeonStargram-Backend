@@ -51,7 +51,7 @@ public class CommentWriteBackService {
 
     private CommentLike getCommentLike(Long commentLikeUserId,
                                        Long commentId) {
-        User commentLikeUser = userService.findById(commentLikeUserId);
+        User commentLikeUser = userService.getUserById(commentLikeUserId);
         Comment comment = commentService.findById(commentId);
 
         return CommentBuilder.buildCommentLike(commentLikeUser, comment);

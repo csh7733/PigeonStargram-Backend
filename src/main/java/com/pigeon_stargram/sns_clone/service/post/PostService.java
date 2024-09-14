@@ -143,7 +143,7 @@ public class PostService {
     }
 
     public Long createPost(CreatePostDto dto) {
-        User loginUser = userService.findById(dto.getLoginUserId());
+        User loginUser = userService.getUserById(dto.getLoginUserId());
 
         List<Long> notificationEnabledIds =
                 followCrudService.findNotificationEnabledIds(loginUser.getId());
@@ -234,7 +234,7 @@ public class PostService {
         Long loginUserId = dto.getLoginUserId();
         Long postId = dto.getPostId();
 
-        User loginUser = userService.findById(loginUserId);
+        User loginUser = userService.getUserById(loginUserId);
         dto.setLoginUserName(loginUser.getName());
         postLikeCrudService.toggleLike(loginUserId, postId);
 

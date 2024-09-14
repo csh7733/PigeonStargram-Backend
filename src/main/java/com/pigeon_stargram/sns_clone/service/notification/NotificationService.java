@@ -55,7 +55,7 @@ public class NotificationService {
     private List<Notification> convertDtoToNotifications(NotificationConvertable dto, Long senderId, User sender) {
         return dto.toRecipientIds().stream()
                 .filter(recipientId -> !recipientId.equals(senderId))
-                .map(userService::findById)
+                .map(userService::getUserById)
                 .map(recipient -> dto.toNotification(sender, recipient))
                 .collect(Collectors.toList());
     }
@@ -67,7 +67,7 @@ public class NotificationService {
                 .map(notification -> {
                     NotificationContent content =
                             notificationCrudService.findContentById(notification.getContent().getId());
-                    User sender = userService.findById(content.getSenderId());
+                    User sender = userService.getUserById(content.getSenderId());
 
                     return buildResponseNotificationDto(notification, sender, content);
                 })

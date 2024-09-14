@@ -4,11 +4,11 @@ import lombok.*;
 
 @Getter
 @Builder
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
 public class UpdateOnlineStatusDto {
+
     private Long userId;
     private String onlineStatus;
 }

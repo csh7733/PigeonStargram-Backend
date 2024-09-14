@@ -11,6 +11,7 @@ import com.pigeon_stargram.sns_clone.dto.Follow.internal.GetNotificationEnabledD
 import com.pigeon_stargram.sns_clone.dto.Follow.internal.ToggleNotificationEnabledDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseUserChatDto;
+import com.pigeon_stargram.sns_clone.dto.user.UserDtoConverter;
 import com.pigeon_stargram.sns_clone.exception.follow.FollowExistException;
 import com.pigeon_stargram.sns_clone.repository.follow.FollowRepository;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
@@ -26,25 +27,23 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.pigeon_stargram.sns_clone.constant.FollowConstants.*;
+import static com.pigeon_stargram.sns_clone.dto.user.UserDtoConverter.*;
 import static com.pigeon_stargram.sns_clone.service.follow.FollowBuilder.*;
-import static com.pigeon_stargram.sns_clone.service.user.UserBuilder.*;
 
-@Slf4j
-@RequiredArgsConstructor
-@Transactional
 @Service
+@Transactional
+@RequiredArgsConstructor
+@Slf4j
 public class FollowService {
 
     private final FollowCrudService followCrudService;
 
     private final UserService userService;
     private final ChatService chatService;
-    private final FollowRepository followRepository;
     private final NotificationService notificationService;
     private final StoryService storyService;
 
@@ -56,8 +55,8 @@ public class FollowService {
             throw new FollowExistException("이미 팔로우 중입니다.");
         }
 
-        User sender = userService.findById(senderId);
-        User recipient = userService.findById(recipientId);
+        User sender = userService.getUserById(senderId);
+        User recipient = userService.getUserById(recipientId);
         log.info("sender ={}, recipient = {}",sender.getId(),recipient.getId());
 
         Follow follow = buildFollow(sender, recipient);
@@ -76,7 +75,7 @@ public class FollowService {
 
     public List<ResponseFollowerDto> findFollowings(Long userId) {
         return followCrudService.findFollowingIds(userId).stream()
-                .map(userService::findById)
+                .map(userService::getUserById)
                 .map(recipient -> new ResponseFollowerDto(recipient, 1))
                 .collect(Collectors.toList());
     }
@@ -132,7 +131,7 @@ public class FollowService {
                                                                         int follow) {
         return userIdSet.stream()
                 .map(userId -> {
-                    User user = userService.findById(userId);
+                    User user = userService.getUserById(userId);
                     return buildResponseFollowerDto(user, follow);
                 }).collect(Collectors.toList());
     }
@@ -142,14 +141,9 @@ public class FollowService {
                 .contains(sourceId);
     }
 
-    private Boolean checkMutualFollow(Long user1Id, Long user2Id) {
-        return isFollowing(user1Id, user2Id) && isFollowing(user2Id, user1Id);
-    }
-
     public List<Long> findFollows(Long userId) {
         return followCrudService.findNotificationEnabledIds(userId);
     }
-
 
     public List<ResponseUserChatDto> findPartnersForChat(Long currentUserId) {
         List<Long> followerIds = followCrudService.findFollowerIds(currentUserId);
@@ -173,9 +167,8 @@ public class FollowService {
                         state = FOLLOWED_ONLY;
                     }
 
-                    User user = userService.findById(userId);
-                    return buildResponseUserChatDto(
-                            user, unreadChatCount, lastMessage, state);
+                    User user = userService.getUserById(userId);
+                    return toResponseUserChatDto(user, unreadChatCount, lastMessage, state);
                 })
                 .sorted(Comparator.comparing(
                         ResponseUserChatDto::getLastMessage,
@@ -214,7 +207,7 @@ public class FollowService {
         boolean currentUserHasRecentStory = storyService.hasRecentStory(userId);
         if (currentUserHasRecentStory) {
             boolean currentUserHasUnreadStories = storyService.hasUnreadStories(userId, userId);
-            ResponseFollowerDto currentUserDto = new ResponseFollowerDto(userService.findById(userId), FOLLOWING);
+            ResponseFollowerDto currentUserDto = new ResponseFollowerDto(userService.getUserById(userId), FOLLOWING);
             currentUserDto.setHasUnreadStories(currentUserHasUnreadStories);
             followingsWithRecentStories.add(currentUserDto);
         }

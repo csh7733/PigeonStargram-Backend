@@ -96,7 +96,7 @@ class LoginServiceTest {
     @DisplayName("로그인 양식으로 유저 찾기 - 성공")
     public void testFindLoginUser() {
         //given
-        when(userService.findByWorkEmailAndPassword(anyString(), anyString()))
+        when(userService.getUserByWorkEmailAndPassword(anyString(), anyString()))
                 .thenReturn(user);
 
         //when
@@ -110,7 +110,7 @@ class LoginServiceTest {
     @DisplayName("로그인 양식으로 유저 찾기 - 유저 없음")
     public void testFindLoginUserUserNotFound() {
         //given
-        when(userService.findByWorkEmailAndPassword(anyString(), anyString()))
+        when(userService.getUserByWorkEmailAndPassword(anyString(), anyString()))
                 .thenThrow(UserNotFoundException.class);
 
         //when
@@ -125,7 +125,7 @@ class LoginServiceTest {
     @DisplayName("로그인 양식으로 유저 찾기 - 여러 유저")
     public void testFindLoginUserMultipleUsersFound() {
         //given
-        when(userService.findByWorkEmailAndPassword(anyString(), anyString()))
+        when(userService.getUserByWorkEmailAndPassword(anyString(), anyString()))
                 .thenThrow(MultipleUsersFoundException.class);
 
         //when
@@ -183,7 +183,7 @@ class LoginServiceTest {
     @DisplayName("비밀번호 변경 이메일 전송 - 성공")
     public void testSendPasswordResetLinkSuccess() {
         //given
-        when(userService.findByWorkEmail(anyString())).thenReturn(user);
+        when(userService.getUserByWorkEmail(anyString())).thenReturn(user);
         when(tokenService.createToken(anyString())).thenReturn(resetToken);
 
         MimeMessage mimeMessage = mock(MimeMessage.class);
@@ -200,7 +200,7 @@ class LoginServiceTest {
     @DisplayName("비밀번호 변경 이메일 전송 - 이메일 없음")
     public void testSendPasswordResetLinkUserNotFound() {
         //given
-        when(userService.findByWorkEmail(anyString()))
+        when(userService.getUserByWorkEmail(anyString()))
                 .thenThrow(UserNotFoundException.class);
 
         //when
@@ -215,7 +215,7 @@ class LoginServiceTest {
     @DisplayName("비밀번호 변경 이메일 전송 - 전송 실패")
     public void testSendPasswordResetLinkEmailNotSent() {
         //given
-        when(userService.findByWorkEmail(anyString())).thenReturn(user);
+        when(userService.getUserByWorkEmail(anyString())).thenReturn(user);
         when(tokenService.createToken(anyString())).thenReturn(resetToken);
 
         MimeMessage mimeMessage = mock(MimeMessage.class);
@@ -237,7 +237,7 @@ class LoginServiceTest {
         //given
         when(tokenService.validateToken(anyString())).thenReturn(resetToken);
         when(tokenService.extractEmail(anyString())).thenReturn("test-email");
-        when(userService.findByWorkEmail(anyString())).thenReturn(user);
+        when(userService.getUserByWorkEmail(anyString())).thenReturn(user);
         when(userService.updatePassword(anyLong(), anyString())).thenReturn(user);
 
         //when
@@ -282,7 +282,7 @@ class LoginServiceTest {
         //given
         when(tokenService.validateToken(anyString())).thenReturn(resetToken);
         when(tokenService.extractEmail(anyString())).thenReturn("test-email");
-        when(userService.findByWorkEmail(anyString()))
+        when(userService.getUserByWorkEmail(anyString()))
                 .thenThrow(UserNotFoundException.class);
 
         //when

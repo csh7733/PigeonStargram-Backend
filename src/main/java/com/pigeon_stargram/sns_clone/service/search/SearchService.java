@@ -6,10 +6,10 @@ import com.pigeon_stargram.sns_clone.dto.search.internal.DeleteSearchHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.search.internal.SaveSearchHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.search.response.ResponseSearchHistoryDto;
 import com.pigeon_stargram.sns_clone.dto.search.response.ResponseTopSearchDto;
+import com.pigeon_stargram.sns_clone.dto.user.UserDtoConverter;
 import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
 import com.pigeon_stargram.sns_clone.repository.search.SearchHistoryRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
-import com.pigeon_stargram.sns_clone.service.user.UserBuilder;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
 import static com.pigeon_stargram.sns_clone.service.search.SearchBuilder.*;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentTimeMillis;
-import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getTimeMillis;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 
 @Service
@@ -69,7 +68,7 @@ public class SearchService {
         }
 
         // Redis에 데이터가 없을 경우 (캐시 미스)
-        User user = userService.findById(userId);
+        User user = userService.getUserById(userId);
         List<SearchHistory> searchHistories = searchHistoryRepository.findTop5ByUserOrderByScoreDesc(user);
 
         // DB에서 가져온 검색 기록을 Redis에 저장
@@ -119,7 +118,7 @@ public class SearchService {
         String searchQuery = dto.getSearchQuery();
 
         // DB에서 사용자 정보 조회
-        User user = userService.findById(userId);
+        User user = userService.getUserById(userId);
 
         // 캐시 키 생성
         String searchKey = cacheKeyGenerator(SEARCH_HISTORY, USER_ID, userId.toString());
@@ -165,7 +164,7 @@ public class SearchService {
     public List<ResponseUserInfoDto> getUserSearchResults(String searchQuery){
 
         return userService.findBySearchQuery(searchQuery).stream()
-                .map(UserBuilder::buildResponseUserInfoDto)
+                .map(UserDtoConverter::toResponseUserInfoDto)
                 .collect(Collectors.toList());
     }
 

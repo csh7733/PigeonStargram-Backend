@@ -19,7 +19,8 @@ public class RedisOnlineStatusListener implements MessageListener {
 
     @Override
     public void onMessage(Message message, byte[] pattern) {
-        UpdateOnlineStatusDto dto = redisService.deserializeMessage(message.getBody(), UpdateOnlineStatusDto.class);
+        UpdateOnlineStatusDto dto =
+                redisService.deserializeMessage(message.getBody(), UpdateOnlineStatusDto.class);
         log.info("OnlineStatus = {}",dto.toString());
 
         userService.handleOnlineStatusUpdate(dto);

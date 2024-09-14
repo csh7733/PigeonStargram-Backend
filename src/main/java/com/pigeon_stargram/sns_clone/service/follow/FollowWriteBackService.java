@@ -1,12 +1,8 @@
 package com.pigeon_stargram.sns_clone.service.follow;
 
 import com.pigeon_stargram.sns_clone.domain.follow.Follow;
-import com.pigeon_stargram.sns_clone.domain.post.Post;
-import com.pigeon_stargram.sns_clone.domain.post.PostLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.repository.follow.FollowRepository;
-import com.pigeon_stargram.sns_clone.repository.post.PostLikeRepository;
-import com.pigeon_stargram.sns_clone.service.post.PostService;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import com.pigeon_stargram.sns_clone.util.RedisUtil;
@@ -15,15 +11,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.NOTIFICATION_ENABLED_IDS;
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.USER_ID;
 import static com.pigeon_stargram.sns_clone.service.follow.FollowBuilder.buildFollow;
-import static com.pigeon_stargram.sns_clone.service.post.PostBuilder.buildPostLike;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 
 @Slf4j
@@ -40,7 +32,7 @@ public class FollowWriteBackService {
         log.info("WriteBack key={}", key);
 
         // Sender 찾기
-        User sender = userService.findById(senderId);
+        User sender = userService.getUserById(senderId);
 
         // followingIds 리스트 가져오기 (Dummy 제외)
         List<Long> followingIds = redisService.getSetAsLongListExcludeDummy(key);
@@ -48,7 +40,7 @@ public class FollowWriteBackService {
         for (Long recipientId : followingIds) {
             // 중복 여부 확인
             if (!followRepository.existsBySenderIdAndRecipientId(senderId, recipientId)) {
-                User recipient = userService.findById(recipientId);
+                User recipient = userService.getUserById(recipientId);
                 log.info("sender = {},recipient = {}",senderId,recipientId);
                 // Follow 객체 생성 및 저장
                 // 알림 신청 여부에 따라 저장한다
@@ -63,7 +55,7 @@ public class FollowWriteBackService {
         log.info("WriteBack key={}", key);
 
         // Recipient 찾기
-        User recipient = userService.findById(recipientId);
+        User recipient = userService.getUserById(recipientId);
 
         // followerIds 리스트 가져오기 (Dummy 제외)
         List<Long> followerIds = redisService.getSetAsLongListExcludeDummy(key);
@@ -71,7 +63,7 @@ public class FollowWriteBackService {
         for (Long senderId : followerIds) {
             // 중복 여부 확인
             if (!followRepository.existsBySenderIdAndRecipientId(senderId, recipientId)) {
-                User sender = userService.findById(senderId);
+                User sender = userService.getUserById(senderId);
                 // Follow 객체 생성 및 저장
                 // 알림 신청 여부에 따라 저장한다
                 Boolean isEnabled = getisEnabled(senderId, recipientId);

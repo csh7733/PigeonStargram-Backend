@@ -67,7 +67,7 @@ class UserServiceTest {
                 .thenReturn(Optional.of(user));
 
         //when
-        User findUser = userService.findById(1L);
+        User findUser = userService.getUserById(1L);
 
         //then
         assertThat(user).isEqualTo(findUser);
@@ -84,7 +84,7 @@ class UserServiceTest {
 
         //then
         assertThatThrownBy(() -> {
-            userService.findById(1L);
+            userService.getUserById(1L);
         }).isInstanceOf(UserNotFoundException.class);
     }
 
@@ -96,7 +96,7 @@ class UserServiceTest {
                 .thenReturn(List.of(user));
 
         //when
-        User findUser = userService.findByWorkEmailAndPassword("test@gmail.com", "test_password");
+        User findUser = userService.getUserByWorkEmailAndPassword("test@gmail.com", "test_password");
 
         //then
         assertThat(user).isEqualTo(findUser);
@@ -113,7 +113,7 @@ class UserServiceTest {
 
         //then
         assertThatThrownBy(() -> {
-            userService.findByWorkEmailAndPassword("test@gmail.com", "test_password");
+            userService.getUserByWorkEmailAndPassword("test@gmail.com", "test_password");
         }).isInstanceOf(UserNotFoundException.class);
     }
 
@@ -128,7 +128,7 @@ class UserServiceTest {
 
         //then
         assertThatThrownBy(() -> {
-            userService.findByWorkEmailAndPassword("test@gmail.com", "test_password");
+            userService.getUserByWorkEmailAndPassword("test@gmail.com", "test_password");
         }).isInstanceOf(MultipleUsersFoundException.class);
     }
 
@@ -136,7 +136,7 @@ class UserServiceTest {
     @DisplayName("RequestRegisterDto로 User 저장 - 성공")
     public void testSaveSuccess() {
         //given
-        when(requestRegisterDto.toEntity()).thenReturn(user);
+        when(requestRegisterDto.toUser()).thenReturn(user);
         when(userRepository.save(any(User.class))).thenReturn(user);
 
         //when
@@ -150,7 +150,7 @@ class UserServiceTest {
     @DisplayName("RequestRegisterDto로 User 저장 - 중복된 이메일")
     public void testSave() {
         //given
-        when(requestRegisterDto.toEntity()).thenReturn(user);
+        when(requestRegisterDto.toUser()).thenReturn(user);
         when(userRepository.save(any(User.class)))
                 .thenThrow(DataIntegrityViolationException.class);
 
@@ -170,7 +170,7 @@ class UserServiceTest {
                 .thenReturn(Optional.of(user));
 
         //when
-        ResponseUserChatDto findResponseUserChatDto = userService.findUserChatById(1L);
+        ResponseUserChatDto findResponseUserChatDto = userService.getUserChatById(1L);
 
         //then
         assertThat(findResponseUserChatDto.getId()).isEqualTo(user.getId());
