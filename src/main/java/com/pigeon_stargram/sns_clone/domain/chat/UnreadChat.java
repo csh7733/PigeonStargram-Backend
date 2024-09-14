@@ -6,23 +6,24 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-@ToString
+/**
+ * UnreadChat 엔티티는 특정 사용자에게 읽지 않은 채팅 메시지의 수를 나타냅니다.
+ * - 사용자 간의 읽지 않은 메시지 수를 저장합니다.
+ * - RDB의 UNREAD_CHAT 테이블과 매핑됩니다.
+ */
+@Entity
 @Getter
 @NoArgsConstructor
-@Entity
+@ToString
 public class UnreadChat {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId;
-
-    private Long toUserId;
-
-    private Integer count;
-
-
+    private Long userId; // 읽지 않은 메시지를 보낸 사용자의 ID
+    private Long toUserId; // 읽지 않은 메시지를 받은 사용자의 ID
+    private Integer count; // 읽지 않은 메시지의 수
 
     public UnreadChat(Long userId, Long toUserId) {
         this.userId = userId;
@@ -38,9 +39,6 @@ public class UnreadChat {
     }
 
     public Integer incrementCount() {
-        if (this.count >= 99) {
-            this.count = 99;
-        }
         this.count += 1;
 
         return this.count;

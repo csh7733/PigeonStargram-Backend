@@ -23,10 +23,14 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 import static com.pigeon_stargram.sns_clone.dto.user.UserDtoConverter.*;
-import static com.pigeon_stargram.sns_clone.service.chat.ChatBuilder.*;
+import static com.pigeon_stargram.sns_clone.dto.chat.ChatDtoConvertor.*;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.getCurrentFormattedTime;
 import static com.pigeon_stargram.sns_clone.util.LogUtil.*;
 
+/**
+ * 채팅과 관련된 API 요청을 처리하는 Controller 클래스입니다.
+ * 사용자가 채팅 메시지를 주고받거나, 채팅 파트너 목록을 조회하고 온라인 상태를 관리하는 작업을 수행할 수 있습니다.
+ */
 @RestController
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
@@ -65,13 +69,23 @@ public class ChatController {
         return userService.getUserChatById(id);
     }
 
+
+    /**
+     * 두 사용자 간의 채팅 내역을 반환합니다.
+     *
+     * @param user1Id 첫 번째 사용자의 ID
+     * @param user2Id 두 번째 사용자의 ID
+     * @param lastFetchedTime 마지막으로 가져온 시간 (선택사항)
+     * @param size 가져올 채팅 내역의 수
+     * @return 두 사용자 간의 채팅 내역
+     */
     @GetMapping("/chats")
     public ResponseChatHistoriesDto getCurrentChatHistory(@RequestParam Long user1Id,
                                                               @RequestParam Long user2Id,
                                                               @RequestParam(required = false) String lastFetchedTime,
                                                               @RequestParam(defaultValue = "10") int size) {
 
-        GetUserChatsDto getUserChatsDto = buildGetUserChatsDto(user1Id, user2Id);
+        GetUserChatsDto getUserChatsDto = toGetUserChatsDto(user1Id, user2Id);
         return chatService.getUserChats(getUserChatsDto, lastFetchedTime, size);
     }
 
@@ -103,37 +117,61 @@ public class ChatController {
         userService.updateOnlineStatus(dto);
     }
 
+
+    /**
+     * 채팅에 이미지를 업로드합니다.
+     *
+     * @param imageFile 업로드할 이미지 파일
+     * @return 업로드된 파일의 경로
+     */
     @PostMapping("/image")
     public String uploadImage(@RequestPart(value = "image") MultipartFile imageFile){
 
         return fileService.saveFile(imageFile);
     }
 
+    /**
+     * 사용자가 스토리에 대한 답장을 보냅니다.
+     *
+     * @param loginUser 현재 로그인한 사용자 (세션 정보)
+     * @param chatMessage 답장 메시지 (NewChatDto)
+     * @return 답장 메시지 (NewChatDto)
+     */
     @PostMapping("/story-reply")
     public NewChatDto sendStoryReply(@LoginUser SessionUser loginUser,
                                      @RequestBody NewChatDto chatMessage) {
         Long from = loginUser.getId();
         Long to = chatMessage.getTo();
 
-        chatMessage.setTime(getCurrentFormattedTime());
-        chatService.save(chatMessage);
-
-        String channel = getChatChannelName(from, to);
-        redisService.publishMessage(channel,chatMessage);
+        // 메시지 저장 및 처리
+        processChatMessage(chatMessage, from, to);
 
         return chatMessage;
     }
 
-
+    /**
+     * WebSocket을 통해 두 사용자 간의 채팅 메시지를 전송합니다.
+     *
+     * @param chatMessage 전송할 채팅 메시지 (NewChatDto)
+     * @param user1Id 첫 번째 사용자의 ID
+     * @param user2Id 두 번째 사용자의 ID
+     */
     @MessageMapping("/chat/{user1Id}/{user2Id}")
     public void sendMessage(@Payload NewChatDto chatMessage,
                                   @DestinationVariable Long user1Id,
                                   @DestinationVariable Long user2Id) {
+        // 메시지 저장 및 처리
+        processChatMessage(chatMessage, user1Id, user2Id);
+    }
+
+    private void processChatMessage(NewChatDto chatMessage, Long from, Long to) {
+        // 메시지의 시간을 설정하고 저장
         chatMessage.setTime(getCurrentFormattedTime());
         chatService.save(chatMessage);
 
-        String channel = getChatChannelName(user1Id, user2Id);
-        redisService.publishMessage(channel,chatMessage);
+        // Redis 채널에 메시지 발행
+        String channel = getChatChannelName(from, to);
+        redisService.publishMessage(channel, chatMessage);
     }
 
     private String getChatChannelName(Long user1Id, Long user2Id) {

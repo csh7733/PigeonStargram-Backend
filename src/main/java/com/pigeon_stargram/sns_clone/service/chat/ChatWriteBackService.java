@@ -13,10 +13,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-@Slf4j
-@RequiredArgsConstructor
-@Transactional
 @Service
+@Transactional
+@RequiredArgsConstructor
+@Slf4j
 public class ChatWriteBackService {
 
     private final ChatRepository chatRepository;
@@ -24,48 +24,49 @@ public class ChatWriteBackService {
     private final RedisService redisService;
     private final LastMessageRepository lastMessageRepository;
 
+    /**
+     * Redis에서 가져온 읽지 않은 채팅 카운트를 DB에 동기화합니다.
+     * @param key Redis에서 관리하는 읽지 않은 채팅 카운트 키
+     */
     public void syncUnreadChatCount(String key) {
-        log.info("syncUnreadChatCount key={}", key);
+        // Redis에서 받은 키를 파싱하여 hashKey와 fieldKey를 분리 (사용자 ID와 상대방 ID)
         String[] keys = RedisUtil.parseHashKeyAndFieldKey(key);
-        String hashKey = keys[0];
-        String fieldKey = keys[1];
+        Long userId = RedisUtil.parseSuffix(keys[0]);  // hashKey로부터 사용자 ID 추출
+        Long toUserId = Long.valueOf(keys[1]);  // fieldKey로부터 상대방 사용자 ID 추출
 
-        Long userId = RedisUtil.parseSuffix(hashKey);
-        Long toUserId = Long.valueOf(fieldKey);
-        log.info("WriteBack HashKey={}, fieldKey={}", hashKey, fieldKey);
+        // Redis에서 읽지 않은 채팅 카운트를 가져옴
+        Integer count = redisService.getValueFromHash(keys[0], keys[1], Integer.class);
 
-        Integer count = redisService.getValueFromHash(hashKey, fieldKey, Integer.class);
-
+        // DB에서 해당 사용자와 상대방 사이의 읽지 않은 채팅 정보를 조회 (없다면 새로 생성)
         UnreadChat unreadChat = unreadChatRepository.findByUserIdAndToUserId(userId, toUserId)
                 .orElse(new UnreadChat(userId, toUserId));
 
-        log.info("before={}", unreadChat.getCount());
-        log.info("after={}", count);
-
+        // 가져온 카운트로 업데이트 후 DB에 저장
         unreadChat.setCount(count);
         unreadChatRepository.save(unreadChat);
     }
 
+    /**
+     * Redis에서 가져온 마지막 메시지를 DB에 동기화합니다.
+     * @param key Redis에서 관리하는 마지막 메시지 키
+     */
     public void syncLastMessage(String key) {
-        log.info("syncLastMessage key={}", key);
+        // Redis에서 받은 키를 파싱하여 hashKey와 fieldKey를 분리 (사용자 ID와 상대방 ID)
         String[] keys = RedisUtil.parseHashKeyAndFieldKey(key);
-        String hashKey = keys[0];
-        String fieldKey = keys[1];
+        Long userId = RedisUtil.parseSuffix(keys[0]);  // hashKey로부터 사용자 ID 추출
+        Long toUserId = Long.valueOf(keys[1]);  // fieldKey로부터 상대방 사용자 ID 추출
 
-        Long userId = RedisUtil.parseSuffix(hashKey);
-        Long toUserId = Long.valueOf(fieldKey);
-        log.info("WriteBack HashKey={}, fieldKey={}", hashKey, fieldKey);
-
+        // Redis에서 마지막 메시지 DTO를 가져옴
         LastMessageDto lastMessageDto =
-                redisService.getValueFromHash(hashKey, fieldKey, LastMessageDto.class);
+                redisService.getValueFromHash(keys[0], keys[1], LastMessageDto.class);
         String newMessage = lastMessageDto.getLastMessage();
 
+        // DB에서 해당 사용자와 상대방 사이의 마지막 메시지를 조회 (없다면 새로 생성)
         LastMessage lastMessage = lastMessageRepository.findByUser1IdAndUser2Id(userId, toUserId)
                 .orElse(new LastMessage(userId, toUserId, newMessage));
 
-        log.info("before={}", lastMessage);
-        log.info("after={}", lastMessageDto);
 
+        // 마지막 메시지를 업데이트 후 DB에 저장
         lastMessage.setLastMessage(newMessage);
         lastMessageRepository.save(lastMessage);
     }

@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.*;
  * 파일과 관련된 API 요청을 처리하는 Controller 클래스입니다.
  * 파일을 미리 서명된 URL로 로드하는 작업을 수행할 수 있습니다.
  */
-@Slf4j
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/files")
+@RequiredArgsConstructor
+@Slf4j
 public class FileController {
 
     private final FileService fileService;

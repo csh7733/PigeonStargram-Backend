@@ -34,7 +34,7 @@ class ChatServiceTest {
     @Mock
     ChatRepository chatRepository;
     @InjectMocks
-    private ChatService chatService;
+    private ChatServiceV2 chatService;
     @Mock
     private UnreadChatRepository unreadChatRepository;
     @Mock
