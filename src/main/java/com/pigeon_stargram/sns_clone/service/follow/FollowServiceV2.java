@@ -87,7 +87,7 @@ public class FollowServiceV2 implements FollowService {
     public List<ResponseFollowerDto> findFollowings(Long userId) {
         return followCrudService.findFollowingIds(userId).stream()
                 .map(userService::getUserById)
-                .map(recipient -> toResponseFollowerDto(recipient, false))
+                .map(recipient -> toResponseFollowerDto(recipient, 1))
                 .collect(Collectors.toList());
     }
 
