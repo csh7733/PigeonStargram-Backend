@@ -35,12 +35,11 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.combineHashKeyAndFieldKey;
 
 // 채팅 정보에 대한 캐싱을 적용한 ChatServiceV2 구현체
-// Value         | Structure | Key
-// ------------- | --------- | ---------------------------------------------------
-// unreadCount   | Hash      | UNREAD_CHAT_COUNT_USER_ID_{userId}                 (사용자별 읽지 않은 채팅 수)
-// lastMessage   | Hash      | LAST_MESSAGE_USER_ID_{userId}                      (사용자별 마지막 메시지)
-// activeUsers   | Hash      | ACTIVE_USERS_KEY_PREFIX_{userId}                   (사용자의 현재 채팅 상대)
-// dirtyKeys     | SortedSet | Write-back 작업을 위한 Sorted Set 키들 (비동기 flush를 위해)
+// Value         | Structure | Key                                 | FieldKey
+// ------------- | --------- | ----------------------------------- | --------
+// unreadCount   | Hash      | UNREAD_CHAT_COUNT_USER_ID_{userId}  | toUserId   (상대 사용자 ID)
+// lastMessage   | Hash      | LAST_MESSAGE_USER_ID_{userId}       | toUserId   (상대 사용자 ID)
+// activeUsers   | Hash      | ACTIVE_USERS_KEY_PREFIX_{userId}    | partnerUserId (현재 채팅 중인 사용자 ID)
 @Service
 @Transactional
 @RequiredArgsConstructor
