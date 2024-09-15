@@ -102,35 +102,7 @@ public class CommentBuilder {
                 .build();
     }
 
-    public static CreateCommentDto buildCreateCommentDto(RequestAddCommentDto dto,
-                                                         SessionUser loginUser) {
-        return CreateCommentDto.builder()
-                .loginUserId(loginUser.getId())
-                .postId(dto.getPostId())
-                .postUserId(dto.getPostUserId())
-                .context(dto.getContext())
-                .content(dto.getComment().getContent())
-                .taggedUserIds(dto.getComment().getTaggedUserIds())
-                .build();
-    }
 
-    public static EditCommentDto buildEditCommentDto(Long commentId,
-                                                     String content) {
-        return EditCommentDto.builder()
-                .commentId(commentId)
-                .content(content)
-                .build();
-    }
-
-    public static LikeCommentDto buildLikeCommentDto(RequestLikeCommentDto dto,
-                                                     SessionUser loginUser) {
-        return LikeCommentDto.builder()
-                .loginUserId(loginUser.getId())
-                .postUserId(dto.getPostUserId())
-                .commentId(dto.getCommentId())
-                .postId(dto.getPostId())
-                .build();
-    }
 
     public static CommentLike buildCommentLike(User loginUser,
                                                Comment comment) {

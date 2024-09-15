@@ -102,7 +102,7 @@ public class CommentCrudService {
         // 영속화된 comment
         Comment comment = repository.findById(commentId)
                 .orElseThrow(() -> new CommentNotFoundException(COMMENT_NOT_FOUND_ID));
-        comment.modify(newContent);
+        comment.editContent(newContent);
 
         return comment;
     }
