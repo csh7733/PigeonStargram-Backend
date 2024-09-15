@@ -20,6 +20,7 @@ import com.pigeon_stargram.sns_clone.dto.reply.internal.LikeReplyDto;
 import com.pigeon_stargram.sns_clone.exception.notification.NotificationNotFoundException;
 import com.pigeon_stargram.sns_clone.exception.user.UserNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.notification.NotificationRepository;
+import com.pigeon_stargram.sns_clone.service.notification.implV2.NotificationServiceV2;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import com.pigeon_stargram.sns_clone.worker.Worker;
 import org.junit.jupiter.api.BeforeEach;

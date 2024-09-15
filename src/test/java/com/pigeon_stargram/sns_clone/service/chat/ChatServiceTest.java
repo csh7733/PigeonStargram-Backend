@@ -11,6 +11,7 @@ import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseChatHistoryDto;
 import com.pigeon_stargram.sns_clone.repository.chat.ChatRepository;
 import com.pigeon_stargram.sns_clone.repository.chat.LastMessageRepository;
 import com.pigeon_stargram.sns_clone.repository.chat.UnreadChatRepository;
+import com.pigeon_stargram.sns_clone.service.chat.implV2.ChatServiceV2;
 import com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

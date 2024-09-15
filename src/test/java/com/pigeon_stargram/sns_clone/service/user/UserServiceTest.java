@@ -8,6 +8,7 @@ import com.pigeon_stargram.sns_clone.exception.user.MultipleUsersFoundException;
 import com.pigeon_stargram.sns_clone.exception.login.RegisterFailException;
 import com.pigeon_stargram.sns_clone.exception.user.UserNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
+import com.pigeon_stargram.sns_clone.service.user.implV2.UserServiceV2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,7 @@ class UserServiceTest {
     private UserRepository userRepository;
 
     @InjectMocks
-    private BasicUserService basicUserService;
+    private UserServiceV2 basicUserService;
 
     private User user;
 
