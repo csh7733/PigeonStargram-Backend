@@ -156,7 +156,9 @@ public class BasicUserService implements UserService {
     @Transactional
     @Override
     public User updateOnlineStatus(UpdateOnlineStatusDto dto) {
-        User foundUser = getUserById(dto.getUserId());
+        // 캐시에는 유저의 일부 정보만 저장되어 있어, 업데이트 시 불완전한 정보로 덮어씌워질 수 있습니다
+        // 따라서 데이터베이스에서 직접 조회하여 처리합니다.
+        User foundUser = getUserByIdFromRepository(dto.getUserId());
 
         foundUser.updateOnlineStatus(dto.getOnlineStatus());
 
