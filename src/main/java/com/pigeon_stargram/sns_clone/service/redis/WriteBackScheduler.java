@@ -97,6 +97,9 @@ public class WriteBackScheduler {
     public void syncCacheToDB() {
         // 한 번에 몇개를 가져올지 확인
         Integer writeBackBatchSize = (Integer) redisService.getValue(WRITE_BACK_BATCH_SIZE);
+        if (writeBackBatchSize == null) {
+            writeBackBatchSize = WRITE_BACK_BATCH_SIZE_INIT;
+        }
 
         log.info("writeBackBatchSize={}", writeBackBatchSize);
         // 하위 N개의 값을 가져옴
@@ -119,6 +122,10 @@ public class WriteBackScheduler {
     @Profile("write-back-boost")
     @Scheduled(fixedRate = 10000)
     public void syncAllCache() {
+        if (!redisService.hasKey(WRITE_BACK)) {
+            return;
+        }
+
         log.info("전체 Write Back Boosting 시작");
         Long writeBackKeyNum = redisService.getSortedSetSize(WRITE_BACK);
 

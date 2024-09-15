@@ -12,7 +12,7 @@ public interface TimelineService {
 
     /**
      * 사용자가 팔로우한 유명인과 비유명인의 최근 게시물을 조회하여 반환합니다.
-     * 
+     *
      * @param userId 사용자 ID
      * @return 팔로우한 사용자들의 게시물을 시간순으로 정렬하여 반환
      */

@@ -10,25 +10,30 @@ import java.util.List;
 
 /**
  * 게시물 생성 요청을 위한 데이터 전송 객체 (DTO)입니다.
- *
- * 이 클래스는 사용자가 게시물을 생성할 때 필요한 정보를 담고 있으며,
- * 알림 전송을 위한 다양한 메서드를 구현하고 있습니다.
+ * CreatePostDto는 게시물 생성과 관련된 데이터를 담고 있으며,
+ * 알림(Notification) 시스템에서 사용할 데이터를 변환하는 기능을 제공합니다.
+ * NotificationConvertable 인터페이스를 구현하여 알림 배치 데이터 및 알림 내용을
+ * 생성할 수 있는 메서드를 포함하고 있습니다.
  */
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class CreatePostDto implements NotificationConvertable {
 
     private Long loginUserId;
     private String loginUserName;
     private String content;
-    private List<Long> notificationRecipientIds;
-    private List<String> imageUrls;
-    private String fieldKey;
     private Boolean hasImage;
+    private List<String> imageUrls;
+
+    private List<Long> notificationRecipientIds;
     private List<Long> taggedUserIds;
+    
+    // 이미지 업로드 완료 전에 작성자 이외의 접근을 막을 때 사용되는 Hash Field Key
+    private String fieldKey;
 
     @Override
     public NotificationBatchDto toNotificationBatchDto(Long senderId,

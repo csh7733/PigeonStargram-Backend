@@ -52,7 +52,6 @@ public class TimelineServiceV2 implements TimelineService{
                 .collect(Collectors.toList());
     }
 
-
     private List<ResponsePostDto> getFamousFollowingsRecentPosts(Long userId) {
         // 유명인은 타임라인 캐시에서가 아니라 최신 게시물들을 직접 조회
         return followService.findFollowings(userId).stream()

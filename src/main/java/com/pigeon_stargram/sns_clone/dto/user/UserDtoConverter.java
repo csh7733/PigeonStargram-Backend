@@ -4,6 +4,8 @@ import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.chat.response.LastMessageDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseUserChatDto;
+import com.pigeon_stargram.sns_clone.dto.login.response.UserEmailInfoDto;
+import com.pigeon_stargram.sns_clone.dto.login.response.UserInfoDto;
 import com.pigeon_stargram.sns_clone.dto.user.internal.UpdateOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.user.internal.UpdatePasswordDto;
 import com.pigeon_stargram.sns_clone.dto.user.response.ResponseLoginUserInfoDto;
@@ -75,10 +77,10 @@ public class UserDtoConverter {
     /**
      * User 객체와 추가 정보를 바탕으로 ResponseUserChatDto를 생성합니다.
      *
-     * @param user 변환할 User객체
+     * @param user            변환할 User객체
      * @param unreadChatCount 읽지 않은 채팅 수
-     * @param lastMessageDto 마지막 메시지 정보
-     * @param state 팔로우 상태
+     * @param lastMessageDto  마지막 메시지 정보
+     * @param state           팔로우 상태
      * @return 변환된 ResponseUserChatDto
      */
     public static ResponseUserChatDto toResponseUserChatDto(User user,
@@ -108,7 +110,7 @@ public class UserDtoConverter {
     /**
      * 사용자 ID와 온라인 상태를 바탕으로 UpdateOnlineStatusDto를 생성합니다.
      *
-     * @param userId 상태를 업데이트할 사용자 ID
+     * @param userId       상태를 업데이트할 사용자 ID
      * @param onlineStatus 온라인 상태
      * @return 변환된 UpdateOnlineStatusDto
      */
@@ -123,7 +125,7 @@ public class UserDtoConverter {
     /**
      * 사용자 ID와 온라인 상태를 바탕으로 ResponseOnlineStatusDto를 생성합니다.
      *
-     * @param userId 온라인 상태를 변환한 사용자 ID
+     * @param userId       온라인 상태를 변환한 사용자 ID
      * @param onlineStatus 온라인 상태
      * @return 변환된 ResponseOnlineStatusDto
      */
@@ -138,7 +140,7 @@ public class UserDtoConverter {
     /**
      * 사용자 ID와 새로운 비밀번호를 바탕으로 UpdatePasswordDto를 생성합니다.
      *
-     * @param userId 비밀번호를 업데이트할 사용자 ID
+     * @param userId   비밀번호를 업데이트할 사용자 ID
      * @param password 새로운 비밀번호
      * @return 변환된 UpdatePasswordDto
      */
@@ -147,6 +149,39 @@ public class UserDtoConverter {
         return UpdatePasswordDto.builder()
                 .userId(userId)
                 .password(password)
+                .build();
+    }
+
+    /**
+     * 주어진 이메일 주소를 사용하여 `UserEmailInfoDto` 객체를 생성합니다.
+     * <p>
+     * 이 메서드는 단순히 이메일 주소만 포함된 DTO를 생성하는 데 사용됩니다.
+     * </p>
+     *
+     * @param email 사용자 이메일 주소
+     * @return 이메일 주소를 포함하는 `UserEmailInfoDto` 객체
+     */
+    public static UserEmailInfoDto toUserEmailInfoDto(String email) {
+        return UserEmailInfoDto.builder()
+                .email(email)
+                .build();
+    }
+
+    /**
+     * 주어진 사용자 객체를 사용하여 `UserInfoDto` 객체를 생성합니다.
+     * <p>
+     * 이 메서드는 사용자 ID, 이름, 회사, 아바타를 포함하는 DTO를 생성하는 데 사용됩니다.
+     * </p>
+     *
+     * @param user 사용자 객체
+     * @return 사용자 정보를 포함하는 `UserInfoDto` 객체
+     */
+    public static UserInfoDto toUserInfoDto(User user) {
+        return UserInfoDto.builder()
+                .userId(user.getId())
+                .name(user.getName())
+                .company(user.getCompany())
+                .avatar(user.getAvatar())
                 .build();
     }
 }

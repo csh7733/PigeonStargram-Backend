@@ -17,11 +17,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 
-import static com.pigeon_stargram.sns_clone.service.login.LoginBuilder.*;
+import static com.pigeon_stargram.sns_clone.domain.user.UserFactory.createSessionUser;
 
 @RequiredArgsConstructor
 @Service
-public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User>{
+public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     private final UserService userService;
     private final HttpSession httpSession;
@@ -62,7 +62,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                     attributes.getAttributes(),
                     attributes.getNameAttributeKey());
         } else {
-            httpSession.setAttribute("user", buildSessionUser(user));
+            httpSession.setAttribute("user", createSessionUser(user));
             httpSession.setAttribute("isNewUser", false);
 
             return new DefaultOAuth2User(
