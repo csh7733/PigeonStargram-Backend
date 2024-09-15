@@ -1,8 +1,13 @@
 package com.pigeon_stargram.sns_clone.constant;
 
+/**
+ * 캐시에서 사용되는 상수들을 정의한 클래스입니다.
+ *
+ * 이 클래스는 캐시 키, TTL(Time-To-Live) 설정, 캐시 관련 상수들을 관리합니다.
+ */
 public class CacheConstants {
 
-    // data
+    // 데이터 관련 캐시 키
     public static final String POST = "post";
     public static final String COMMENT = "comment";
     public static final String REPLY = "reply";
@@ -39,11 +44,11 @@ public class CacheConstants {
     public static final String USER_NAME_TO_ID_MAPPING_CACHE_KEY = "userNameToIdMapping";
     public static final String TIMELINE = "timeline";
 
-    // non-volatile
+    // WRITE BACK 처리 관련 상수
     public static final String WRITE_BACK = "writeBack";
     public static final String WRITE_BACK_BATCH_SIZE = "writeBackBatchSize";
 
-    // key
+    // 키 관련 상수
     public static final String USER_ID = "userId";
     public static final String POST_ID = "postId";
     public static final String COMMENT_ID = "commentId";
@@ -52,18 +57,17 @@ public class CacheConstants {
     public static final String NOTIFICATION_ID = "notificationId";
     public static final String NOTIFICATION_CONTENT_ID = "notificationContentId";
 
-
-    // TTL
+    // TTL 설정 (분 단위)
     public static final Long ONE_DAY_TTL = 1440L;
     public static final Long ONE_HOUR_TTL = 60L;
     public static final Long ONE_MINUTE_TTL = 1L;
 
-    // Key Generator
+    // 키 생성 시 사용할 구분자
     public static final String SEPARATOR_1 = "::";
     public static final String SEPARATOR_2 = "_";
     public static final String SEPARATOR_3 = "#";
 
-    // Cache
+    // 캐시 관련 설정
     public static final Integer WRITE_BACK_BATCH_NUM = 10;
     public static final Integer WRITE_BACK_BATCH_SIZE_INIT = 3;
 
