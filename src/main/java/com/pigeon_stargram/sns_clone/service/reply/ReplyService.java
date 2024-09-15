@@ -1,115 +1,87 @@
 package com.pigeon_stargram.sns_clone.service.reply;
 
-import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.domain.reply.Reply;
-import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyReplyTaggedDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.CreateReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.EditReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.LikeReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.ReplyContentDto;
 import com.pigeon_stargram.sns_clone.dto.reply.response.ReplyLikeDto;
 import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
-import com.pigeon_stargram.sns_clone.service.comment.CommentCrudServiceV2;
-import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
-import com.pigeon_stargram.sns_clone.service.user.UserService;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static com.pigeon_stargram.sns_clone.service.reply.ReplyBuilder.*;
+/**
+ * ReplyService는 답글과 관련된 주요 비즈니스 로직을 처리하는 메서드들을 정의한 인터페이스입니다.
+ */
+public interface ReplyService {
 
-@RequiredArgsConstructor
-@Transactional
-@Service
-public class ReplyService {
+    /**
+     * 주어진 답글 ID에 해당하는 답글을 조회합니다.
+     *
+     * @param replyId 답글의 ID
+     * @return 조회된 답글 객체
+     */
+    Reply findById(Long replyId);
 
-    private final ReplyCrudService replyCrudService;
-    private final ReplyLikeCrudService replyLikeCrudService;
-    private final UserService userService;
-    private final NotificationService notificationService;
-    private final CommentCrudServiceV2 commentCrudService;
+    /**
+     * 주어진 댓글 ID에 속한 모든 답글을 DTO 리스트로 반환합니다.
+     *
+     * @param commentId 댓글의 ID
+     * @return 답글 DTO 리스트
+     */
+    List<ResponseReplyDto> getReplyDtosByCommentId(Long commentId);
 
-    public Reply findById(Long replyId) {
-        return replyCrudService.findById(replyId);
-    }
+    /**
+     * 답글 ID로 답글 내용 및 좋아요 정보를 조합하여 응답 DTO를 반환합니다.
+     *
+     * @param replyId 답글의 ID
+     * @return 응답 DTO
+     */
+    ResponseReplyDto getCombinedReply(Long replyId);
 
-    public List<ResponseReplyDto> getReplyDtosByCommentId(Long commentId) {
-        return replyCrudService.findReplyIdByCommentId(commentId).stream()
-                .sorted(Comparator.reverseOrder())
-                .map(this::getCombinedReply)
-                .collect(Collectors.toList());
-    }
+    /**
+     * 주어진 답글의 내용을 조회하여 반환합니다.
+     *
+     * @param replyId 답글의 ID
+     * @return 답글 내용 DTO
+     */
+    ReplyContentDto getReplyContent(Long replyId);
 
-    public ResponseReplyDto getCombinedReply(Long replyId) {
-        ReplyContentDto replyContentDto = getReplyContent(replyId);
-        ReplyLikeDto replyLikeDto = getReplyLike(replyId);
-        return buildResponseReplyDto(replyContentDto, replyLikeDto);
-    }
+    /**
+     * 주어진 답글의 좋아요 정보를 조회하여 반환합니다.
+     *
+     * @param replyId 답글의 ID
+     * @return 답글 좋아요 DTO
+     */
+    ReplyLikeDto getReplyLike(Long replyId);
 
-    public ReplyContentDto getReplyContent(Long replyId) {
-        Reply reply = replyCrudService.findById(replyId);
-        return buildReplyContentDto(reply);
-    }
+    /**
+     * 새로운 답글을 생성합니다.
+     *
+     * @param dto 답글 생성 요청 DTO
+     * @return 생성된 답글의 응답 DTO
+     */
+    ResponseReplyDto createReply(CreateReplyDto dto);
 
-    public ReplyLikeDto getReplyLike(Long replyId) {
-        Integer count = replyLikeCrudService.countByReplyId(replyId);
-        return buildReplyLikeDto(false, count);
-    }
+    /**
+     * 주어진 답글을 수정합니다.
+     *
+     * @param dto 답글 수정 요청 DTO
+     */
+    void editReply(EditReplyDto dto);
 
-    public ResponseReplyDto createReply(CreateReplyDto dto) {
-        User loginUser = userService.getUserById(dto.getLoginUserId());
-        Comment comment = commentCrudService.findById(dto.getCommentId());
+    /**
+     * 주어진 답글에 좋아요를 추가하거나 삭제합니다.
+     *
+     * @param dto 답글 좋아요 요청 DTO
+     * @return 좋아요가 추가되면 true, 삭제되면 false 반환
+     */
+    Boolean likeReply(LikeReplyDto dto);
 
-        Reply reply = buildReply(dto, loginUser, comment);
-        replyCrudService.save(reply);
-
-        dto.setLoginUserName(loginUser.getName());
-        notificationService.sendToSplitWorker(dto);
-
-        notifyTaggedUsers(dto, loginUser);
-
-        return getCombinedReply(reply.getId());
-    }
-
-    private void notifyTaggedUsers(CreateReplyDto dto, User loginUser) {
-        NotifyReplyTaggedDto notifyTaggedUsers =
-                buildNotifyReplyTaggedDto(dto, loginUser);
-        notificationService.notifyTaggedUsers(notifyTaggedUsers);
-    }
-
-    public void editReply(EditReplyDto dto) {
-        replyCrudService.edit(dto.getReplyId(), dto.getContent());
-    }
-
-    public Boolean likeReply(LikeReplyDto dto) {
-        Long loginUserId = dto.getLoginUserId();
-        Long replyId = dto.getReplyId();
-
-        User loginUser = userService.getUserById(loginUserId);
-        dto.setLoginUserName(loginUser.getName());
-
-        Reply reply = replyCrudService.findById(replyId);
-        dto.setWriterId(reply.getUser().getId());
-
-        replyLikeCrudService.toggleLike(loginUserId, replyId);
-
-        // 좋아요수가 증가할때 알림 보내기
-        List<Long> replyLikeUserIds = replyLikeCrudService.getReplyLikeUserIds(replyId);
-        if (replyLikeUserIds.contains(loginUserId)) {
-            notificationService.sendToSplitWorker(dto);
-            return true;
-        }
-        return false;
-    }
-
-    public void deleteAllReplyByCommentId(Long commentId) {
-        List<Long> replyIds = replyCrudService.findReplyIdByCommentId(commentId);
-        replyIds.forEach(replyCrudService::deleteById);
-    }
+    /**
+     * 주어진 댓글 ID에 속한 모든 답글을 삭제합니다.
+     *
+     * @param commentId 댓글의 ID
+     */
+    void deleteAllReplyByCommentId(Long commentId);
 }
-

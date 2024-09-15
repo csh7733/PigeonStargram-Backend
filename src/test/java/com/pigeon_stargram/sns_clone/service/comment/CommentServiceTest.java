@@ -14,7 +14,7 @@ import com.pigeon_stargram.sns_clone.exception.comment.CommentNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentRepository;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationServiceV2;
-import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
+import com.pigeon_stargram.sns_clone.service.reply.ReplyServiceV2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -45,7 +45,7 @@ class CommentServiceTest {
     CommentServiceV2 commentService;
 
     @Mock
-    ReplyService replyService;
+    ReplyServiceV2 replyService;
     @Mock
     NotificationServiceV2 notificationService;
 
