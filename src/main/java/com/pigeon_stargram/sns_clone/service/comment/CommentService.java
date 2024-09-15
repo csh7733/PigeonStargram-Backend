@@ -16,6 +16,7 @@ import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyCommentTagg
 import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.post.PostCrudService;
+import com.pigeon_stargram.sns_clone.service.post.PostCrudServiceV2;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil;

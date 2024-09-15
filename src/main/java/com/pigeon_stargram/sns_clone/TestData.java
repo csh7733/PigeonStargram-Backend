@@ -4,6 +4,7 @@ import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.post.PostService;
+import com.pigeon_stargram.sns_clone.service.post.PostServiceV2;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
 import com.pigeon_stargram.sns_clone.util.JsonUtil;

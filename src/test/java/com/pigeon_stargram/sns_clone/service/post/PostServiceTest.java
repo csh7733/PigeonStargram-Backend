@@ -41,7 +41,7 @@ class PostServiceTest {
 
     @Spy
     @InjectMocks
-    PostService postService;
+    PostServiceV2 postService;
 
     @Mock
     UserService userService;

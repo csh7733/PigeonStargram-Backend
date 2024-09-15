@@ -8,11 +8,12 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@EqualsAndHashCode
-@ToString
+@Entity
 @Getter
 @NoArgsConstructor
-@Entity
+@AllArgsConstructor
+@ToString
+@EqualsAndHashCode
 public class PasswordResetToken {
 
     @Id
@@ -20,9 +21,7 @@ public class PasswordResetToken {
     private Long id;
 
     private String token;
-
     private String email;
-
     private LocalDateTime expiryDate;
 
     @Builder

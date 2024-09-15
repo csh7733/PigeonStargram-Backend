@@ -1,44 +1,38 @@
 package com.pigeon_stargram.sns_clone.controller.login;
 
 import com.pigeon_stargram.sns_clone.config.auth.annotation.NewUserEmail;
-import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
-import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.login.request.RequestLoginDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestForgotPasswordDto;
+import com.pigeon_stargram.sns_clone.dto.login.request.RequestLoginDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestResetPasswordDto;
 import com.pigeon_stargram.sns_clone.dto.login.response.UserEmailInfoDto;
-import com.pigeon_stargram.sns_clone.dto.login.response.UserInfoDto;
-import com.pigeon_stargram.sns_clone.service.login.LoginBuilder;
 import com.pigeon_stargram.sns_clone.service.login.LoginService;
-import com.pigeon_stargram.sns_clone.util.LogUtil;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import static com.pigeon_stargram.sns_clone.service.login.LoginBuilder.*;
-import static com.pigeon_stargram.sns_clone.util.LogUtil.*;
+import static com.pigeon_stargram.sns_clone.dto.user.UserDtoConverter.toUserEmailInfoDto;
+import static com.pigeon_stargram.sns_clone.util.LogUtil.logControllerMethod;
 
-@Slf4j
-@RequiredArgsConstructor
-@RequestMapping("/api/session")
 @RestController
+@RequestMapping("/api/session")
+@RequiredArgsConstructor
+@Slf4j
 public class LoginController {
 
     private final LoginService loginService;
 
     @GetMapping("/user-info")
-    public UserEmailInfoDto getCurrentMemberEmail(@NewUserEmail String email){
+    public UserEmailInfoDto getCurrentMemberEmail(@NewUserEmail String email) {
+        logControllerMethod("getCurrentMemberEmail", email);
 
-        return buildUserEmailInfoDto(email);
+        return toUserEmailInfoDto(email);
     }
 
     @PostMapping("/register")
     public void register(@NewUserEmail String email,
-                         @RequestBody RequestRegisterDto request){
+                         @RequestBody RequestRegisterDto request) {
         logControllerMethod("register", email, request);
 
         loginService.register(email, request);

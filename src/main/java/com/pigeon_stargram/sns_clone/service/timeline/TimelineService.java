@@ -5,6 +5,7 @@ import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.dto.redis.ScoreWithValue;
 import com.pigeon_stargram.sns_clone.service.follow.FollowServiceV2;
 import com.pigeon_stargram.sns_clone.service.post.PostService;
+import com.pigeon_stargram.sns_clone.service.post.PostServiceV2;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
