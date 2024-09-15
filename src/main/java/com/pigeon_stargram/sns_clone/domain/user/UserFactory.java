@@ -1,11 +1,24 @@
 package com.pigeon_stargram.sns_clone.domain.user;
 
 import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
+import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
 
 /**
  * 사용자 객체를 기반으로 세션 사용자 객체를 생성하는 팩토리 클래스입니다.
  */
 public class UserFactory {
+
+    public static User createUser(RequestRegisterDto dto){
+        return User.builder()
+                .workEmail(dto.getEmail())
+                .password(dto.getPassword())
+                .role(Role.USER)
+                .name(dto.getUsername())
+                .company(dto.getCompany())
+                .personalPhone(dto.getPersonalPhone())
+                .avatar(dto.getAvatar())
+                .build();
+    }
 
     /**
      * 주어진 사용자 객체를 사용하여 `SessionUser` 객체를 생성합니다.
