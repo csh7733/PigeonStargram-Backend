@@ -12,7 +12,6 @@ import com.pigeon_stargram.sns_clone.dto.post.request.RequestLikePostDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.service.file.FileService;
 import com.pigeon_stargram.sns_clone.service.post.PostService;
-import com.pigeon_stargram.sns_clone.service.timeline.TimelineService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +28,6 @@ import static com.pigeon_stargram.sns_clone.service.post.PostBuilder.*;
 public class PostController {
 
     private final PostService postService;
-    private final TimelineService timelineService;
     private final FileService fileService;
 
     @GetMapping

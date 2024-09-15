@@ -15,7 +15,7 @@ import com.pigeon_stargram.sns_clone.service.comment.CommentCrudService;
 import com.pigeon_stargram.sns_clone.service.post.PostService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyCrudService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
-import com.pigeon_stargram.sns_clone.service.timeline.TimelineService;
+import com.pigeon_stargram.sns_clone.service.timeline.TimelineServiceV2;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +31,7 @@ import static com.pigeon_stargram.sns_clone.service.reply.ReplyBuilder.*;
 public class ReplyController {
 
     private final PostService postService;
-    private final TimelineService timelineService;
+    private final TimelineServiceV2 timelineService;
     private final ReplyService replyService;
     private final CommentCrudService commentCrudService;
     private final ReplyCrudService replyCrudService;
