@@ -8,10 +8,10 @@ import com.pigeon_stargram.sns_clone.repository.chat.LastMessageRepository;
 import com.pigeon_stargram.sns_clone.repository.chat.UnreadChatRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.util.RedisUtil;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional

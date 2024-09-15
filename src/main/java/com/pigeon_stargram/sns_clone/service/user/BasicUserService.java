@@ -13,12 +13,12 @@ import com.pigeon_stargram.sns_clone.exception.user.UserNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.user.UserRepository;
 import com.pigeon_stargram.sns_clone.service.follow.FollowCrudService;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,7 +35,6 @@ import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
 // user   | Hash      | USER_CACHE_KEY                    | userId
 // userId | Hash      | USER_NAME_TO_ID_MAPPING_CACHE_KEY | userName
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class BasicUserService implements UserService {
@@ -47,6 +46,7 @@ public class BasicUserService implements UserService {
 
     private final SimpMessagingTemplate messagingTemplate;
 
+    @Transactional(readOnly = true)
     @Override
     public User getUserById(Long id) {
         String fieldKey = id.toString();
@@ -65,6 +65,7 @@ public class BasicUserService implements UserService {
         return findUser;
     }
 
+    @Transactional(readOnly = true)
     public User getUserByName(String name) {
         String fieldKey = name;
 
@@ -84,6 +85,7 @@ public class BasicUserService implements UserService {
         return getUserById(user.getId());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public User getUserByWorkEmail(String workEmail) {
         // 로그인과 관련된 정보는 직접 DB에서 조회
@@ -91,6 +93,7 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_EMAIL));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public User getUserByWorkEmailAndPassword(String workEmail,
                                               String password) {
@@ -99,12 +102,14 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_EMAIL));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<User> findBySearchQuery(String searchQuery) {
         // 검색과 관련된 정보는 직접 DB에서 조회
         return userRepository.findByNameContainingIgnoreCase(searchQuery);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ResponseUserInfoDto> getUserInfosByUserIds(List<Long> userIds) {
         return userIds.stream()
@@ -113,18 +118,21 @@ public class BasicUserService implements UserService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ResponseUserChatDto getUserChatById(Long userId) {
         User user = getUserById(userId);
         return toResponseUserChatDto(user);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ResponseOnlineStatusDto getOnlineStatus(Long userId) {
         User user = getUserById(userId);
         return toResponseOnlineStatusDto(userId, user.getOnlineStatus());
     }
 
+    @Transactional
     @Override
     public User save(RequestRegisterDto userDto) {
         try {
@@ -143,6 +151,7 @@ public class BasicUserService implements UserService {
         }
     }
 
+    @Transactional
     @Override
     public User updateOnlineStatus(UpdateOnlineStatusDto dto) {
         User foundUser = getUserById(dto.getUserId());
@@ -160,6 +169,7 @@ public class BasicUserService implements UserService {
         return foundUser;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public void handleOnlineStatusUpdate(UpdateOnlineStatusDto dto) {
         Long updatedUserId = dto.getUserId();
@@ -179,6 +189,7 @@ public class BasicUserService implements UserService {
                 });
     }
 
+    @Transactional
     @Override
     public User updatePassword(UpdatePasswordDto dto) {
         // 로그인과 관련된 정보는 직접 DB에서 조회

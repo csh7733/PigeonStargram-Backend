@@ -6,10 +6,10 @@ import com.pigeon_stargram.sns_clone.dto.redis.ScoreWithValue;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.post.PostService;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -28,7 +28,6 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 // timeline | Sorted Set | TIMELINE_USER_ID_{userId}           (게시물 ID와 스코어)
 // posts    | Set        | UPLOADING_POSTS_SET                 (업로드 중인 게시물 ID)
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class TimelineServiceV2 implements TimelineService{
@@ -37,6 +36,7 @@ public class TimelineServiceV2 implements TimelineService{
     private final FollowService followService;
     private final RedisService redisService;
 
+    @Transactional
     public List<ResponsePostDto> getFollowingUsersRecentPosts(Long userId) {
         // 1. 유명인 팔로우 대상의 게시물 가져오기
         List<ResponsePostDto> famousPosts = getFamousFollowingsRecentPosts(userId);

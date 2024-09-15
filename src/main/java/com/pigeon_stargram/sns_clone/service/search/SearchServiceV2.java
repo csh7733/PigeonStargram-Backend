@@ -33,7 +33,6 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 // search term   | Sorted Set | SEARCH_TERM_SCORES_{prefix}              (접두사별 검색어 점수)
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class SearchServiceV2 implements SearchService {
 
     private final UserService userService;
@@ -54,6 +53,7 @@ public class SearchServiceV2 implements SearchService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<ResponseSearchHistoryDto> getTopSearchHistory(Long userId) {
         String cacheKey = cacheKeyGenerator(SEARCH_HISTORY, USER_ID, userId.toString());
 
@@ -76,6 +76,7 @@ public class SearchServiceV2 implements SearchService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public void deleteSearchHistory(DeleteSearchHistoryDto dto) {
         Long userId = dto.getUserId();
         String searchQuery = dto.getQuery();
@@ -91,7 +92,7 @@ public class SearchServiceV2 implements SearchService {
                 .ifPresent(searchHistoryRepository::delete);
     }
 
-
+    @Transactional
     public void deleteAllSearchHistory(Long userId) {
         // 사용자 검색 기록에 대한 캐시 키 생성
         String searchKey = cacheKeyGenerator(SEARCH_HISTORY, USER_ID, userId.toString());
@@ -104,7 +105,7 @@ public class SearchServiceV2 implements SearchService {
         searchHistoryRepository.deleteAll(histories);
     }
 
-
+    @Transactional
     public void saveSearchHistory(SaveSearchHistoryDto dto) {
         Long userId = dto.getUserId();
         String searchQuery = dto.getSearchQuery();
@@ -122,7 +123,15 @@ public class SearchServiceV2 implements SearchService {
         updateSearchTermScores(searchQuery);
     }
 
-    public void updateSearchTermScores(String term) {
+    @Transactional(readOnly = true)
+    public List<ResponseUserInfoDto> getUserSearchResults(String searchQuery) {
+        // 검색어를 기준으로 사용자 정보를 조회하고, Response DTO로 변환하여 반환
+        return userService.findBySearchQuery(searchQuery).stream()
+                .map(UserDtoConverter::toResponseUserInfoDto)
+                .collect(Collectors.toList());
+    }
+
+    private void updateSearchTermScores(String term) {
         // 검색어의 접두사(prefix) 목록 생성
         List<String> prefixes = generatePrefixes(term);
 
@@ -133,13 +142,6 @@ public class SearchServiceV2 implements SearchService {
             // prefix를 키로 사용하고, 검색어를 값으로 하여 점수를 1 증가시킴
             redisService.incrementScoreInSortedSet(searchKey, term, 1.0);
         });
-    }
-
-    public List<ResponseUserInfoDto> getUserSearchResults(String searchQuery) {
-        // 검색어를 기준으로 사용자 정보를 조회하고, Response DTO로 변환하여 반환
-        return userService.findBySearchQuery(searchQuery).stream()
-                .map(UserDtoConverter::toResponseUserInfoDto)
-                .collect(Collectors.toList());
     }
 
     private List<ResponseSearchHistoryDto> getCachedSearchHistory(String cacheKey) {

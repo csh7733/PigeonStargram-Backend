@@ -36,7 +36,6 @@ import static com.pigeon_stargram.sns_clone.dto.user.UserDtoConverter.toResponse
  * 알림 설정 및 기타 팔로우 관련 작업을 수행합니다.
  */
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class FollowServiceV2 implements FollowService {
@@ -47,6 +46,7 @@ public class FollowServiceV2 implements FollowService {
     private final NotificationService notificationService;
     private final StoryService storyService;
 
+    @Transactional(readOnly = true)
     @Override
     public List<ResponseFollowerDto> findFollowers(FindFollowersDto dto) {
         Set<Long> targetUserFollowerIdSet = findFollowerIdsAsSet(dto.getUserId());
@@ -56,6 +56,7 @@ public class FollowServiceV2 implements FollowService {
         return getResponseFollowerDtos(loginUserFollowingIdSet, targetUserFollowerIdSet);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ResponseFollowerDto> findFollowings(FindFollowingsDto dto) {
         Set<Long> targetUserFollowingIdSet = findFollowingIdsAsSet(dto.getUserId());
@@ -64,6 +65,7 @@ public class FollowServiceV2 implements FollowService {
         return getResponseFollowerDtos(loginUserFollowingIdSet, targetUserFollowingIdSet);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ResponseFollowerDto> findFollowings(Long userId) {
         return followCrudService.findFollowingIds(userId).stream()
@@ -72,43 +74,51 @@ public class FollowServiceV2 implements FollowService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Long> getFollowerIds(Long userId) {
         return followCrudService.findFollowerIds(userId);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Long> findNotificationEnabledFollowerIds(Long userId) {
         return followCrudService.findNotificationEnabledIds(userId);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Boolean getNotificationEnabled(GetNotificationEnabledDto dto) {
         return followCrudService.findNotificationEnabledIds(dto.getTargetUserId())
                 .contains(dto.getLoginUserId());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Long countFollowings(Long userId) {
         return (long) followCrudService.findFollowingIds(userId).size();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Long countFollowers(Long userId) {
         return (long) followCrudService.findFollowerIds(userId).size();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Boolean isFollowing(Long sourceId, Long targetId) {
         return followCrudService.findFollowerIds(targetId)
                 .contains(sourceId);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Boolean isFamousUser(Long userId) {
         return countFollowers(userId) >= FAMOUS_USER_THRESHOLD;
     }
 
+    @Transactional
     @Override
     public void createFollow(AddFollowDto dto) {
         Long senderId = dto.getSenderId();
@@ -129,16 +139,19 @@ public class FollowServiceV2 implements FollowService {
         notificationService.sendToSplitWorker(dto);
     }
 
+    @Transactional
     @Override
     public void toggleNotificationEnabled(ToggleNotificationEnabledDto dto) {
         followCrudService.toggleNotificationEnabled(dto.getLoginUserId(), dto.getTargetUserId());
     }
 
+    @Transactional
     @Override
     public void deleteFollow(DeleteFollowDto dto) {
         followCrudService.deleteFollowBySenderIdAndRecipientId(dto.getSenderId(), dto.getRecipientId());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ResponseUserChatDto> findPartnersForChat(Long loginUserId) {
         List<Long> followerIds = followCrudService.findFollowerIds(loginUserId);
@@ -153,6 +166,7 @@ public class FollowServiceV2 implements FollowService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ResponseFollowerDto> findMeAndFollowingsWithRecentStories(Long userId) {
         List<ResponseFollowerDto> followingsWithRecentStories = getFollowingsWithRecentStories(userId);
@@ -172,6 +186,7 @@ public class FollowServiceV2 implements FollowService {
         return followingsWithRecentStories;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Long> findFollowingsWhoFollowTarget(Long sourceId, Long targetId) {
         // 소스 사용자의 팔로잉 목록을 가져옴

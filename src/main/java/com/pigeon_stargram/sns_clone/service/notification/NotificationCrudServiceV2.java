@@ -6,12 +6,12 @@ import com.pigeon_stargram.sns_clone.exception.notification.NotificationNotFound
 import com.pigeon_stargram.sns_clone.repository.notification.NotificationContentRepository;
 import com.pigeon_stargram.sns_clone.repository.notification.NotificationV2Repository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -28,7 +28,6 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.*;
  * content     | String    | NOTIFICATION_CONTENT_ID_{contentId}        (특정 알림 content 정보 캐싱)
  */
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class NotificationCrudServiceV2 implements NotificationCrudService{
@@ -39,11 +38,13 @@ public class NotificationCrudServiceV2 implements NotificationCrudService{
     private final NotificationContentRepository contentRepository;
     private final NotificationContentRepository notificationContentRepository;
 
+    @Transactional(readOnly = true)
     public List<NotificationV2> findNotificationByRecipientId(Long recipientId) {
 
         return notificationRepository.findByRecipientId(recipientId);
     }
 
+    @Transactional(readOnly = true)
     public NotificationV2 findById(Long notificationId) {
 
         return notificationRepository.findById(notificationId)
@@ -52,12 +53,14 @@ public class NotificationCrudServiceV2 implements NotificationCrudService{
 
     @Cacheable(value = NOTIFICATION_CONTENT,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).NOTIFICATION_CONTENT_ID + '_' + #contentId")
+    @Transactional(readOnly = true)
     public NotificationContent findContentById(Long contentId) {
 
         return notificationContentRepository.findById(contentId)
                 .orElseThrow(() -> new NotificationNotFoundException(NOTIFICATION_CONTENT_NOT_FOUND_ID));
     }
 
+    @Transactional
     public NotificationV2 save(NotificationV2 notification) {
         Long recipientId = notification.getRecipientId();
         NotificationV2 save = notificationRepository.save(notification);
@@ -75,16 +78,19 @@ public class NotificationCrudServiceV2 implements NotificationCrudService{
 
     @CachePut(value = NOTIFICATION_CONTENT,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).NOTIFICATION_CONTENT_ID + '_' + #content.id")
+    @Transactional
     public NotificationContent saveContent(NotificationContent content) {
 
         return contentRepository.save(content);
     }
 
+    @Transactional
     public void deleteNotificationById(Long notificationId) {
 
         notificationRepository.deleteById(notificationId);
     }
 
+    @Transactional
     public void deleteAllNotificationByRecipientId(Long recipientId) {
 
         notificationRepository.deleteAllByRecipientId(recipientId);

@@ -9,10 +9,10 @@ import com.pigeon_stargram.sns_clone.dto.notification.internal.NotificationSplit
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import com.pigeon_stargram.sns_clone.worker.notification.NotificationSplitWorker;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -26,7 +26,6 @@ import static com.pigeon_stargram.sns_clone.dto.notification.NotificationDtoConv
  * 알림 전송, 조회, 읽음 처리, 삭제 등의 기능을 제공합니다.
  */
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class NotificationServiceV2 implements NotificationService{
@@ -36,6 +35,7 @@ public class NotificationServiceV2 implements NotificationService{
 
     private final NotificationSplitWorker notificationSplitWorker;
 
+    @Transactional
     public void sendToSplitWorker(NotificationConvertable dto) {
 
         // 알림 콘텐츠 객체를 생성하고 저장
@@ -57,6 +57,7 @@ public class NotificationServiceV2 implements NotificationService{
         });
     }
 
+    @Transactional(readOnly = true)
     public List<ResponseNotificationDto> findByUserId(Long userId) {
         List<NotificationV2> notifications = notificationCrudService.findNotificationByRecipientId(userId);
 
@@ -72,11 +73,13 @@ public class NotificationServiceV2 implements NotificationService{
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public void readNotification(Long notificationId) {
         NotificationV2 notification = notificationCrudService.findById(notificationId);
         notification.setRead(true); // 읽음 상태로 설정
     }
 
+    @Transactional
     public void readNotifications(Long userId) {
         List<NotificationV2> notifications =
                 notificationCrudService.findNotificationByRecipientId(userId);
@@ -84,16 +87,19 @@ public class NotificationServiceV2 implements NotificationService{
         notifications.forEach(notification -> notification.setRead(true)); // 모든 알림 읽음 처리
     }
 
+    @Transactional
     public void deleteNotification(Long notificationId) {
 
         notificationCrudService.deleteNotificationById(notificationId);
     }
 
+    @Transactional
     public void deleteAll(Long recipientId) {
 
         notificationCrudService.deleteAllNotificationByRecipientId(recipientId);
     }
 
+    @Transactional
     public void notifyTaggedUsers(NotificationConvertable dto) {
 
         if (!dto.toRecipientIds().isEmpty()) sendToSplitWorker(dto); // 태그된 유저가 있으면 워커에 알림 작업을 넘김

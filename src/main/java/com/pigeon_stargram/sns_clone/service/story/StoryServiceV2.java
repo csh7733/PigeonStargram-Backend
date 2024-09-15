@@ -10,10 +10,10 @@ import com.pigeon_stargram.sns_clone.dto.story.response.ResponseStoryDto;
 import com.pigeon_stargram.sns_clone.dto.user.response.ResponseUserInfoDto;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -29,7 +29,6 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 // storyId  | Set       | USER_STORIES_USER_ID_{userId}            (사용자별 스토리 목록)
 // userId   | Set       | STORY_VIEWS_STORY_ID_{storyId}           (스토리별 조회한 사용자 목록)
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class StoryServiceV2 implements StoryService {
@@ -38,6 +37,7 @@ public class StoryServiceV2 implements StoryService {
     private final UserService userService;
     private final RedisService redisService;
 
+    @Transactional
     public Story uploadStory(UploadStoryDto dto) {
         User user = userService.getUserById(dto.getUserId());
         Story story = createStory(user, dto.getContent(), dto.getImageUrl());
@@ -52,6 +52,7 @@ public class StoryServiceV2 implements StoryService {
         return savedStory;
     }
 
+    @Transactional
     public void deleteStory(Long storyId) {
         // 캐시 또는 데이터베이스에서 스토리를 조회
         Story story = storyCrudService.findById(storyId);
@@ -71,7 +72,7 @@ public class StoryServiceV2 implements StoryService {
         redisService.addToSet(redisSetKey, dto.getUserId());
     }
 
-
+    @Transactional(readOnly = true)
     public ResponseStoriesDto getRecentStories(GetRecentStoriesDto dto) {
         // 조회할 사용자를 가져옴
         User user = userService.getUserById(dto.getUserId());
@@ -91,6 +92,7 @@ public class StoryServiceV2 implements StoryService {
         return new ResponseStoriesDto(storyDtos, lastReadIndex);
     }
 
+    @Transactional(readOnly = true)
     public List<ResponseUserInfoDto> getUserInfosWhoViewedStory(Long storyId) {
         String redisSetKey = cacheKeyGenerator(STORY_VIEWS, STORY_ID, storyId.toString());
 
@@ -111,6 +113,7 @@ public class StoryServiceV2 implements StoryService {
         return redisService.isMemberOfSet(redisSetKey, userId);
     }
 
+    @Transactional(readOnly = true)
     public Boolean hasRecentStory(Long userId) {
         User user = userService.getUserById(userId);
 
@@ -121,6 +124,7 @@ public class StoryServiceV2 implements StoryService {
         return !recentStoryIds.isEmpty();
     }
 
+    @Transactional(readOnly = true)
     public Boolean hasUnreadStories(Long userId, Long currentMemberId) {
         User user = userService.getUserById(userId);
 

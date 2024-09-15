@@ -13,7 +13,6 @@ import com.pigeon_stargram.sns_clone.dto.chat.response.UnReadChatCountDto;
 import com.pigeon_stargram.sns_clone.event.user.UserConnectEvent;
 import com.pigeon_stargram.sns_clone.repository.chat.*;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -22,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -41,7 +41,6 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.combineHashKeyAndFiel
 // lastMessage   | Hash      | LAST_MESSAGE_USER_ID_{userId}       | toUserId   (상대 사용자 ID)
 // activeUsers   | Hash      | ACTIVE_USERS_KEY_PREFIX_{userId}    | partnerUserId (현재 채팅 중인 사용자 ID)
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class ChatServiceV2 implements ChatService{
@@ -55,6 +54,7 @@ public class ChatServiceV2 implements ChatService{
 
     private final RedisService redisService;
 
+    @Transactional
     public void save(NewChatDto dto){
         // 채팅 메시지를 데이터베이스에 저장
         chatRepository.save(dto.toEntity());
@@ -72,12 +72,6 @@ public class ChatServiceV2 implements ChatService{
         handleLastMessageUpdate(user1Id, user2Id, dto);
     }
 
-    public void sentUnReadChatCountToUser(Long toUserId, Long fromUserId, Integer count) {
-        String channel = getUnReadChatCountChannelName(toUserId);
-        UnReadChatCountDto unReadChatCountDto = new UnReadChatCountDto(toUserId,fromUserId, count);
-        redisService.publishMessage(channel, unReadChatCountDto); // Redis로 메시지 발행
-    }
-
     public void sentLastMessage(SendLastMessageDto dto) {
         Long user1Id = dto.getUser1Id();
         Long user2Id = dto.getUser2Id();
@@ -92,6 +86,7 @@ public class ChatServiceV2 implements ChatService{
         messagingTemplate.convertAndSend(destination2, lastMessage);
     }
 
+    @Transactional(readOnly = true)
     public ResponseChatHistoriesDto getUserChats(GetUserChatsDto dto, String lastFetchedTime, Integer size) {
         Long user1Id = dto.getUser1Id();
         Long user2Id = dto.getUser2Id();
@@ -115,6 +110,7 @@ public class ChatServiceV2 implements ChatService{
         return new ResponseChatHistoriesDto(chatHistoryDtos, hasMoreChat);
     }
 
+    @Transactional
     public Integer increaseUnReadChatCount(Long userId,
                                            Long toUserId) {
         // 캐시 키 생성
@@ -134,7 +130,7 @@ public class ChatServiceV2 implements ChatService{
         return incrementUnreadCountInDbAndSaveInCache(userId, toUserId, cacheKey, fieldKey);
     }
 
-
+    @Transactional(readOnly = true)
     public Integer getUnreadChatCount(Long userId, Long toUserId) {
         String cacheKey = cacheKeyGenerator(UNREAD_CHAT_COUNT, USER_ID, userId.toString());
         String fieldKey = toUserId.toString();
@@ -148,6 +144,7 @@ public class ChatServiceV2 implements ChatService{
         return getUnreadCountFromDbAndSaveInCache(userId, toUserId, cacheKey, fieldKey);
     }
 
+    @Transactional
     public void setUnreadChatCount0(Long userId, Long toUserId) {
         String cacheKey = cacheKeyGenerator(UNREAD_CHAT_COUNT, USER_ID, userId.toString());
         String fieldKey = toUserId.toString();
@@ -165,6 +162,7 @@ public class ChatServiceV2 implements ChatService{
         }
     }
 
+    @Transactional
     public LastMessageDto setLastMessage(NewChatDto chatMessage) {
         Long user1Id = chatMessage.getFrom();
         Long user2Id = chatMessage.getTo();
@@ -189,6 +187,7 @@ public class ChatServiceV2 implements ChatService{
         return updateLastMessageInDbAndCache(userIds, lastMessageText, hashKey, fieldKey);
     }
 
+    @Transactional(readOnly = true)
     public LastMessageDto getLastMessage(Long user1Id, Long user2Id) {
         // 사용자 ID 정렬 (작은 ID가 먼저 오도록)
         Long[] userIds = sortAndGet(user1Id, user2Id);
@@ -218,10 +217,17 @@ public class ChatServiceV2 implements ChatService{
     }
 
     @EventListener
+    @Transactional
     public void handleUserConnect(UserConnectEvent event) {
         Long userId = event.getUserId();
         Long partnerUserId = event.getPartnerUserId();
         if(!userId.equals(partnerUserId)) setUnreadChatCount0(userId,partnerUserId);
+    }
+
+    private void sentUnReadChatCountToUser(Long toUserId, Long fromUserId, Integer count) {
+        String channel = getUnReadChatCountChannelName(toUserId);
+        UnReadChatCountDto unReadChatCountDto = new UnReadChatCountDto(toUserId,fromUserId, count);
+        redisService.publishMessage(channel, unReadChatCountDto); // Redis로 메시지 발행
     }
 
     private void handleLastMessageUpdate(Long user1Id, Long user2Id, NewChatDto dto) {

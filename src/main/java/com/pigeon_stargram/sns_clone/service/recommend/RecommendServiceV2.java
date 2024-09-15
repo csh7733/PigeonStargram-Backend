@@ -5,10 +5,10 @@ import com.pigeon_stargram.sns_clone.dto.user.response.ResponseRecommendUserInfo
 import com.pigeon_stargram.sns_clone.service.follow.FollowCrudService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +25,6 @@ import static com.pigeon_stargram.sns_clone.dto.recommend.RecommendDtoConvertor.
  * 추천된 사용자들의 추가 정보를 포함한 리스트를 반환합니다.
  */
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class RecommendServiceV2 implements RecommendService {
@@ -34,6 +33,7 @@ public class RecommendServiceV2 implements RecommendService {
     private final FollowService followService;
     private final UserService userService;
 
+    @Transactional(readOnly = true)
     public List<ResponseRecommendUserInfoDto> recommendFriendsWithDetails(Long userId) {
         // 1. 추천 친구 목록 가져오기
         List<Long> recommendedUserIds = recommendFriends(userId);
@@ -57,6 +57,7 @@ public class RecommendServiceV2 implements RecommendService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<Long> recommendFriends(Long userId) {
         // 1. userId의 팔로잉 목록을 가져옴
         List<Long> userFollowingIds = followCrudService.findFollowingIds(userId);

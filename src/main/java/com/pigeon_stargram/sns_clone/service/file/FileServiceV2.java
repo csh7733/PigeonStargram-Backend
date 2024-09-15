@@ -28,7 +28,6 @@ import java.util.UUID;
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 @Profile("local-s3")

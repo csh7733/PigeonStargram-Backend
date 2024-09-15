@@ -21,15 +21,6 @@ public interface ChatService {
     void save(NewChatDto dto);
 
     /**
-     * 특정 사용자에게 읽지 않은 메시지 수를 전송합니다.
-     *
-     * @param toUserId 읽지 않은 메시지를 전송할 사용자 ID
-     * @param fromUserId 메시지를 보낸 사용자 ID
-     * @param count 읽지 않은 메시지 수
-     */
-    void sentUnReadChatCountToUser(Long toUserId, Long fromUserId, Integer count);
-
-    /**
      * 마지막 메시지를 전송합니다.
      *
      * @param dto 마지막 메시지 정보를 포함한 DTO

@@ -25,7 +25,6 @@ import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.*;
 
 @Slf4j
 @RequiredArgsConstructor
-@Transactional
 @Service
 public class RedisService {
 

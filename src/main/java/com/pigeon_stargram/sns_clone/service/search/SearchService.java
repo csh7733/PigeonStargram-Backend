@@ -52,13 +52,6 @@ public interface SearchService {
     void saveSearchHistory(SaveSearchHistoryDto dto);
 
     /**
-     * 검색어의 점수를 업데이트합니다.
-     *
-     * @param term 검색어
-     */
-    void updateSearchTermScores(String term);
-
-    /**
      * 특정 검색어에 대한 사용자 검색 결과를 반환합니다.
      *
      * @param searchQuery 검색어

@@ -36,7 +36,6 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 // commentId | Set       | ALL_COMMENT_IDS    |           게시물의 모든 댓글 ID
 // userId    | Set       | POST_LIKE_USER_IDS |           게시물을 좋아하는 사용자 ID
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class PostCrudServiceV2 implements PostCrudService {
@@ -47,12 +46,14 @@ public class PostCrudServiceV2 implements PostCrudService {
 
     @Cacheable(value = POST,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).POST_ID + '_' + #postId")
+    @Transactional(readOnly = true)
     @Override
     public Post findById(Long postId) {
         return repository.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException(POST_NOT_FOUND_ID));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Long> findPostIdByUserId(Long userId) {
         // 사용자 ID를 기반으로 캐시 키를 생성합니다
@@ -70,6 +71,7 @@ public class PostCrudServiceV2 implements PostCrudService {
         return redisService.cacheListToSetWithDummy(postIds, cacheKey, ONE_DAY_TTL);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Long> findPostIdsByUserIdAndCreatedDateAfter(Long userId,
                                                              LocalDateTime createdDate) {
@@ -90,6 +92,7 @@ public class PostCrudServiceV2 implements PostCrudService {
 
     @CachePut(value = POST,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).POST_ID + '_' + #post.id")
+    @Transactional
     @Override
     public Post save(Post post) {
         // 게시물을 데이터베이스에 저장합니다.
@@ -114,6 +117,7 @@ public class PostCrudServiceV2 implements PostCrudService {
 
     @CachePut(value = POST,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).POST_ID + '_' + #postId")
+    @Transactional
     @Override
     public Post edit(Long postId,
                      String newContent) {
@@ -136,6 +140,7 @@ public class PostCrudServiceV2 implements PostCrudService {
 
     @CacheEvict(value = POST,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).POST_ID + '_' + #postId")
+    @Transactional
     @Override
     public void deleteById(Long postId) {
         Long postUserId = findById(postId).getUser().getId();

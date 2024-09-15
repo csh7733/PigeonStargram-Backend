@@ -24,7 +24,6 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 // followingIds | Set       | FOLLOWING_IDS
 // userIds      | Set       | NOTIFICATION_ENABLED_IDS
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class FollowCrudServiceV2 implements FollowCrudService{
@@ -32,6 +31,7 @@ public class FollowCrudServiceV2 implements FollowCrudService{
     private final RedisService redisService;
     private final FollowRepository repository;
 
+    @Transactional(readOnly = true)
     public List<Long> findFollowerIds(Long userId) {
         String cacheKey = cacheKeyGenerator(FOLLOWER_IDS, USER_ID, userId.toString());
 
@@ -44,6 +44,7 @@ public class FollowCrudServiceV2 implements FollowCrudService{
         return getFollowerIdsFromDB(userId, cacheKey);
     }
 
+    @Transactional(readOnly = true)
     public List<Long> findFollowingIds(Long userId) {
         String cacheKey = cacheKeyGenerator(FOLLOWING_IDS, USER_ID, userId.toString());
 
@@ -56,6 +57,7 @@ public class FollowCrudServiceV2 implements FollowCrudService{
         return getFollowingIdsFromDB(userId, cacheKey);
     }
 
+    @Transactional(readOnly = true)
     public List<Long> findNotificationEnabledIds(Long userId) {
         String cacheKey = cacheKeyGenerator(NOTIFICATION_ENABLED_IDS, USER_ID, userId.toString());
 
@@ -68,19 +70,21 @@ public class FollowCrudServiceV2 implements FollowCrudService{
         return getNotificationEnabledIdsFromDB(userId, cacheKey);
     }
 
+    @Transactional
     public void save(Follow follow) {
         Long senderId = follow.getSender().getId();
         Long recipientId = follow.getRecipient().getId();
 
         // Follower Ids 관련 캐시 처리
         String followerIdsKey = cacheKeyGenerator(FOLLOWER_IDS, USER_ID, recipientId.toString());
-        handleFollowerCache(followerIdsKey, recipientId, senderId);
+        updateFollowerCacheWithDBFallback(followerIdsKey, recipientId, senderId);
 
         // Following Ids 관련 캐시 처리
         String followingIdsKey = cacheKeyGenerator(FOLLOWING_IDS, USER_ID, senderId.toString());
-        handleFollowingCache(followingIdsKey, senderId, recipientId);
+        updateFollowingCacheWithDBFallback(followingIdsKey, senderId, recipientId);
     }
 
+    @Transactional
     public void toggleNotificationEnabled(Long senderId, Long recipientId) {
         // 캐시 키 생성 (recipientId를 기준으로 Notification Enabled 상태를 관리)
         String cacheKey = cacheKeyGenerator(NOTIFICATION_ENABLED_IDS, USER_ID, recipientId.toString());
@@ -102,6 +106,7 @@ public class FollowCrudServiceV2 implements FollowCrudService{
         }
     }
 
+    @Transactional
     public void deleteFollowBySenderIdAndRecipientId(Long senderId,
                                                      Long recipientId) {
         repository.deleteBySenderIdAndRecipientId(senderId, recipientId);
@@ -165,9 +170,9 @@ public class FollowCrudServiceV2 implements FollowCrudService{
      * @param senderId     팔로우 요청자 ID
      * @param recipientId  팔로우 대상자 ID
      */
-    private void handleFollowingCache(String followingIds,
-                                      Long senderId,
-                                      Long recipientId) {
+    private void updateFollowingCacheWithDBFallback(String followingIds,
+                                                    Long senderId,
+                                                    Long recipientId) {
         // Write-back Sorted Set에 추가
         redisService.pushToWriteBackSortedSet(followingIds);
 
@@ -214,9 +219,9 @@ public class FollowCrudServiceV2 implements FollowCrudService{
      * @param recipientId  팔로우 대상자 ID
      * @param senderId     팔로우 요청자 ID
      */
-    private void handleFollowerCache(String followerIdsKey,
-                                     Long recipientId,
-                                     Long senderId) {
+    private void updateFollowerCacheWithDBFallback(String followerIdsKey,
+                                                   Long recipientId,
+                                                   Long senderId) {
         // Write-back Sorted Set에 추가
         redisService.pushToWriteBackSortedSet(followerIdsKey);
 
