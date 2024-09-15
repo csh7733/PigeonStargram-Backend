@@ -13,8 +13,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
-@RequiredArgsConstructor
+/**
+ * 웹 애플리케이션의 전반적인 설정을 위한 클래스입니다.
+ *
+ * 이 클래스는 CORS 설정, 인터셉터 등록, 그리고 메서드 인자 리졸버 등록을 통해
+ * 웹 애플리케이션의 동작을 제어합니다.
+ */
 @Configuration
+@RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
     @Value("${cors.allowed-origins}")

@@ -11,6 +11,11 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+/**
+ * @LoginUser 어노테이션이 붙은 파라미터를 처리하는 Argument Resolver입니다.
+ *
+ * 이 클래스는 세션에서 사용자 정보를 가져와 해당 파라미터에 주입합니다.
+ */
 @Component
 @RequiredArgsConstructor
 public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver {

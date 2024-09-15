@@ -10,8 +10,13 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-@RequiredArgsConstructor
+/**
+ * @NewUserEmail 어노테이션이 붙은 파라미터를 처리하는 Argument Resolver입니다.
+ *
+ * 이 클래스는 세션에서 신규가입할 유저의 "email" 속성을 가져와 해당 파라미터에 주입합니다.
+ */
 @Component
+@RequiredArgsConstructor
 public class NewUserEmailArgumentResolver implements HandlerMethodArgumentResolver {
 
     private final HttpSession httpSession;
