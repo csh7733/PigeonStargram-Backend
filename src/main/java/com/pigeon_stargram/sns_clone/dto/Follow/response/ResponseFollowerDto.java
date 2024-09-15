@@ -19,6 +19,7 @@ public class ResponseFollowerDto {
     private Long id;
     private String name;
     private String location;
+    private String company;
     private String avatar;
     private Integer follow;
     private Boolean hasUnreadStories;   // 로그인 사용자가 읽지않은 스토리 존재 여부

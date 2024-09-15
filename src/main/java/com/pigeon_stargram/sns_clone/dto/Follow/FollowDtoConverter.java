@@ -115,6 +115,7 @@ public class FollowDtoConverter {
                 .id(user.getId())
                 .name(user.getName())
                 .location(user.getLocation())
+                .company(user.getCompany())
                 .avatar(user.getAvatar())
                 .hasUnreadStories(hasUnreadStories)
                 .build();
@@ -126,6 +127,7 @@ public class FollowDtoConverter {
                 .id(user.getId())
                 .name(user.getName())
                 .location(user.getLocation())
+                .company(user.getCompany())
                 .avatar(user.getAvatar())
                 .follow(follow)
                 .build();
