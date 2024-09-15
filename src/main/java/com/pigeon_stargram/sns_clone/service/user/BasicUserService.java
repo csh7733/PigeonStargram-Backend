@@ -4,7 +4,6 @@ import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseUserChatDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
-import com.pigeon_stargram.sns_clone.UserDto;
 import com.pigeon_stargram.sns_clone.dto.user.UserDtoConverter;
 import com.pigeon_stargram.sns_clone.dto.user.internal.UpdateOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.user.internal.UpdatePasswordDto;
@@ -198,25 +197,5 @@ public class BasicUserService implements UserService {
     private User getUserByNameFromRepository(String name) {
         return userRepository.findByName(name)
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_NAME + "name=" + name));
-    }
-
-    // TestData에서만 사용
-    public List<User> saveAll(List<UserDto> userDtoList) {
-        // 1. DTO 리스트를 엔티티 리스트로 변환
-        List<User> users = userDtoList.stream()
-                .map(UserDto::toEntity)
-                .collect(Collectors.toList());
-
-        // 2. 엔티티 리스트를 데이터베이스에 저장
-        List<User> savedUsers = userRepository.saveAll(users);
-
-        // 3. 각 사용자 정보를 캐시에 저장 (Write-through 캐싱 전략)
-        savedUsers.forEach(user -> {
-            redisService.putValueInHash(USER_CACHE_KEY, user.getId().toString(), user);
-            redisService.putValueInHash(USER_NAME_TO_ID_MAPPING_CACHE_KEY, user.getName(), user.getId());
-        });
-
-        // 4. 저장된 사용자 리스트 반환
-        return savedUsers;
     }
 }

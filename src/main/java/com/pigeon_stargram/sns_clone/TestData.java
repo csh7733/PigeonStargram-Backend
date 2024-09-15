@@ -1,5 +1,6 @@
 package com.pigeon_stargram.sns_clone;
 
+import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
@@ -8,6 +9,7 @@ import com.pigeon_stargram.sns_clone.service.post.PostService;
 import com.pigeon_stargram.sns_clone.service.post.PostServiceV2;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
+import com.pigeon_stargram.sns_clone.service.user.UserService;
 import com.pigeon_stargram.sns_clone.util.JsonUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
@@ -26,19 +28,9 @@ import static com.pigeon_stargram.sns_clone.dto.Follow.FollowDtoConverter.*;
 @RequiredArgsConstructor
 @Component
 public class TestData {
-
-    private final PostService postService;
-    private final CommentService commentService;
-    private final ReplyService replyService;
-    private final JsonUtil jsonUtil;
-
-    private final BasicUserService userService;
+    private final UserService userService;
     private final FollowService followService;
-    private final ChatService chatService;
-
     private final RedisTemplate<String, Object> redisTemplate;
-
-    public List<UserDto> userDtoList;
 
     @PostConstruct
     public void initData() throws IOException {
@@ -48,14 +40,24 @@ public class TestData {
     }
 
     public void initData1() throws IOException {
-        log.info("init data");
-        ObjectMapper objectMapper = new ObjectMapper();
-        userDtoList = objectMapper.readValue(
-                new ClassPathResource("data/chat.json").getFile(),
-                objectMapper.getTypeFactory()
-                        .constructCollectionType(List.class, UserDto.class));
-        userService.saveAll(userDtoList);
-
+        List<RequestRegisterDto> testData = List.of(
+                new RequestRegisterDto("test1@gmil.com", "test", "PigeonKing", "Pigeon University", "010-1234-5678", "avatar-1.png"),
+                new RequestRegisterDto("test2@gmil.com", "test", "ChickMaster", "Chicken Academy", "010-2234-5678", "avatar-2.png"),
+                new RequestRegisterDto("test3@gmil.com", "test", "WingedHero", "Pigeon Institute of Technology", "010-3234-5678", "avatar-3.png"),
+                new RequestRegisterDto("test4@gmil.com", "test", "RoosterLeader", "Chicken University", "010-4234-5678", "avatar-4.png"),
+                new RequestRegisterDto("test5@gmil.com", "test", "FeatherQueen", "Pigeon Science Academy", "010-5234-5678", "avatar-5.png"),
+                new RequestRegisterDto("test6@gmil.com", "test", "EggGuardian", "Chicken State University", "010-6234-5678", "avatar-6.png"),
+                new RequestRegisterDto("test7@gmil.com", "test", "SkyWatcher", "Pigeon College of Aviation", "010-7234-5678", "avatar-7.png"),
+                new RequestRegisterDto("test8@gmil.com", "test", "NestProtector", "Chicken Technical University", "010-8234-5678", "avatar-1.png"),
+                new RequestRegisterDto("test9@gmil.com", "test", "CluckCommander", "Chicken Institute", "010-9234-5678", "avatar-2.png"),
+                new RequestRegisterDto("test10@gmil.com", "test", "DoveChampion", "Pigeon College of Arts", "010-0234-5678", "avatar-3.png"),
+                new RequestRegisterDto("test11@gmil.com", "test", "HatchMaster", "Chicken Innovation University", "010-1234-5679", "avatar-4.png"),
+                new RequestRegisterDto("test12@gmil.com", "test", "FlightLord", "Pigeon Wing Academy", "010-2234-5679", "avatar-5.png"),
+                new RequestRegisterDto("test13@gmil.com", "test", "ChickKing", "Chicken Kingdom University", "010-3234-5679", "avatar-6.png"),
+                new RequestRegisterDto("test14@gmil.com", "test", "FalconRider", "Pigeon Engineering College", "010-4234-5679", "avatar-7.png"),
+                new RequestRegisterDto("test15@gmil.com", "test", "HenQueen", "Chicken University of Science", "010-5234-5679", "avatar-1.png")
+        );
+        testData.forEach(userService::save);
     }
 
     public void initData2() {
@@ -122,16 +124,6 @@ public class TestData {
         followService.createFollow(toAddFollowDto(4L, 11L));
         followService.createFollow(toAddFollowDto(5L, 12L));
         followService.createFollow(toAddFollowDto(6L, 13L));
-
-    }
-
-
-
-    private void logPosts(List<ResponsePostDto> posts) {
-        posts.forEach(post -> {
-            String jsonString = jsonUtil.toJson(post);
-            log.info(jsonString);
-        });
     }
 
 }
