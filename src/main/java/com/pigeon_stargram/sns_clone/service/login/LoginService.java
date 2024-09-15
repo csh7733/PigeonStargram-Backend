@@ -11,13 +11,13 @@ import com.pigeon_stargram.sns_clone.exception.login.EmailMismatchException;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import jakarta.servlet.http.HttpSession;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import static com.pigeon_stargram.sns_clone.constant.RedisQueueConstants.MAIL_QUEUE;
 import static com.pigeon_stargram.sns_clone.domain.user.UserFactory.createSessionUser;
@@ -32,7 +32,6 @@ import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.EMAI
  * </p>
  */
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class LoginService {
@@ -47,34 +46,6 @@ public class LoginService {
     private String resetPasswordBaseUrl;
 
     /**
-     * 비밀번호 재설정 이메일의 HTML 본문을 생성합니다.
-     *
-     * @param resetPasswordLink 비밀번호 재설정 링크
-     * @return HTML 형식의 이메일 본문
-     */
-    private static String getBody(String resetPasswordLink) {
-        return new StringBuilder()
-                .append("<div style=\"font-family: Arial, sans-serif; font-size: 16px; color: #333; max-width: 600px; margin: 0 auto;\">")
-                .append("<h2 style=\"color: #4CAF50; text-align: center;\">PigeonStargram 비밀번호 재설정</h2>")
-                .append("<p>안녕하세요, PigeonStargram입니다.</p>")
-                .append("<p>아래 버튼을 눌러 비밀번호를 재설정하실 수 있습니다. 비밀번호 재설정 후 다시 로그인해 주세요.</p>")
-                .append("<div style=\"text-align: center; margin: 20px 0;\">")
-                .append("<a href=\"").append(resetPasswordLink).append("\" ")
-                .append("style=\"display: inline-block; background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px;\">")
-                .append("비밀번호 재설정</a>")
-                .append("</div>")
-                .append("<p style=\"text-align: center;\">혹시 버튼이 작동하지 않을 경우, 아래 링크를 복사하여 브라우저에 붙여넣어 주세요:</p>")
-                .append("<p style=\"text-align: center; word-break: break-all; margin-bottom: 20px;\">")
-                .append("<a href=\"").append(resetPasswordLink).append("\" style=\"color: #4CAF50;\">")
-                .append(resetPasswordLink).append("</a>")
-                .append("</p>")
-                .append("<p style=\"margin-bottom: 20px;\">감사합니다.</p>")
-                .append("<p style=\"margin-bottom: 0;\">PigeonStargram Team</p>")
-                .append("</div>")
-                .toString();
-    }
-
-    /**
      * 로그인 요청을 처리하여 사용자 정보를 반환합니다.
      * <p>
      * 주어진 이메일과 비밀번호를 사용하여 사용자를 조회하고, 로그인에 성공하면 사용자 객체를 반환합니다.
@@ -83,6 +54,7 @@ public class LoginService {
      * @param request 로그인 요청 DTO
      * @return 로그인 성공 시 사용자 객체
      */
+    @Transactional(readOnly = true)
     public User findLoginUser(RequestLoginDto request) {
         String email = request.getEmail();
         String password = request.getPassword();
@@ -106,6 +78,7 @@ public class LoginService {
      * @param email   사용자 등록 요청 이메일 주소
      * @param request 사용자 등록 요청 DTO
      */
+    @Transactional
     public void register(String email,
                          RequestRegisterDto request) {
         // 등록 요청의 이메일과 실제 이메일이 일치하는지 검증
@@ -123,6 +96,7 @@ public class LoginService {
      *
      * @param email 비밀번호 재설정을 요청한 이메일 주소
      */
+    @Transactional
     public void sendPasswordResetLink(String email) {
         // 이메일로 사용자 존재 여부 확인
         userService.getUserByWorkEmail(email);
@@ -150,6 +124,7 @@ public class LoginService {
      * @param request 비밀번호 재설정 요청 DTO
      * @return 비밀번호가 성공적으로 재설정된 사용자 객체
      */
+    @Transactional
     public User resetPassword(RequestResetPasswordDto request) {
         // 비밀번호 재설정 토큰 검증
         String token = request.getToken();
@@ -201,6 +176,34 @@ public class LoginService {
         if (!email.equals(registerEmail)) {
             throw new EmailMismatchException(EMAIL_MISMATCH);
         }
+    }
+
+    /**
+     * 비밀번호 재설정 이메일의 HTML 본문을 생성합니다.
+     *
+     * @param resetPasswordLink 비밀번호 재설정 링크
+     * @return HTML 형식의 이메일 본문
+     */
+    private static String getBody(String resetPasswordLink) {
+        return new StringBuilder()
+                .append("<div style=\"font-family: Arial, sans-serif; font-size: 16px; color: #333; max-width: 600px; margin: 0 auto;\">")
+                .append("<h2 style=\"color: #4CAF50; text-align: center;\">PigeonStargram 비밀번호 재설정</h2>")
+                .append("<p>안녕하세요, PigeonStargram입니다.</p>")
+                .append("<p>아래 버튼을 눌러 비밀번호를 재설정하실 수 있습니다. 비밀번호 재설정 후 다시 로그인해 주세요.</p>")
+                .append("<div style=\"text-align: center; margin: 20px 0;\">")
+                .append("<a href=\"").append(resetPasswordLink).append("\" ")
+                .append("style=\"display: inline-block; background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px;\">")
+                .append("비밀번호 재설정</a>")
+                .append("</div>")
+                .append("<p style=\"text-align: center;\">혹시 버튼이 작동하지 않을 경우, 아래 링크를 복사하여 브라우저에 붙여넣어 주세요:</p>")
+                .append("<p style=\"text-align: center; word-break: break-all; margin-bottom: 20px;\">")
+                .append("<a href=\"").append(resetPasswordLink).append("\" style=\"color: #4CAF50;\">")
+                .append(resetPasswordLink).append("</a>")
+                .append("</p>")
+                .append("<p style=\"margin-bottom: 20px;\">감사합니다.</p>")
+                .append("<p style=\"margin-bottom: 0;\">PigeonStargram Team</p>")
+                .append("</div>")
+                .toString();
     }
 
 }

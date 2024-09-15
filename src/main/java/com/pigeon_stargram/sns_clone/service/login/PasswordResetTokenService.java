@@ -5,9 +5,9 @@ import com.pigeon_stargram.sns_clone.exception.login.TokenExpiredException;
 import com.pigeon_stargram.sns_clone.exception.login.TokenNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.login.PasswordResetTokenRepository;
 import com.pigeon_stargram.sns_clone.util.PasswordResetTokenGenerator;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -21,7 +21,6 @@ import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
  * </p>
  */
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class PasswordResetTokenService {
 
@@ -35,6 +34,7 @@ public class PasswordResetTokenService {
      * @param email 비밀번호 재설정을 요청한 사용자의 이메일 주소
      * @return 생성된 비밀번호 재설정 토큰 객체
      */
+    @Transactional
     public PasswordResetToken createToken(String email) {
         String token = tokenGenerator.generateToken();
         LocalDateTime expiryDate = tokenGenerator.calculateExpiryDate();
@@ -54,6 +54,7 @@ public class PasswordResetTokenService {
      * @throws TokenNotFoundException 토큰이 존재하지 않는 경우
      * @throws TokenExpiredException 토큰이 만료된 경우
      */
+    @Transactional(readOnly = true)
     public PasswordResetToken validateToken(String token) {
         PasswordResetToken resetToken = tokenRepository.findByToken(token)
                 .orElseThrow(() -> new TokenNotFoundException(TOKEN_NOT_FOUND));
@@ -71,6 +72,7 @@ public class PasswordResetTokenService {
      * @return 해당 토큰에 연결된 이메일 주소
      * @throws TokenNotFoundException 토큰이 존재하지 않는 경우
      */
+    @Transactional(readOnly = true)
     public String extractEmail(String token) {
         return tokenRepository.findByToken(token)
                 .map(PasswordResetToken::getEmail)

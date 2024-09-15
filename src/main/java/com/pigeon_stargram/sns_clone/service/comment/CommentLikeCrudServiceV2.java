@@ -4,10 +4,10 @@ import com.pigeon_stargram.sns_clone.domain.comment.CommentLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentLikeRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,7 +26,6 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 // -----  | --------- | --------------------
 // userId | Set       | COMMENT_LIKE_USER_IDS
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class CommentLikeCrudServiceV2 implements CommentLikeCrudService {
@@ -34,6 +33,7 @@ public class CommentLikeCrudServiceV2 implements CommentLikeCrudService {
     private final RedisService redisService;
     private final CommentLikeRepository repository;
 
+    @Transactional
     @Override
     public void toggleLike(Long userId, Long commentId) {
         // 댓글 ID를 기반으로 캐시 키를 생성합니다.
@@ -74,6 +74,7 @@ public class CommentLikeCrudServiceV2 implements CommentLikeCrudService {
         redisService.addAllToSet(cacheKey, commentLikeUserIds, ONE_DAY_TTL);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Integer countByCommentId(Long commentId) {
         // 댓글 ID를 기반으로 캐시 키를 생성합니다.
@@ -92,6 +93,7 @@ public class CommentLikeCrudServiceV2 implements CommentLikeCrudService {
         return commentLikeUserIds.size() - 1;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Long> getCommentLikeUserIds(Long commentId) {
         // 댓글 ID를 기반으로 캐시 키를 생성합니다.

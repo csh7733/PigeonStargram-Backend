@@ -4,7 +4,6 @@ import com.pigeon_stargram.sns_clone.domain.comment.Comment;
 import com.pigeon_stargram.sns_clone.exception.comment.CommentNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -13,6 +12,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.DefaultTypedTuple;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,7 +38,6 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 // replyId   | Set       | ALL_REPLY_IDS         |           댓글의 모든 답글 ID
 // userId    | Set       | COMMENT_LIKE_USER_IDS |           댓글을 좋아하는 사용자 ID
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class CommentCrudServiceV2 implements CommentCrudService{
@@ -49,11 +48,13 @@ public class CommentCrudServiceV2 implements CommentCrudService{
 
     @Cacheable(value = COMMENT,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).COMMENT_ID + '_' + #commentId")
+    @Transactional(readOnly = true)
     public Comment findById(Long commentId) {
         return repository.findById(commentId)
                 .orElseThrow(() -> new CommentNotFoundException(COMMENT_NOT_FOUND_ID));
     }
 
+    @Transactional(readOnly = true)
     public List<Long> findCommentIdByPostId(Long postId) {
         // 게시물 ID를 기반으로 캐시 키를 생성합니다.
         String cacheKey = cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
@@ -71,6 +72,7 @@ public class CommentCrudServiceV2 implements CommentCrudService{
         return redisService.getRangeByScoreAsList(cacheKey, Double.MIN_VALUE, Double.MAX_VALUE);
     }
 
+    @Transactional(readOnly = true)
     public List<Long> findCommentIdByPostIdAndCommentId(Long postId,
                                                         Long commentId) {
         // 게시물 ID를 기반으로 캐시 키를 생성합니다.
@@ -91,6 +93,7 @@ public class CommentCrudServiceV2 implements CommentCrudService{
 
     @CachePut(value = COMMENT,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).COMMENT_ID + '_' + #comment.id")
+    @Transactional
     public Comment save(Comment comment) {
         // 댓글을 데이터베이스에 저장합니다.
         Comment savedComment = repository.save(comment);
@@ -111,6 +114,7 @@ public class CommentCrudServiceV2 implements CommentCrudService{
 
     @CachePut(value = COMMENT,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).COMMENT_ID + '_' + #commentId")
+    @Transactional
     public Comment edit(Long commentId,
                         String newContent) {
         // 댓글 ID로 데이터베이스에서 댓글을 조회합니다.
@@ -124,6 +128,7 @@ public class CommentCrudServiceV2 implements CommentCrudService{
 
     @CacheEvict(value = COMMENT,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).COMMENT_ID + '_' + #commentId")
+    @Transactional
     public void deleteById(Long commentId) {
         Long postId = findById(commentId).getPost().getId();
         repository.deleteById(commentId);
@@ -136,6 +141,7 @@ public class CommentCrudServiceV2 implements CommentCrudService{
         }
     }
 
+    @Transactional(readOnly = true)
     public Boolean getIsMoreComments(Long postId,
                                      Long lastCommentId) {
         String cacheKey = cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());

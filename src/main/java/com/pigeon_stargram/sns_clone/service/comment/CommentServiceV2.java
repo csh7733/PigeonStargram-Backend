@@ -19,10 +19,10 @@ import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.post.PostCrudService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -34,7 +34,6 @@ import static com.pigeon_stargram.sns_clone.dto.comment.CommentDtoConverter.*;
  * 댓글 관련 비즈니스 로직을 처리하는 서비스 클래스입니다.
  */
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class CommentServiceV2 implements CommentService{
@@ -45,13 +44,14 @@ public class CommentServiceV2 implements CommentService{
     private final ReplyService replyService;
     private final NotificationService notificationService;
     private final CommentLikeCrudServiceV2 commentLikeCrudService;
-    private final CommentRepository commentRepository;
 
+    @Transactional(readOnly = true)
     @Override
     public Comment findById(Long commentId) {
         return commentCrudService.findById(commentId);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ResponseGetCommentDto getPartialComment(RequestGetCommentDto dto) {
         Long postId = dto.getPostId();
@@ -66,6 +66,7 @@ public class CommentServiceV2 implements CommentService{
         return toResponseGetCommentDto(comments, isMoreComments);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ResponseCommentDto> getCommentResponseByPostIdAndLastCommentId(Long postId,
                                                                                Long commentId) {
@@ -76,6 +77,7 @@ public class CommentServiceV2 implements CommentService{
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ResponseCommentDto getCombinedComment(Long commentId) {
         // 댓글 ID를 기준으로 댓글 내용을 조회합니다.
@@ -88,12 +90,14 @@ public class CommentServiceV2 implements CommentService{
         return toResponseCommentDto(contentDto, likeDto, replyDtos);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public CommentContentDto getCommentContent(Long commentId) {
         Comment comment = commentCrudService.findById(commentId);
         return toCommentContentDto(comment);
     }
 
+    @Transactional
     @Override
     public ResponseCommentDto createComment(CreateCommentDto dto) {
         User loginUser = userService.getUserById(dto.getLoginUserId());
@@ -109,17 +113,20 @@ public class CommentServiceV2 implements CommentService{
         return getCombinedComment(comment.getId());
     }
 
+    @Transactional
     @Override
     public void editComment(EditCommentDto dto) {
         commentCrudService.edit(dto.getCommentId(), dto.getContent());
     }
 
+    @Transactional
     @Override
     public void deleteAllCommentsAndReplyByPostId(Long postId) {
         List<Long> commentIds = commentCrudService.findCommentIdByPostId(postId);
         commentIds.forEach(this::deleteComment);
     }
 
+    @Transactional
     @Override
     public void deleteComment(Long commentId) {
         // 댓글 ID를 기준으로 답글을 모두 삭제합니다.
@@ -128,12 +135,14 @@ public class CommentServiceV2 implements CommentService{
         commentCrudService.deleteById(commentId);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public CommentLikeDto getCommentLike(Long commentId) {
         Integer count = commentLikeCrudService.countByCommentId(commentId);
         return toCommentLikeDto(false, count);
     }
 
+    @Transactional
     @Override
     public Boolean likeComment(LikeCommentDto dto) {
         Long loginUserId = dto.getLoginUserId();

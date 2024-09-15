@@ -26,7 +26,6 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 // -----  | --------- | --------------------
 // userId | Set       | POST_LIKE_USER_IDS
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 class PostLikeCrudServiceV2 implements PostLikeCrudService{
@@ -34,6 +33,7 @@ class PostLikeCrudServiceV2 implements PostLikeCrudService{
     private final RedisService redisService;
     private final PostLikeRepository repository;
 
+    @Transactional
     @Override
     public void toggleLike(Long userId, Long postId) {
         // 캐시 키 생성: 게시물 ID에 기반한 캐시 키를 생성합니다.
@@ -73,6 +73,7 @@ class PostLikeCrudServiceV2 implements PostLikeCrudService{
         redisService.addAllToSet(cacheKey, postLikeUserIds, ONE_DAY_TTL);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Integer countByPostId(Long postId) {
         // 캐시 키 생성: 게시물 ID에 기반한 캐시 키를 생성합니다.
@@ -91,7 +92,8 @@ class PostLikeCrudServiceV2 implements PostLikeCrudService{
         return postLikeUserIds.size() - 1;
     }
 
-  @Override
+    @Transactional(readOnly = true)
+    @Override
     public List<Long> getPostLikeUserIds(Long postId) {
         // 캐시 키 생성: 게시물 ID에 기반한 캐시 키를 생성합니다.
         String cacheKey = cacheKeyGenerator(POST_LIKE_USER_IDS, POST_ID, postId.toString());

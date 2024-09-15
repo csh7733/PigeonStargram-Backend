@@ -46,7 +46,6 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 // postId | Set       | UPLOADING_POSTS_SET  |           업로드중인 게시물
 // postId | Set       | TIMELINE             |           유저에 대한 타임라인 게시물
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class PostServiceV2 implements PostService {
@@ -65,11 +64,13 @@ public class PostServiceV2 implements PostService {
 
     private final FileUploadWorker fileUploadWorker;
 
+    @Transactional(readOnly = true)
     @Override
     public Post findById(Long postId) {
         return postCrudService.findById(postId);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ResponsePostDto> getPostsByUserId(Long userId) {
         return postCrudService.findPostIdByUserId(userId).stream()
@@ -79,6 +80,7 @@ public class PostServiceV2 implements PostService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ResponsePostDto> getRecentPostsByUser(Long userId) {
         LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
@@ -91,6 +93,7 @@ public class PostServiceV2 implements PostService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ResponsePostDto getCombinedPost(Long postId) {
         PostContentDto contentDto = getPostContent(postId);
@@ -107,6 +110,7 @@ public class PostServiceV2 implements PostService {
         return toResponsePostDto(contentDto, likeDto, commentDtos, isMoreComments);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ResponsePostDto getPostByPostId(Long postId) {
         if (redisService.isMemberOfSet(UPLOADING_POSTS_SET, postId)) {
@@ -116,6 +120,7 @@ public class PostServiceV2 implements PostService {
         return getCombinedPost(postId);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public PostContentDto getPostContent(Long postId) {
         Post post = postCrudService.findById(postId);
@@ -126,12 +131,14 @@ public class PostServiceV2 implements PostService {
         return toPostContentDto(post);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public PostLikeDto getPostsLike(Long postId) {
         Integer count = postLikeCrudService.countByPostId(postId);
         return toPostLikeDto(false, count);
     }
 
+    @Transactional
     @Override
     public Long createPost(CreatePostDto dto) {
         User loginUser = userService.getUserById(dto.getLoginUserId());
@@ -150,11 +157,13 @@ public class PostServiceV2 implements PostService {
         return savedPost.getId();
     }
 
+    @Transactional
     @Override
     public void editPost(EditPostDto dto) {
         postCrudService.edit(dto.getPostId(), dto.getContent());
     }
 
+    @Transactional
     @Override
     public void deletePost(Long postId) {
         // 댓글 및 답글 삭제
@@ -164,6 +173,7 @@ public class PostServiceV2 implements PostService {
         postCrudService.deleteById(postId);
     }
 
+    @Transactional
     @Override
     public Boolean likePost(LikePostDto dto) {
         Long loginUserId = dto.getLoginUserId();
