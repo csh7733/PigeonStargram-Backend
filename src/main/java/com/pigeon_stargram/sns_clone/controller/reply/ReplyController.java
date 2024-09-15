@@ -11,9 +11,8 @@ import com.pigeon_stargram.sns_clone.dto.reply.request.RequestDeleteReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.request.RequestEditReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.request.RequestLikeReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
-import com.pigeon_stargram.sns_clone.service.comment.CommentCrudService;
+import com.pigeon_stargram.sns_clone.service.comment.CommentCrudServiceV2;
 import com.pigeon_stargram.sns_clone.service.post.PostService;
-import com.pigeon_stargram.sns_clone.service.post.PostServiceV2;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyCrudService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import com.pigeon_stargram.sns_clone.service.timeline.TimelineServiceV2;
@@ -34,7 +33,7 @@ public class ReplyController {
     private final PostService postService;
     private final TimelineServiceV2 timelineService;
     private final ReplyService replyService;
-    private final CommentCrudService commentCrudService;
+    private final CommentCrudServiceV2 commentCrudService;
     private final ReplyCrudService replyCrudService;
 
     @PostMapping

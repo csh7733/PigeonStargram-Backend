@@ -42,7 +42,7 @@ class CommentServiceTest {
 
     @Spy
     @InjectMocks
-    CommentService commentService;
+    CommentServiceV2 commentService;
 
     @Mock
     ReplyService replyService;

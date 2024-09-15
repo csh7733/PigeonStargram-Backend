@@ -30,7 +30,7 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
  */
 // Value     | Structure | Key                | FieldKey
 // --------- | --------- | ------------------ | --------
-// post      | String    | POST               | fieldKey  JSON 직렬화된 Post객체
+// post      | String    | POST               |           JSON 직렬화된 Post객체
 // postId    | Set       | ALL_POST_IDS       |           사용자의 모든 게시물 ID
 // postId    | Set       | RECENT_POST_IDS    |           사용자의 최근 게시물ID
 // commentId | Set       | ALL_COMMENT_IDS    |           게시물의 모든 댓글 ID
@@ -157,18 +157,6 @@ public class PostCrudServiceV2 implements PostCrudService {
         String recentPostIdsKeys = cacheKeyGenerator(RECENT_POST_IDS, USER_ID, postUserId.toString());
         if (redisService.hasKey(recentPostIdsKeys)) {
             redisService.removeFromSet(recentPostIdsKeys, postId);
-        }
-
-        // 댓글 ID 캐시를 제거합니다.
-        String allCommentIdsKeys = cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
-        if (redisService.hasKey(allCommentIdsKeys)) {
-            redisService.removeSet(allCommentIdsKeys);
-        }
-
-        // 게시물 좋아요 사용자 ID 캐시를 제거합니다.
-        String postLikeUserIdsKeys = cacheKeyGenerator(POST_LIKE_USER_IDS, POST_ID, postId.toString());
-        if (redisService.hasKey(postLikeUserIdsKeys)) {
-            redisService.removeSet(postLikeUserIdsKeys);
         }
     }
 

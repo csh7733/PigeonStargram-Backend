@@ -13,10 +13,10 @@ import com.pigeon_stargram.sns_clone.dto.post.internal.PostContentDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.PostLikeDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.repository.post.ImageRepository;
-import com.pigeon_stargram.sns_clone.service.comment.CommentCrudService;
+import com.pigeon_stargram.sns_clone.service.comment.CommentCrudServiceV2;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowCrudService;
-import com.pigeon_stargram.sns_clone.service.follow.FollowServiceV2;
+import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -52,14 +52,14 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 public class PostServiceV2 implements PostService {
 
     private final PostCrudService postCrudService;
-    private final PostLikeCrudService postLikeCrudService;
+    private final PostLikeCrudServiceV2 postLikeCrudService;
     private final CommentService commentService;
-    private final FollowServiceV2 followService;
+    private final FollowService followService;
     private final FollowCrudService followCrudService;
     private final NotificationService notificationService;
     private final UserService userService;
     private final RedisService redisService;
-    private final CommentCrudService commentCrudService;
+    private final CommentCrudServiceV2 commentCrudService;
 
     private final ImageRepository imageRepository;
 
@@ -102,7 +102,7 @@ public class PostServiceV2 implements PostService {
         List<ResponseCommentDto> commentDtos = commentService
                 .getCommentResponseByPostIdAndLastCommentId(postId, lastCommentId);
         // 추가 댓글 여부 조회
-        Boolean isMoreComments = commentCrudService.getIsMoreComment(postId, lastCommentId);
+        Boolean isMoreComments = commentCrudService.getIsMoreComments(postId, lastCommentId);
 
         return toResponsePostDto(contentDto, likeDto, commentDtos, isMoreComments);
     }

@@ -1,6 +1,7 @@
 package com.pigeon_stargram.sns_clone.service.user;
 
 import com.pigeon_stargram.sns_clone.domain.user.User;
+import com.pigeon_stargram.sns_clone.domain.user.UserFactory;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.dto.chat.response.ResponseUserChatDto;
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
+import static com.pigeon_stargram.sns_clone.domain.user.UserFactory.*;
 import static com.pigeon_stargram.sns_clone.dto.user.UserDtoConverter.*;
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
 
@@ -136,7 +138,7 @@ public class BasicUserService implements UserService {
     @Override
     public User save(RequestRegisterDto userDto) {
         try {
-            User registerUser = userDto.toUser();
+            User registerUser = createUser(userDto);
             User savedUser = userRepository.save(registerUser);
 
             // Write-through 캐싱: 데이터베이스에 저장된 후 캐시에도 저장

@@ -5,11 +5,11 @@ import com.pigeon_stargram.sns_clone.domain.user.User;
 import lombok.*;
 
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-@EqualsAndHashCode
 public class RequestRegisterDto {
 
     private String email;
@@ -19,16 +19,4 @@ public class RequestRegisterDto {
     private String personalPhone;
     @Builder.Default
     private String avatar = "avatar-3.png";
-
-    public User toUser(){
-        return User.builder()
-                .workEmail(email)
-                .password(password)
-                .role(Role.USER)
-                .name(username)
-                .company(company)
-                .personalPhone(personalPhone)
-                .avatar(avatar)
-                .build();
-    }
 }
