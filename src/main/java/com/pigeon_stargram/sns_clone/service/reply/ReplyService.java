@@ -10,7 +10,7 @@ import com.pigeon_stargram.sns_clone.dto.reply.internal.LikeReplyDto;
 import com.pigeon_stargram.sns_clone.dto.reply.internal.ReplyContentDto;
 import com.pigeon_stargram.sns_clone.dto.reply.response.ReplyLikeDto;
 import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
-import com.pigeon_stargram.sns_clone.service.comment.CommentCrudService;
+import com.pigeon_stargram.sns_clone.service.comment.CommentCrudServiceV2;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import jakarta.transaction.Transactional;
@@ -32,7 +32,7 @@ public class ReplyService {
     private final ReplyLikeCrudService replyLikeCrudService;
     private final UserService userService;
     private final NotificationService notificationService;
-    private final CommentCrudService commentCrudService;
+    private final CommentCrudServiceV2 commentCrudService;
 
     public Reply findById(Long replyId) {
         return replyCrudService.findById(replyId);

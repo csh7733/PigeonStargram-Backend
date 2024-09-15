@@ -1,130 +1,38 @@
 package com.pigeon_stargram.sns_clone.service.comment;
 
-import com.pigeon_stargram.sns_clone.domain.comment.Comment;
-import com.pigeon_stargram.sns_clone.domain.comment.CommentLike;
-import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.repository.comment.CommentLikeRepository;
-import com.pigeon_stargram.sns_clone.service.redis.RedisService;
-import com.pigeon_stargram.sns_clone.service.user.UserService;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
-import static com.pigeon_stargram.sns_clone.service.comment.CommentBuilder.*;
-import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
+/**
+ * 댓글에 대한 좋아요 기능을 제공하는 서비스 인터페이스입니다.
+ * <p>
+ * 이 인터페이스는 댓글에 대한 좋아요를 토글하고, 좋아요 개수 및 좋아요를 누른 사용자 목록을 조회하는
+ * 메서드를 정의합니다. Redis 캐시를 활용하여 성능을 최적화하며, 캐시 미스 시에는 데이터베이스에서
+ * 정보를 조회합니다.
+ * </p>
+ */
+public interface CommentLikeCrudService {
 
-@Slf4j
-@RequiredArgsConstructor
-@Transactional
-@Service
-public class CommentLikeCrudService {
+    /**
+     * 사용자가 특정 댓글에 대해 좋아요를 토글합니다.
+     *
+     * @param userId 사용자의 ID
+     * @param commentId 댓글의 ID
+     */
+    void toggleLike(Long userId, Long commentId);
 
-    private final RedisService redisService;
+    /**
+     * 특정 댓글의 좋아요 개수를 반환합니다.
+     *
+     * @param commentId 댓글의 ID
+     * @return 댓글에 대한 좋아요 개수
+     */
+    Integer countByCommentId(Long commentId);
 
-    private final CommentLikeRepository repository;
-
-    public void toggleLike(Long userId,
-                           Long commentId) {
-        String cacheKey = cacheKeyGenerator(COMMENT_LIKE_USER_IDS, COMMENT_ID, commentId.toString());
-
-        // 캐시 히트
-        if (redisService.hasKey(cacheKey)) {
-            log.info("toggleLike 캐시 히트, commentId={}, userId={}", commentId, userId);
-
-            // 좋아요 정보 토글
-            if (redisService.isMemberOfSet(cacheKey, userId)) {
-                redisService.removeFromSet(cacheKey, userId);
-                // 삭제시 write through
-                repository.deleteByUserIdAndCommentId(userId, commentId);
-            } else {
-                redisService.addToSet(cacheKey, userId, ONE_DAY_TTL);
-                // 생성시 write back
-                redisService.pushToWriteBackSortedSet(cacheKey);
-            }
-
-            return;
-        }
-
-        // 캐시 미스
-        log.info("toggleLike 캐시 미스, commentId={}, userId={}", commentId, userId);
-        List<CommentLike> commentLikes = repository.findByCommentId(commentId);
-
-        List<Long> commentLikeUserIds = commentLikes.stream()
-                        .map(CommentLike::getUser)
-                        .map(User::getId)
-                        .collect(Collectors.toList());
-        // 비어있는 set을 캐시하기 위한 더미데이터
-        commentLikeUserIds.add(0L);
-
-        // 좋아요 정보 토글
-        if (commentLikeUserIds.contains(userId)) {
-            commentLikeUserIds.remove(userId);
-            repository.deleteByUserIdAndCommentId(userId, commentId);
-        } else {
-            commentLikeUserIds.add(userId);
-            redisService.pushToWriteBackSortedSet(cacheKey);
-        }
-
-        redisService.addAllToSet(cacheKey, commentLikeUserIds, ONE_DAY_TTL);
-    }
-
-    public Optional<CommentLike> findByUserIdAndCommentId(Long userId,
-                                                          Long commentId) {
-        return repository.findByUserIdAndCommentId(userId, commentId);
-    }
-
-    public CommentLike save(CommentLike commentLike) {
-        return repository.save(commentLike);
-    }
-
-    public void delete(CommentLike commentLike) {
-        repository.delete(commentLike);
-    }
-
-    public Integer countByCommentId(Long commentId) {
-        // 수동 캐시
-        String cacheKey = cacheKeyGenerator(COMMENT_LIKE_USER_IDS, COMMENT_ID, commentId.toString());
-
-        if (redisService.hasKey(cacheKey)) {
-            log.info("countByCommentId {} 캐시 히트", commentId);
-            return redisService.getSetSize(cacheKey).intValue() - 1;
-        }
-        log.info("countByCommentId {} 캐시 미스", commentId);
-
-        // DB 조회후 레디스에 캐시
-        List<Long> commentLikeUserIds = repository.findByCommentId(commentId).stream()
-                .map(CommentLike::getUser)
-                .map(User::getId)
-                .collect(Collectors.toList());
-        commentLikeUserIds.add(0L);
-
-        redisService.addAllToSet(cacheKey, commentLikeUserIds, ONE_DAY_TTL);
-
-        return commentLikeUserIds.size() - 1;
-    }
-
-    public List<Long> getCommentLikeUserIds(Long commentId) {
-        // 수동 캐시
-        String cacheKey = cacheKeyGenerator(COMMENT_LIKE_USER_IDS, COMMENT_ID, commentId.toString());
-
-        if (redisService.hasKey(cacheKey)) {
-            log.info("getCommentLikeUserIds {} 캐시 히트", commentId);
-            return redisService.getSetAsLongListExcludeDummy(cacheKey);
-        }
-        log.info("getCommentLikeUserIds {} 캐시 미스", commentId);
-
-        // DB 조회후 레디스에 캐시
-        List<Long> commentLikeUserIds = repository.findByCommentId(commentId).stream()
-                .map(CommentLike::getUser)
-                .map(User::getId)
-                .collect(Collectors.toList());
-
-        return redisService.cacheListToSetWithDummy(commentLikeUserIds, cacheKey, ONE_DAY_TTL);
-    }
+    /**
+     * 특정 댓글에 대해 좋아요를 누른 사용자 ID 목록을 반환합니다.
+     *
+     * @param commentId 댓글의 ID
+     * @return 좋아요를 누른 사용자 ID 목록
+     */
+    List<Long> getCommentLikeUserIds(Long commentId);
 }

@@ -1,175 +1,73 @@
 package com.pigeon_stargram.sns_clone.service.comment;
 
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
-import com.pigeon_stargram.sns_clone.exception.comment.CommentNotFoundException;
-import com.pigeon_stargram.sns_clone.repository.comment.CommentRepository;
-import com.pigeon_stargram.sns_clone.service.redis.RedisService;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.redis.core.DefaultTypedTuple;
-import org.springframework.data.redis.core.ZSetOperations;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
-import static com.pigeon_stargram.sns_clone.constant.PageConstants.*;
-import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.COMMENT_NOT_FOUND_ID;
-import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.*;
-import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
+/**
+ * 댓글 CRUD 서비스를 위한 인터페이스입니다.
+ * <p>
+ * 이 인터페이스는 댓글에 대한 CRUD 작업을 정의합니다. 실제 구현체에서는
+ * Redis 캐시와 데이터베이스를 연동하여 댓글 정보를 효율적으로 관리합니다.
+ * </p>
+ */
+public interface CommentCrudService {
 
-@Slf4j
-@RequiredArgsConstructor
-@Transactional
-@Service
-public class CommentCrudService {
+    /**
+     * 댓글 ID를 기반으로 댓글을 조회합니다.
+     *
+     * @param commentId 댓글 ID
+     * @return 댓글 객체
+     */
+    Comment findById(Long commentId);
 
-    private final RedisService redisService;
+    /**
+     * 게시물 ID를 기준으로 댓글 ID 목록을 조회합니다.
+     *
+     * @param postId 게시물 ID
+     * @return 댓글 ID 리스트
+     */
+    List<Long> findCommentIdByPostId(Long postId);
 
-    private final CommentRepository repository;
+    /**
+     * 게시물 ID와 특정 댓글 ID를 기준으로 댓글 ID 목록을 조회합니다.
+     *
+     * @param postId    게시물 ID
+     * @param commentId 댓글 ID
+     * @return 댓글 ID 리스트
+     */
+    List<Long> findCommentIdByPostIdAndCommentId(Long postId, Long commentId);
 
-    @Cacheable(value = COMMENT,
-            key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).COMMENT_ID + '_' + #commentId")
-    public Comment findById(Long commentId) {
-        return repository.findById(commentId)
-                .orElseThrow(() -> new CommentNotFoundException(COMMENT_NOT_FOUND_ID));
-    }
+    /**
+     * 댓글을 저장하고 관련 캐시를 업데이트합니다.
+     *
+     * @param comment 저장할 댓글 객체
+     * @return 저장된 댓글 객체
+     */
+    Comment save(Comment comment);
 
-    public List<Long> findCommentIdByPostId(Long postId) {
-        String cacheKey = cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
+    /**
+     * 댓글의 내용을 수정합니다. 캐시를 업데이트합니다.
+     *
+     * @param commentId 수정할 댓글 ID
+     * @param newContent 새 댓글 내용
+     * @return 수정된 댓글 객체
+     */
+    Comment edit(Long commentId, String newContent);
 
-        if (redisService.hasKey(cacheKey)) {
-            log.info("findCommentIdsByPostId = {} 캐시 히트", postId);
+    /**
+     * 댓글을 삭제하고 관련 캐시를 제거합니다.
+     *
+     * @param commentId 삭제할 댓글 ID
+     */
+    void deleteById(Long commentId);
 
-            return redisService.getRangeByScoreAsList(cacheKey, Double.MIN_VALUE, Double.MAX_VALUE);
-        }
-
-        log.info("findCommentIdsByPostId = {} 캐시 미스", postId);
-
-        List<ZSetOperations.TypedTuple<Object>> commentIdTypedTuples = getCommentTuples(postId);
-
-        redisService.cacheListToSortedSetWithDummy(commentIdTypedTuples, cacheKey);
-
-        return redisService.getRangeByScoreAsList(cacheKey, Double.MIN_VALUE, Double.MAX_VALUE);
-    }
-
-    public List<Long> findCommentIdByPostIdAndCommentId(Long postId,
-                                                        Long commentId) {
-        String cacheKey = cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
-
-        if (redisService.hasKey(cacheKey)) {
-            log.info("findCommentIdByPostIdByPage = {}, commentId = {} 캐시 히트", postId, commentId);
-
-            return redisService.getSortedSetAfterValueAsList(cacheKey, commentId);
-        }
-
-        log.info("findCommentIdByPostIdByPage = {}, commentId = {} 캐시 미스", postId, commentId);
-        List<ZSetOperations.TypedTuple<Object>> commentIdTypedTuples = getCommentTuples(postId);
-
-        redisService.cacheListToSortedSetWithDummy(commentIdTypedTuples, cacheKey, ONE_DAY_TTL);
-
-        return redisService.getSortedSetAfterValueAsList(cacheKey, commentId);
-    }
-
-    @CachePut(value = COMMENT,
-            key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).COMMENT_ID + '_' + #comment.id")
-    public Comment save(Comment comment) {
-        Comment save = repository.save(comment);
-
-        Long postId = comment.getPost().getId();
-        Long commentId = comment.getId();
-        Double score = convertToScore(comment.getCreatedDate());
-
-        String allCommentIds =
-                cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
-        if (redisService.hasKey(allCommentIds)) {
-            log.info("comment 저장후 postId에 대한 모든 commentId 캐시 저장 commentId = {}", postId);
-            redisService.addToSortedSet(allCommentIds, score, commentId, ONE_DAY_TTL);
-        }
-
-        return save;
-    }
-
-    @CachePut(value = COMMENT,
-            key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).COMMENT_ID + '_' + #commentId")
-    public Comment edit(Long commentId,
-                        String newContent) {
-        // 영속화된 comment
-        Comment comment = repository.findById(commentId)
-                .orElseThrow(() -> new CommentNotFoundException(COMMENT_NOT_FOUND_ID));
-        comment.editContent(newContent);
-
-        return comment;
-    }
-
-    @CacheEvict(value = COMMENT,
-            key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).COMMENT_ID + '_' + #commentId")
-    public void deleteById(Long commentId) {
-        // 프록시 문제로 캐시 수동획득으로 수정 필요
-        Long postId = findById(commentId).getPost().getId();
-        repository.deleteById(commentId);
-
-        String allCommentIds =
-                cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
-        if (redisService.hasKey(allCommentIds)) {
-            log.info("comment 삭제후 postId에 대한 모든 commentId 캐시 삭제 postId = {}", postId);
-            redisService.removeFromSortedSet(allCommentIds, commentId);
-        }
-
-        String allReplyIds =
-                cacheKeyGenerator(ALL_REPLY_IDS, COMMENT_ID, commentId.toString());
-        if (redisService.hasKey(allReplyIds)) {
-            log.info("comment 삭제후 commentId에 대한 replyId 캐시 key 삭제 commentId = {}", commentId);
-            redisService.removeSet(allReplyIds);
-        }
-
-        String commentLikeUserIds =
-                cacheKeyGenerator(COMMENT_LIKE_USER_IDS, COMMENT_ID, commentId.toString());
-        if (redisService.hasKey(commentLikeUserIds)) {
-            log.info("comment 삭제후 commentId에 대한 commentLikeUserIds 캐시 삭제 commentId = {}", commentId);
-            redisService.removeSet(commentLikeUserIds);
-        }
-    }
-
-    public Boolean getIsMoreComment(Long postId,
-                                    Long lastCommentId) {
-        String cacheKey = cacheKeyGenerator(ALL_COMMENT_IDS, POST_ID, postId.toString());
-
-        if (redisService.hasKey(cacheKey)) {
-            log.info("getIsMoreComment = {}, lastCommentId = {} 캐시 히트", postId, lastCommentId);
-
-            return isMoreComment(lastCommentId, cacheKey);
-        }
-
-        log.info("getIsMoreComment = {}, lastCommentId = {} 캐시 미스", postId, lastCommentId);
-        List<ZSetOperations.TypedTuple<Object>> commentIdTypedTuples = getCommentTuples(postId);
-
-        redisService.cacheListToSortedSetWithDummy(commentIdTypedTuples, cacheKey, ONE_DAY_TTL);
-
-        return isMoreComment(lastCommentId, cacheKey);
-    }
-
-    private List<ZSetOperations.TypedTuple<Object>> getCommentTuples(Long postId) {
-        return repository.findByPostId(postId).stream()
-                .map(comment -> {
-                    Double score = convertToScore(comment.getCreatedDate());
-                    return new DefaultTypedTuple<Object>(comment.getId(), score);
-                })
-                .collect(Collectors.toList());
-    }
-
-    private Boolean isMoreComment(Long lastCommentId, String cacheKey) {
-        Long count = redisService.countSortedSetAfterValue(cacheKey, lastCommentId);
-        if(count <= COMMENT_FETCH_NUM){
-            return false;
-        } else {
-            return true;
-        }
-    }
-
+    /**
+     * 댓글이 더 있는지 여부를 확인합니다.
+     *
+     * @param postId        게시물 ID
+     * @param lastCommentId 마지막 댓글 ID
+     * @return 댓글이 더 있는지 여부
+     */
+    Boolean getIsMoreComments(Long postId, Long lastCommentId);
 }

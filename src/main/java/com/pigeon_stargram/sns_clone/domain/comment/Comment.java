@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +21,11 @@ import java.util.List;
 @Table(name = "comment")
 @Getter
 @NoArgsConstructor
+@ToString
 public class Comment extends BaseTimeEntity {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String content; // 댓글 내용
@@ -40,7 +43,6 @@ public class Comment extends BaseTimeEntity {
     // 댓글 작성자
     @ManyToOne
     @JoinColumn(name = "user_id")
-    @JsonIgnore
     private User user;
 
     // 댓글이 달린 게시물

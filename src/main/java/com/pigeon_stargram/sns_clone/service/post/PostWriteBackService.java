@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,10 +48,8 @@ public class PostWriteBackService {
      */
     public void syncPostLikeUserIds(String key) {
         Long postId = RedisUtil.parseSuffix(key);
-        log.info("WriteBack key={}", key);
 
-        Set<Long> cachePostLikeUserIds = redisService.getSetAsLongListExcludeDummy(key).stream()
-                .collect(Collectors.toSet());
+        List<Long> cachePostLikeUserIds = redisService.getSetAsLongListExcludeDummy(key);
 
         // 데이터베이스에 저장되지 않은 좋아요 사용자 ID를 찾아서 데이터베이스에 저장합니다.
         cachePostLikeUserIds.stream()

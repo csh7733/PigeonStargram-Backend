@@ -14,7 +14,7 @@ import com.pigeon_stargram.sns_clone.exception.post.PostNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentRepository;
 import com.pigeon_stargram.sns_clone.repository.post.PostLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.post.PostRepository;
-import com.pigeon_stargram.sns_clone.service.comment.CommentService;
+import com.pigeon_stargram.sns_clone.service.comment.CommentServiceV2;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationServiceV2;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -46,7 +46,7 @@ class PostServiceTest {
     @Mock
     UserService userService;
     @Mock
-    CommentService commentService;
+    CommentServiceV2 commentService;
     @Mock
     FollowService followService;
     @Mock

@@ -1,156 +1,104 @@
 package com.pigeon_stargram.sns_clone.service.comment;
 
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
-import com.pigeon_stargram.sns_clone.domain.post.Post;
-import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.CommentContentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.CreateCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.EditCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.internal.LikeCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.request.RequestGetCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.CommentLikeDto;
-import com.pigeon_stargram.sns_clone.dto.comment.response.CommentProfileDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseCommentDto;
 import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseGetCommentDto;
-import com.pigeon_stargram.sns_clone.dto.notification.internal.NotifyCommentTaggedDto;
-import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
-import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
-import com.pigeon_stargram.sns_clone.service.post.PostCrudService;
-import com.pigeon_stargram.sns_clone.service.post.PostCrudServiceV2;
-import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
-import com.pigeon_stargram.sns_clone.service.user.UserService;
-import com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
+/**
+ * 댓글 관련 비즈니스 로직을 정의하는 서비스 인터페이스입니다.
+ */
+public interface CommentService {
 
-import static com.pigeon_stargram.sns_clone.service.comment.CommentBuilder.*;
+    /**
+     * 댓글을 ID로 조회합니다.
+     *
+     * @param commentId 조회할 댓글의 ID
+     * @return 조회된 댓글
+     */
+    Comment findById(Long commentId);
 
-@RequiredArgsConstructor
-@Transactional
-@Service
-public class CommentService {
+    /**
+     * 포스트 ID와 마지막 댓글 ID를 기준으로 댓글을 조회합니다.
+     *
+     * @param dto 조회에 필요한 데이터가 담긴 DTO
+     * @return 조회된 댓글과 추가 댓글 여부를 포함하는 DTO
+     */
+    ResponseGetCommentDto getPartialComment(RequestGetCommentDto dto);
 
-    private final CommentCrudService commentCrudService;
-    private final UserService userService;
-    private final PostCrudService postCrudService;
-    private final ReplyService replyService;
-    private final NotificationService notificationService;
-    private final CommentLikeCrudService commentLikeCrudService;
+    /**
+     * 포스트 ID와 마지막 댓글 ID를 기준으로 댓글 목록을 조회합니다.
+     *
+     * @param postId 포스트 ID
+     * @param commentId 마지막 댓글 ID
+     * @return 조회된 댓글 목록
+     */
+    List<ResponseCommentDto> getCommentResponseByPostIdAndLastCommentId(Long postId, Long commentId);
 
-    public Comment findById(Long commentId) {
-        return commentCrudService.findById(commentId);
-    }
+    /**
+     * 댓글 ID로 댓글과 관련된 정보를 결합하여 조회합니다.
+     *
+     * @param commentId 조회할 댓글의 ID
+     * @return 결합된 댓글 정보 DTO
+     */
+    ResponseCommentDto getCombinedComment(Long commentId);
 
-    public ResponseGetCommentDto getPartialComment(RequestGetCommentDto dto) {
-        Long postId = dto.getPostId();
-        Long lastCommentId = dto.getLastCommentId();
+    /**
+     * 댓글 ID로 댓글 내용을 조회합니다.
+     *
+     * @param commentId 조회할 댓글의 ID
+     * @return 댓글 내용 DTO
+     */
+    CommentContentDto getCommentContent(Long commentId);
 
-        List<ResponseCommentDto> comments =
-                getCommentResponseByPostIdAndLastCommentId(postId, lastCommentId);
-        Boolean isCommentEnd = commentCrudService.getIsMoreComment(postId, lastCommentId);
+    /**
+     * 새로운 댓글을 생성합니다.
+     *
+     * @param dto 생성할 댓글에 대한 데이터가 담긴 DTO
+     * @return 생성된 댓글 정보 DTO
+     */
+    ResponseCommentDto createComment(CreateCommentDto dto);
 
-        return ResponseGetCommentDto.builder()
-                .comments(comments)
-                .isMoreComments(isCommentEnd)
-                .build();
-    }
+    /**
+     * 댓글을 수정합니다.
+     *
+     * @param dto 수정할 댓글에 대한 데이터가 담긴 DTO
+     */
+    void editComment(EditCommentDto dto);
 
-    public List<ResponseCommentDto> getCommentResponseByPostIdAndLastCommentId(Long postId,
-                                                                               Long commentId) {
-        List<Long> commentIds = commentCrudService.findCommentIdByPostIdAndCommentId(postId, commentId);
-        return commentIds.stream()
-                .sorted(Comparator.reverseOrder())
-                .map(this::getCombinedComment)
-                .collect(Collectors.toList());
-    }
+    /**
+     * 포스트 ID를 기준으로 댓글과 답글을 모두 삭제합니다.
+     *
+     * @param postId 삭제할 포스트의 ID
+     */
+    void deleteAllCommentsAndReplyByPostId(Long postId);
 
-    public ResponseCommentDto getCombinedComment(Long commentId) {
-        CommentContentDto contentDto = getCommentContent(commentId);
+    /**
+     * 댓글 ID를 기준으로 댓글을 삭제합니다.
+     *
+     * @param commentId 삭제할 댓글의 ID
+     */
+    void deleteComment(Long commentId);
 
-        CommentLikeDto likeDto = getCommentLike(commentId);
+    /**
+     * 댓글 ID를 기준으로 댓글의 좋아요 수를 조회합니다.
+     *
+     * @param commentId 조회할 댓글의 ID
+     * @return 댓글 좋아요 정보 DTO
+     */
+    CommentLikeDto getCommentLike(Long commentId);
 
-        List<ResponseReplyDto> replyDtos = replyService.getReplyDtosByCommentId(commentId);
-
-        return buildResponseCommentDto(contentDto, likeDto, replyDtos);
-    }
-
-    public CommentContentDto getCommentContent(Long commentId) {
-        Comment comment = commentCrudService.findById(commentId);
-        return buildCommentContentDto(comment);
-    }
-
-    public ResponseCommentDto createComment(CreateCommentDto dto) {
-        User loginUser = userService.getUserById(dto.getLoginUserId());
-        Post post = postCrudService.findById(dto.getPostId());
-
-        Comment comment = buildComment(dto, loginUser, post);
-        commentCrudService.save(comment);
-
-        dto.setLoginUserName(loginUser.getName());
-        notificationService.sendToSplitWorker(dto);
-
-        notifyTaggedUsers(dto, loginUser);
-
-        return getCombinedComment(comment.getId());
-    }
-
-    private static CommentProfileDto buildCommentProfileDto(User loginUser, Comment comment) {
-        return CommentProfileDto.builder()
-                .id(loginUser.getId())
-                .name(loginUser.getName())
-                .avatar(loginUser.getAvatar())
-                .time(LocalDateTimeUtil.formatTime(comment.getCreatedDate()))
-                .build();
-    }
-
-    private void notifyTaggedUsers(CreateCommentDto dto, User loginUser) {
-        NotifyCommentTaggedDto notifyCommentTaggedDto =
-                buildNotifyCommentTaggedDto(dto, loginUser);
-        notificationService.notifyTaggedUsers(notifyCommentTaggedDto);
-    }
-
-    public void editComment(EditCommentDto dto) {
-        commentCrudService.edit(dto.getCommentId(), dto.getContent());
-    }
-
-    public void deleteAllCommentsAndReplyByPostId(Long postId) {
-        List<Long> commentIds = commentCrudService.findCommentIdByPostId(postId);
-        commentIds.forEach(this::deleteComment);
-    }
-
-    public void deleteComment(Long commentId) {
-        replyService.deleteAllReplyByCommentId(commentId);
-        commentCrudService.deleteById(commentId);
-    }
-
-    public CommentLikeDto getCommentLike(Long commentId) {
-        Integer count = commentLikeCrudService.countByCommentId(commentId);
-        return buildCommentLikeDto(false, count);
-    }
-
-    public Boolean likeComment(LikeCommentDto dto) {
-        Long loginUserId = dto.getLoginUserId();
-        Long commentId = dto.getCommentId();
-
-        User loginUser = userService.getUserById(loginUserId);
-        dto.setLoginUserName(loginUser.getName());
-
-        Comment comment = commentCrudService.findById(commentId);
-        dto.setWriterId(comment.getUser().getId());
-
-        commentLikeCrudService.toggleLike(loginUserId, commentId);
-
-        // 좋아요수가 증가할때 알림 보내기
-        List<Long> commentLikeUserIds = commentLikeCrudService.getCommentLikeUserIds(commentId);
-        if (commentLikeUserIds.contains(loginUserId)) {
-            notificationService.sendToSplitWorker(dto);
-            return true;
-        }
-        return false;
-    }
+    /**
+     * 댓글에 좋아요를 추가하거나 제거합니다.
+     *
+     * @param dto 좋아요를 처리할 댓글에 대한 데이터가 담긴 DTO
+     * @return 좋아요가 추가되었는지 여부
+     */
+    Boolean likeComment(LikeCommentDto dto);
 }
