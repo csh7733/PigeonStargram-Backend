@@ -17,7 +17,7 @@ import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentRepository;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.post.PostCrudService;
-import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
+import com.pigeon_stargram.sns_clone.service.reply.ReplyServiceV2;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +41,7 @@ public class CommentServiceV2 implements CommentService{
     private final CommentCrudService commentCrudService;
     private final UserService userService;
     private final PostCrudService postCrudService;
-    private final ReplyService replyService;
+    private final ReplyServiceV2 replyService;
     private final NotificationService notificationService;
     private final CommentLikeCrudServiceV2 commentLikeCrudService;
 

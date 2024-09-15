@@ -1,21 +1,11 @@
 package com.pigeon_stargram.sns_clone;
 
 import com.pigeon_stargram.sns_clone.dto.login.request.RequestRegisterDto;
-import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
-import com.pigeon_stargram.sns_clone.service.chat.ChatService;
-import com.pigeon_stargram.sns_clone.service.comment.CommentService;
-import com.pigeon_stargram.sns_clone.service.comment.CommentServiceV2;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
-import com.pigeon_stargram.sns_clone.service.post.PostService;
-import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
-import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
-import com.pigeon_stargram.sns_clone.util.JsonUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 

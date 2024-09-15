@@ -39,7 +39,7 @@ class ReplyServiceTest {
 
     @Spy
     @InjectMocks
-    ReplyService replyService;
+    ReplyServiceV2 replyService;
 
     @Mock
     NotificationServiceV2 notificationService;
