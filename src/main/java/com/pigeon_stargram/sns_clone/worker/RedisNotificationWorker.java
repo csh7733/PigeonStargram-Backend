@@ -26,25 +26,32 @@ import static com.pigeon_stargram.sns_clone.domain.notification.NotificationFact
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.UNSUPPORTED_TYPE;
 import static com.pigeon_stargram.sns_clone.dto.notification.NotificationDtoConvertor.buildResponseNotificationDto;
 
-
+/**
+ * Redis 작업 큐에서 알림 전송 작업을 처리하는 워커 클래스입니다.
+ *
+ * 이 클래스는 Redis를 사용하여 알림 전송 작업을 처리하며,
+ * 주어진 작업을 기반으로 알림을 생성하고 이를 대상 사용자에게 전송합니다.
+ */
 @Primary
-@Slf4j
-@RequiredArgsConstructor
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class RedisNotificationWorker implements NotificationWorker {
 
     private final RedisService redisService;
     private final NotificationCrudService notificationCrudService;
     private final UserService userService;
 
-    private final SimpMessagingTemplate messagingTemplate;
-
-
+    /**
+     * Redis 작업 큐에서 알림 전송 작업을 지속적으로 처리하는 메서드입니다.
+     *
+     * 작업이 없을 경우 Redis 블로킹 팝 방식으로 큐에서 작업을 대기하며,
+     * 작업을 수신하면 이를 처리하고 알림을 전송합니다.
+     */
     @Override
     public void acceptTask() {
         while (true) {
             try {
-                log.info("Redis 큐에서 알림 전송 작업을 대기 중입니다...");
                 // Redis 작업큐에서 Blocking Pop 방식으로 가져옴
                 Object task = redisService.popTask(NOTIFICATION_QUEUE);
                 if (task == null) {
@@ -52,19 +59,13 @@ public class RedisNotificationWorker implements NotificationWorker {
                 } else if (!(task instanceof NotificationBatchDto)) {
                     throw new UnsupportedTypeException(UNSUPPORTED_TYPE + task.getClass());
                 }
+
                 NotificationBatchDto batch = (NotificationBatchDto) task;
 
                 // 가져온 작업이 유효하다면 메일을 전송
-                log.info("알림 작업을 가져왔습니다. 수신자: {}", batch.getBatchRecipientIds());
-                if (batch.getBatchRecipientIds().isEmpty()) {
-                    log.info("senderId={}, contentId={}", batch.getSenderId(), batch.getContentId());
-                }
                 work(batch);
             } catch (QueryTimeoutException e) {
-                // Lettuce 클라이언트는 기본적으로 1분후에 타임아웃 시킴
-                // 서버의 안전성을 위해 작업큐에 task가 없다면
-                // 1분(기본값)후에 연결을 재시도한 후 다시 블로킹
-                log.info("[NOTIFICATION BLOCKING POP 재설정] NOTIFICATION 작업큐에 1분동안 작업이없어서 다시 연결합니다");
+                // Lettuce 클라이언트의 기본 타임아웃(1분)에 도달하면 재연결 시도
             } catch (RedisConnectionException e) {
                 log.error("Redis 서버와의 연결이 끊어졌습니다. 다시 연결 시도 중...", e);
             } catch (Exception e) {
@@ -73,17 +74,22 @@ public class RedisNotificationWorker implements NotificationWorker {
         }
     }
 
-
+    /**
+     * 주어진 알림 작업을 처리하는 메서드입니다.
+     *
+     * @param task 알림 작업 객체
+     */
     @Transactional
     @Override
     public void work(Object task) {
         NotificationBatchDto batch = (NotificationBatchDto) task;
 
+        // 알림 컨텐츠를 조회
         NotificationContent content =
                 notificationCrudService.findContentById(batch.getContentId());
-
         User sender = userService.getUserById(content.getSenderId());
 
+        // 수신자별로 알림을 생성하고 처리
         List<NotificationV2> notifications = batch.getBatchRecipientIds().stream()
                 .map(recipientId -> createNotification(recipientId, content))
                 .collect(Collectors.toList());
@@ -96,6 +102,27 @@ public class RedisNotificationWorker implements NotificationWorker {
 
     }
 
+    /**
+     * 알림 작업을 큐에 추가하는 메서드입니다.
+     *
+     * @param task 큐에 추가할 알림 작업
+     */
+    @Override
+    public void enqueue(Object task) {
+        if (task instanceof NotificationBatchDto) {
+            redisService.pushTask(NOTIFICATION_QUEUE, task);
+        } else {
+            throw new UnsupportedTypeException(UNSUPPORTED_TYPE + task.getClass());
+        }
+    }
+
+    /**
+     * 알림을 저장하고 메시지로 변환하는 메서드입니다.
+     *
+     * @param notification 저장할 알림 객체
+     * @param sender 알림을 보낸 사용자
+     * @return 생성된 알림 메시지
+     */
     private ResponseNotificationDto saveNotificationAndbuildMessage(NotificationV2 notification,
                                                                     User sender) {
         NotificationV2 save = notificationCrudService.save(notification);
@@ -105,21 +132,23 @@ public class RedisNotificationWorker implements NotificationWorker {
         return message;
     }
 
+    /**
+     * 생성된 알림 메시지를 대상 사용자에게 전송하는 메서드입니다.
+     *
+     * @param message 전송할 알림 메시지
+     */
     private void publishMessage(ResponseNotificationDto message) {
         String channel = getNotificationChannelName(message.getTargetUserId());
         redisService.publishMessage(channel, message);
     }
 
+    /**
+     * 대상 사용자의 알림 채널 이름을 생성하는 메서드입니다.
+     *
+     * @param targetUserId 대상 사용자 ID
+     * @return 생성된 알림 채널 이름
+     */
     private String getNotificationChannelName(Long targetUserId) {
         return "notification." + targetUserId;
-    }
-
-    @Override
-    public void enqueue(Object task) {
-        if (task instanceof NotificationBatchDto) {
-            redisService.pushTask(NOTIFICATION_QUEUE, task);
-        } else {
-            throw new UnsupportedTypeException(UNSUPPORTED_TYPE + task.getClass());
-        }
     }
 }

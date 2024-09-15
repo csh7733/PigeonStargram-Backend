@@ -16,19 +16,30 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import static com.pigeon_stargram.sns_clone.constant.RedisPostConstants.UPLOADING_POSTS_HASH;
 import static com.pigeon_stargram.sns_clone.constant.RedisPostConstants.UPLOADING_POSTS_SET;
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.FILE_UPLOAD_FAIL;
 
-
+/**
+ * 파일을 비동기적으로 AWS S3에 업로드하는 워커 클래스입니다.
+ *
+ * 이 클래스는 ExecutorService를 사용해 멀티스레드 환경에서 파일 업로드 작업을 처리하며,
+ * Redis를 사용해 업로드 진행 상황을 관리합니다.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class FileUploadWorker {
 
+    // 최대 5개의 스레드로 비동기 작업을 처리하는 ExecutorService
     private final ExecutorService executorService = Executors.newFixedThreadPool(5);
     private final RedisService redisService;
     private final S3Client s3Client;
+
+    // 파일 업로드 진행 상태를 관리하는 맵 (key: 업로드 작업 구분 키, value: 남은 파일 수)
     private final ConcurrentHashMap<String, Integer> uploadProgressMap = new ConcurrentHashMap<>();
+
+    // 파일 업로드 완료 여부를 관리하는 맵 (key: 업로드 작업 구분 키, value: 완료 여부)
     private final ConcurrentHashMap<String, Boolean> uploadCompletionMap = new ConcurrentHashMap<>();
 
     @Value("${aws.s3.bucketName}")
@@ -73,7 +84,7 @@ public class FileUploadWorker {
             // 남은 파일이 0이면 모든 파일이 업로드된 것으로 간주
             if (remainingFiles == 0) {
                 // Redis에서 fieldKey에 해당하는 postId를 가져옴
-                Long postId = redisService.getValueFromHash("UPLOADING_POSTS_HASH", fieldKey, Long.class);
+                Long postId = redisService.getValueFromHash(UPLOADING_POSTS_HASH, fieldKey, Long.class);
 
                 if (postId != null) {
                     // Redis의 업로드 진행 Set에서 해당 postId 제거
