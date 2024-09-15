@@ -22,6 +22,9 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
  * 동기화하는 기능을 제공합니다.
  * </p>
  */
+// Value  | Structure | Key
+// -----  | --------- | --------------------
+// userId | Set       | POST_LIKE_USER_IDS
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -31,15 +34,6 @@ class PostLikeCrudServiceV2 implements PostLikeCrudService{
     private final RedisService redisService;
     private final PostLikeRepository repository;
 
-    /**
-     * 사용자가 게시물에 좋아요를 토글합니다.
-     * <p>
-     * 캐시에서 사용자의 좋아요 정보를 확인하고, 캐시에 따라 좋아요를 추가하거나 제거합니다.
-     * 데이터베이스와의 동기화도 수행합니다.
-     * </p>
-     * @param userId 좋아요를 누른 사용자 ID
-     * @param postId 게시물 ID
-     */
     @Override
     public void toggleLike(Long userId, Long postId) {
         // 캐시 키 생성: 게시물 ID에 기반한 캐시 키를 생성합니다.
@@ -79,14 +73,6 @@ class PostLikeCrudServiceV2 implements PostLikeCrudService{
         redisService.addAllToSet(cacheKey, postLikeUserIds, ONE_DAY_TTL);
     }
 
-    /**
-     * 게시물에 대한 좋아요 개수를 반환합니다.
-     * <p>
-     * 캐시에서 좋아요 사용자 수를 반환하며, 캐시 미스 시 데이터베이스에서 조회하고 캐시에 저장합니다.
-     * </p>
-     * @param postId 게시물 ID
-     * @return 게시물에 대한 좋아요 개수
-     */
     @Override
     public Integer countByPostId(Long postId) {
         // 캐시 키 생성: 게시물 ID에 기반한 캐시 키를 생성합니다.
@@ -105,15 +91,7 @@ class PostLikeCrudServiceV2 implements PostLikeCrudService{
         return postLikeUserIds.size() - 1;
     }
 
-    /**
-     * 게시물에 대한 좋아요 사용자 ID 목록을 반환합니다.
-     * <p>
-     * 캐시에서 사용자 ID 목록을 반환하며, 캐시 미스 시 데이터베이스에서 조회하고 캐시에 저장합니다.
-     * </p>
-     * @param postId 게시물 ID
-     * @return 게시물에 대한 좋아요 사용자 ID 목록
-     */
-    @Override
+  @Override
     public List<Long> getPostLikeUserIds(Long postId) {
         // 캐시 키 생성: 게시물 ID에 기반한 캐시 키를 생성합니다.
         String cacheKey = cacheKeyGenerator(POST_LIKE_USER_IDS, POST_ID, postId.toString());
@@ -130,14 +108,6 @@ class PostLikeCrudServiceV2 implements PostLikeCrudService{
         return redisService.cacheListToSetWithDummy(postLikeUserIds, cacheKey, ONE_DAY_TTL);
     }
 
-    /**
-     * 데이터베이스에서 게시물에 대한 좋아요 사용자 ID 목록을 조회합니다.
-     * <p>
-     * 조회된 ID 목록에 더미 데이터를 추가하여 반환합니다.
-     * </p>
-     * @param postId 게시물 ID
-     * @return 게시물에 대한 좋아요 사용자 ID 목록
-     */
     private List<Long> getPostLikeUserIdFromRepository(Long postId) {
         return repository.findByPostId(postId).stream()
                 .map(PostLike::getUser)

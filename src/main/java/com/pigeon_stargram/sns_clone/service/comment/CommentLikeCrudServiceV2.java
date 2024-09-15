@@ -34,12 +34,6 @@ public class CommentLikeCrudServiceV2 implements CommentLikeCrudService {
     private final RedisService redisService;
     private final CommentLikeRepository repository;
 
-    /**
-     * 사용자가 특정 댓글에 대해 좋아요를 토글합니다.
-     *
-     * @param userId 사용자의 ID
-     * @param commentId 댓글의 ID
-     */
     @Override
     public void toggleLike(Long userId, Long commentId) {
         // 댓글 ID를 기반으로 캐시 키를 생성합니다.
@@ -80,12 +74,6 @@ public class CommentLikeCrudServiceV2 implements CommentLikeCrudService {
         redisService.addAllToSet(cacheKey, commentLikeUserIds, ONE_DAY_TTL);
     }
 
-    /**
-     * 특정 댓글의 좋아요 개수를 반환합니다.
-     *
-     * @param commentId 댓글의 ID
-     * @return 댓글에 대한 좋아요 개수
-     */
     @Override
     public Integer countByCommentId(Long commentId) {
         // 댓글 ID를 기반으로 캐시 키를 생성합니다.
@@ -104,12 +92,6 @@ public class CommentLikeCrudServiceV2 implements CommentLikeCrudService {
         return commentLikeUserIds.size() - 1;
     }
 
-    /**
-     * 특정 댓글에 대해 좋아요를 누른 사용자 ID 목록을 반환합니다.
-     *
-     * @param commentId 댓글의 ID
-     * @return 좋아요를 누른 사용자 ID 목록
-     */
     @Override
     public List<Long> getCommentLikeUserIds(Long commentId) {
         // 댓글 ID를 기반으로 캐시 키를 생성합니다.
