@@ -4,13 +4,13 @@ import com.pigeon_stargram.sns_clone.domain.reply.Reply;
 import com.pigeon_stargram.sns_clone.exception.reply.ReplyNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,7 +30,6 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 // replyId   | Set       | ALL_REPLY_IDS       답글의 모든 답글 ID
 // userId    | Set       | REPLY_LIKE_USER_IDS 답글을 좋아하는 사용자 ID
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class ReplyCrudServiceV2 implements ReplyCrudService{
@@ -41,12 +40,14 @@ public class ReplyCrudServiceV2 implements ReplyCrudService{
 
     @Cacheable(value = REPLY,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).REPLY_ID + '_' + #replyId")
+    @Transactional(readOnly = true)
     @Override
     public Reply findById(Long replyId) {
         return repository.findById(replyId)
                 .orElseThrow(() -> new ReplyNotFoundException(REPLY_NOT_FOUND_ID));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Long> findReplyIdByCommentId(Long commentId) {
         // 캐시 키 생성
@@ -72,6 +73,7 @@ public class ReplyCrudServiceV2 implements ReplyCrudService{
      */
     @CachePut(value = REPLY,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).REPLY_ID + '_' + #reply.id")
+    @Transactional
     @Override
     public Reply save(Reply reply) {
         // 데이터베이스에 답글 저장
@@ -106,6 +108,7 @@ public class ReplyCrudServiceV2 implements ReplyCrudService{
      */
     @CachePut(value = REPLY,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).REPLY_ID + '_' + #replyId")
+    @Transactional
     @Override
     public Reply edit(Long replyId, String newContent) {
         // 데이터베이스에서 답글 조회
@@ -125,6 +128,7 @@ public class ReplyCrudServiceV2 implements ReplyCrudService{
      */
     @CacheEvict(value = REPLY,
             key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).REPLY_ID + '_' + #replyId")
+    @Transactional
     @Override
     public void deleteById(Long replyId) {
         // 데이터베이스에서 답글 삭제

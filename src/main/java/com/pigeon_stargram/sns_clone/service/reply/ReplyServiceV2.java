@@ -15,9 +15,9 @@ import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
 import com.pigeon_stargram.sns_clone.service.comment.CommentCrudService;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -32,7 +32,6 @@ import static com.pigeon_stargram.sns_clone.dto.reply.ReplyDtoConverter.*;
  * </p>
  */
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class ReplyServiceV2 implements ReplyService{
 
@@ -42,11 +41,13 @@ public class ReplyServiceV2 implements ReplyService{
     private final NotificationService notificationService;
     private final CommentCrudService commentCrudService;
 
+    @Transactional(readOnly = true)
     @Override
     public Reply findById(Long replyId) {
         return replyCrudService.findById(replyId);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ResponseReplyDto> getReplyDtosByCommentId(Long commentId) {
         return replyCrudService.findReplyIdByCommentId(commentId).stream()
@@ -55,6 +56,7 @@ public class ReplyServiceV2 implements ReplyService{
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ResponseReplyDto getCombinedReply(Long replyId) {
         // 답글 내용
@@ -64,18 +66,21 @@ public class ReplyServiceV2 implements ReplyService{
         return toResponseReplyDto(replyContentDto, replyLikeDto);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ReplyContentDto getReplyContent(Long replyId) {
         Reply reply = replyCrudService.findById(replyId);
         return toReplyContentDto(reply);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ReplyLikeDto getReplyLike(Long replyId) {
         Integer count = replyLikeCrudService.countByReplyId(replyId);
         return toReplyLikeDto(false, count);
     }
 
+    @Transactional
     @Override
     public ResponseReplyDto createReply(CreateReplyDto dto) {
         User loginUser = userService.getUserById(dto.getLoginUserId());
@@ -93,11 +98,13 @@ public class ReplyServiceV2 implements ReplyService{
         return getCombinedReply(reply.getId());
     }
 
+    @Transactional
     @Override
     public void editReply(EditReplyDto dto) {
         replyCrudService.edit(dto.getReplyId(), dto.getContent());
     }
 
+    @Transactional
     @Override
     public Boolean likeReply(LikeReplyDto dto) {
         Long loginUserId = dto.getLoginUserId();
@@ -122,6 +129,7 @@ public class ReplyServiceV2 implements ReplyService{
         return false;
     }
 
+    @Transactional
     @Override
     public void deleteAllReplyByCommentId(Long commentId) {
         // 해당 댓글에 속한 답글 ID 리스트 조회후 전부 삭제

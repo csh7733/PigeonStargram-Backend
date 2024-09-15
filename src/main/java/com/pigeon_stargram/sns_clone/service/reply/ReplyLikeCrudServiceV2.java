@@ -4,10 +4,10 @@ import com.pigeon_stargram.sns_clone.domain.reply.ReplyLike;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyLikeRepository;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,7 +23,6 @@ import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyGenerator;
 // -----  | --------- | --------------------
 // userId | Set       | REPLY_LIKE_USER_IDS
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class ReplyLikeCrudServiceV2 implements ReplyLikeCrudService {
@@ -31,6 +30,7 @@ public class ReplyLikeCrudServiceV2 implements ReplyLikeCrudService {
     private final RedisService redisService;
     private final ReplyLikeRepository repository;
 
+    @Transactional
     @Override
     public void toggleLike(Long userId, Long replyId) {
         // 캐시 키 생성
@@ -69,6 +69,7 @@ public class ReplyLikeCrudServiceV2 implements ReplyLikeCrudService {
         redisService.addAllToSet(cacheKey, replyLikeUserIds, ONE_DAY_TTL);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Integer countByReplyId(Long replyId) {
         // 캐시 키 생성
@@ -88,6 +89,7 @@ public class ReplyLikeCrudServiceV2 implements ReplyLikeCrudService {
         return replyLikeUserIds.size() - 1;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Long> getReplyLikeUserIds(Long replyId) {
         // 캐시 키 생성
