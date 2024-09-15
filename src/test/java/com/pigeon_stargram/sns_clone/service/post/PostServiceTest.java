@@ -15,7 +15,7 @@ import com.pigeon_stargram.sns_clone.repository.comment.CommentRepository;
 import com.pigeon_stargram.sns_clone.repository.post.PostLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.post.PostRepository;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
-import com.pigeon_stargram.sns_clone.service.follow.FollowServiceV2;
+import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +48,7 @@ class PostServiceTest {
     @Mock
     CommentService commentService;
     @Mock
-    FollowServiceV2 followService;
+    FollowService followService;
     @Mock
     NotificationService notificationService;
 

@@ -3,12 +3,12 @@ package com.pigeon_stargram.sns_clone;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
+import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.post.PostService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import com.pigeon_stargram.sns_clone.service.user.BasicUserService;
 import com.pigeon_stargram.sns_clone.util.JsonUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pigeon_stargram.sns_clone.service.follow.FollowServiceV2;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,7 @@ public class TestData {
     private final JsonUtil jsonUtil;
 
     private final BasicUserService userService;
-    private final FollowServiceV2 followService;
+    private final FollowService followService;
     private final ChatService chatService;
 
     private final RedisTemplate<String, Object> redisTemplate;

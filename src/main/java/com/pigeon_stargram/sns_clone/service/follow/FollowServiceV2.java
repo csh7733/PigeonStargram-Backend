@@ -47,13 +47,6 @@ public class FollowServiceV2 implements FollowService {
     private final NotificationService notificationService;
     private final StoryService storyService;
 
-
-    /**
-     * 로그인 사용자와 타겟 사용자의 팔로우 관계를 기준으로 팔로워 목록을 조회합니다.
-     *
-     * @param dto 팔로워 조회를 위한 DTO
-     * @return 로그인 사용자가 팔로우 중인 타겟 유저의 팔로워 목록
-     */
     @Override
     public List<ResponseFollowerDto> findFollowers(FindFollowersDto dto) {
         Set<Long> targetUserFollowerIdSet = findFollowerIdsAsSet(dto.getUserId());
@@ -63,12 +56,6 @@ public class FollowServiceV2 implements FollowService {
         return getResponseFollowerDtos(loginUserFollowingIdSet, targetUserFollowerIdSet);
     }
 
-    /**
-     * 로그인 사용자와 타겟 사용자의 팔로우 관계를 기준으로 팔로잉 목록을 조회합니다.
-     *
-     * @param dto 팔로잉 조회를 위한 DTO
-     * @return 로그인 사용자가 팔로우 중인 타겟 유저의 팔로잉 목록
-     */
     @Override
     public List<ResponseFollowerDto> findFollowings(FindFollowingsDto dto) {
         Set<Long> targetUserFollowingIdSet = findFollowingIdsAsSet(dto.getUserId());
@@ -77,12 +64,6 @@ public class FollowServiceV2 implements FollowService {
         return getResponseFollowerDtos(loginUserFollowingIdSet, targetUserFollowingIdSet);
     }
 
-    /**
-     * 사용자 ID를 기준으로 팔로잉 목록을 조회합니다.
-     *
-     * @param userId 사용자 ID
-     * @return 해당 사용자의 팔로잉 목록
-     */
     @Override
     public List<ResponseFollowerDto> findFollowings(Long userId) {
         return followCrudService.findFollowingIds(userId).stream()
@@ -91,91 +72,43 @@ public class FollowServiceV2 implements FollowService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 사용자 ID를 기준으로 팔로워 ID 목록을 조회합니다.
-     *
-     * @param userId 사용자 ID
-     * @return 해당 사용자의 팔로워 ID 목록
-     */
     @Override
     public List<Long> getFollowerIds(Long userId) {
         return followCrudService.findFollowerIds(userId);
     }
 
-    /**
-     * 사용자 ID를 기준으로 알림이 활성화된 팔로워 ID 목록을 조회합니다.
-     *
-     * @param userId 사용자 ID
-     * @return 알림이 활성화된 팔로워 ID 목록
-     */
     @Override
     public List<Long> findNotificationEnabledFollowerIds(Long userId) {
         return followCrudService.findNotificationEnabledIds(userId);
     }
 
-    /**
-     * 알림 설정 여부를 조회합니다.
-     *
-     * @param dto 알림 설정 조회를 위한 DTO
-     * @return 알림 설정 여부 (true: 설정됨, false: 설정되지 않음)
-     */
     @Override
     public Boolean getNotificationEnabled(GetNotificationEnabledDto dto) {
         return followCrudService.findNotificationEnabledIds(dto.getTargetUserId())
                 .contains(dto.getLoginUserId());
     }
 
-    /**
-     * 사용자 ID를 기준으로 팔로잉 수를 조회합니다.
-     *
-     * @param userId 사용자 ID
-     * @return 해당 사용자의 팔로잉 수
-     */
     @Override
     public Long countFollowings(Long userId) {
         return (long) followCrudService.findFollowingIds(userId).size();
     }
 
-    /**
-     * 사용자 ID를 기준으로 팔로워 수를 조회합니다.
-     *
-     * @param userId 사용자 ID
-     * @return 해당 사용자의 팔로워 수
-     */
     @Override
     public Long countFollowers(Long userId) {
         return (long) followCrudService.findFollowerIds(userId).size();
     }
 
-    /**
-     * 주어진 대상이 팔로잉 상태인지 확인합니다.
-     *
-     * @param sourceId 팔로우 요청자 ID
-     * @param targetId 팔로우 대상자 ID
-     * @return 팔로우 여부 (true: 팔로우 중, false: 팔로우 중 아님)
-     */
     @Override
     public Boolean isFollowing(Long sourceId, Long targetId) {
         return followCrudService.findFollowerIds(targetId)
                 .contains(sourceId);
     }
 
-    /**
-     * 사용자가 유명 사용자(famous user)인지 여부를 판별합니다.
-     *
-     * @param userId 사용자 ID
-     * @return 유명 사용자 여부 (true: 유명 사용자, false: 일반 사용자)
-     */
     @Override
     public Boolean isFamousUser(Long userId) {
         return countFollowers(userId) >= FAMOUS_USER_THRESHOLD;
     }
 
-    /**
-     * 팔로우 요청을 처리하고, 알림을 전송합니다.
-     *
-     * @param dto 팔로우 요청 DTO
-     */
     @Override
     public void createFollow(AddFollowDto dto) {
         Long senderId = dto.getSenderId();
@@ -196,32 +129,16 @@ public class FollowServiceV2 implements FollowService {
         notificationService.sendToSplitWorker(dto);
     }
 
-    /**
-     * 알림 설정을 토글합니다 (켜기/끄기).
-     *
-     * @param dto 알림 설정 토글을 위한 DTO
-     */
     @Override
     public void toggleNotificationEnabled(ToggleNotificationEnabledDto dto) {
         followCrudService.toggleNotificationEnabled(dto.getLoginUserId(), dto.getTargetUserId());
     }
 
-    /**
-     * 팔로우 관계를 삭제합니다.
-     *
-     * @param dto 팔로우 삭제를 위한 DTO
-     */
     @Override
     public void deleteFollow(DeleteFollowDto dto) {
         followCrudService.deleteFollowBySenderIdAndRecipientId(dto.getSenderId(), dto.getRecipientId());
     }
 
-    /**
-     * 채팅을 할 수 있는 팔로우 대상 목록을 조회합니다.
-     *
-     * @param loginUserId 현재 로그인된 사용자 ID
-     * @return 채팅 가능한 대상 목록
-     */
     @Override
     public List<ResponseUserChatDto> findPartnersForChat(Long loginUserId) {
         List<Long> followerIds = followCrudService.findFollowerIds(loginUserId);
@@ -236,12 +153,6 @@ public class FollowServiceV2 implements FollowService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 사용자의 최근 스토리를 포함한 팔로잉 목록을 조회합니다.
-     *
-     * @param userId 사용자 ID
-     * @return 최근 스토리가 있는 팔로잉 목록
-     */
     @Override
     public List<ResponseFollowerDto> findMeAndFollowingsWithRecentStories(Long userId) {
         List<ResponseFollowerDto> followingsWithRecentStories = getFollowingsWithRecentStories(userId);
@@ -261,13 +172,6 @@ public class FollowServiceV2 implements FollowService {
         return followingsWithRecentStories;
     }
 
-    /**
-     * 주어진 사용자가 타겟을 팔로우하는 팔로잉 목록을 조회합니다.
-     *
-     * @param sourceId 소스 사용자 ID
-     * @param targetId 타겟 사용자 ID
-     * @return 타겟을 팔로우하는 소스 사용자의 팔로잉 목록
-     */
     @Override
     public List<Long> findFollowingsWhoFollowTarget(Long sourceId, Long targetId) {
         // 소스 사용자의 팔로잉 목록을 가져옴

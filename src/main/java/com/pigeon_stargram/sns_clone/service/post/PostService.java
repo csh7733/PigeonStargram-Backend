@@ -15,7 +15,7 @@ import com.pigeon_stargram.sns_clone.repository.post.ImageRepository;
 import com.pigeon_stargram.sns_clone.service.comment.CommentCrudService;
 import com.pigeon_stargram.sns_clone.service.comment.CommentService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowCrudService;
-import com.pigeon_stargram.sns_clone.service.follow.FollowServiceV2;
+import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
@@ -46,7 +46,7 @@ public class PostService {
     private final PostCrudService postCrudService;
     private final PostLikeCrudService postLikeCrudService;
     private final CommentService commentService;
-    private final FollowServiceV2 followService;
+    private final FollowService followService;
     private final FollowCrudService followCrudService;
     private final NotificationService notificationService;
 

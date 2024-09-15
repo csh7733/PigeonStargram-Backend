@@ -3,7 +3,7 @@ package com.pigeon_stargram.sns_clone.service.recommend;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.user.response.ResponseRecommendUserInfoDto;
 import com.pigeon_stargram.sns_clone.service.follow.FollowCrudService;
-import com.pigeon_stargram.sns_clone.service.follow.FollowServiceV2;
+import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ import static com.pigeon_stargram.sns_clone.service.recommend.RecommendBuilder.b
 public class RecommendService {
 
     private final FollowCrudService followCrudService;
-    private final FollowServiceV2 followService;
+    private final FollowService followService;
     private final UserService userService;
 
     public List<ResponseRecommendUserInfoDto> recommendFriendsWithDetails(Long userId) {

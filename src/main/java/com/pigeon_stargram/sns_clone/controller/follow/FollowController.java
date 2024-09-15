@@ -5,7 +5,7 @@ import com.pigeon_stargram.sns_clone.config.auth.dto.SessionUser;
 import com.pigeon_stargram.sns_clone.dto.Follow.internal.*;
 import com.pigeon_stargram.sns_clone.dto.Follow.request.RequestAddFollowerDto;
 import com.pigeon_stargram.sns_clone.dto.Follow.response.ResponseFollowerDto;
-import com.pigeon_stargram.sns_clone.service.follow.FollowServiceV2;
+import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +34,7 @@ import static com.pigeon_stargram.sns_clone.util.LogUtil.*;
 @Slf4j
 public class FollowController {
 
-    private final FollowServiceV2 followService;
+    private final FollowService followService;
 
     /**
      * 특정 유저가 팔로우 중인 사람들의 목록을 조회합니다.

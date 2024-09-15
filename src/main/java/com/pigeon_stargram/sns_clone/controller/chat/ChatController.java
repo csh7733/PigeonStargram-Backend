@@ -9,7 +9,7 @@ import com.pigeon_stargram.sns_clone.dto.chat.response.*;
 import com.pigeon_stargram.sns_clone.dto.user.internal.UpdateOnlineStatusDto;
 import com.pigeon_stargram.sns_clone.service.chat.ChatService;
 import com.pigeon_stargram.sns_clone.service.file.FileService;
-import com.pigeon_stargram.sns_clone.service.follow.FollowServiceV2;
+import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +38,7 @@ import static com.pigeon_stargram.sns_clone.util.LogUtil.*;
 public class ChatController {
 
     private final ChatService chatService;
-    private final FollowServiceV2 followService;
+    private final FollowService followService;
     private final UserService userService;
     private final FileService fileService;
     private final RedisService redisService;
