@@ -9,6 +9,12 @@ import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.stereotype.Component;
 
+/**
+ * Redis에서 마지막 채팅 메시지를 수신하는 리스너 클래스입니다.
+ *
+ * 이 클래스는 Redis로부터 마지막 채팅 메시지를 수신하고, 이를 처리하여
+ * ChatService를 통해 관련 작업을 수행합니다.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -20,8 +26,8 @@ public class RedisChatLastMessageListener implements MessageListener {
     @Override
     public void onMessage(Message message, byte[] pattern) {
         SendLastMessageDto sendLastMessageDto = redisService.deserializeMessage(message.getBody(), SendLastMessageDto.class);
-        log.info("lastMessage = {}",sendLastMessageDto.toString());
 
+        // 수신된 마지막 메시지를 ChatService로 전달하여 처리
         chatService.sentLastMessage(sendLastMessageDto);
     }
 }
