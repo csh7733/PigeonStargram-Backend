@@ -1,24 +1,30 @@
-package com.pigeon_stargram.sns_clone.service.notification;
+package com.pigeon_stargram.sns_clone.dto.notification;
 
-import com.pigeon_stargram.sns_clone.domain.notification.Notification;
+import com.pigeon_stargram.sns_clone.domain.notification.v1.NotificationV1;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationV2;
 import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.notification.internal.NotificationBatchDto;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
-
-import java.time.LocalDateTime;
 
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.UNSUPPORTED_OPERATION;
 import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.formatTime;
 
-public class NotificationBuilder {
+/**
+ * NotificationDtoConvertor 클래스는 알림(Notification) 엔티티를 다양한 DTO로 변환하는 유틸리티 클래스입니다.
+ */
+public class NotificationDtoConvertor {
 
-    private NotificationBuilder() {
+    private NotificationDtoConvertor() {
         throw new UnsupportedOperationException(UNSUPPORTED_OPERATION);
     }
 
-    public static ResponseNotificationDto buildResponseNotificationDto(Notification notification) {
+    /**
+     * NotificationV1 객체를 ResponseNotificationDto로 변환하는 메서드입니다.
+     *
+     * @param notification NotificationV1 객체
+     * @return ResponseNotificationDto 객체
+     */
+    public static ResponseNotificationDto buildResponseNotificationDto(NotificationV1 notification) {
         return ResponseNotificationDto.builder()
                 .id(notification.getId())
                 .type(notification.getType())
@@ -35,6 +41,14 @@ public class NotificationBuilder {
                 .build();
     }
 
+    /**
+     * NotificationV2 및 NotificationContent 객체를 사용해 ResponseNotificationDto로 변환하는 메서드입니다.
+     *
+     * @param notification NotificationV2 객체
+     * @param sender       알림을 보낸 사용자
+     * @param saveContent  알림 콘텐츠
+     * @return ResponseNotificationDto 객체
+     */
     public static ResponseNotificationDto buildResponseNotificationDto(NotificationV2 notification,
                                                                         User sender,
                                                                         NotificationContent saveContent) {
@@ -52,12 +66,4 @@ public class NotificationBuilder {
                 .build();
     }
 
-    public static NotificationV2 buildNotification(Long recipientId,
-                                                    NotificationContent content) {
-        return NotificationV2.builder()
-                .recipientId(recipientId)
-                .content(content)
-                .isRead(false)
-                .build();
-    }
 }

@@ -1,20 +1,22 @@
 package com.pigeon_stargram.sns_clone.dto.reply.internal;
 
-import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
-import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotificationBatchDto;
 import lombok.*;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
+/**
+ * 답글 좋아요 요청을 위한 데이터 전송 객체 (DTO)입니다.
+ *
+ * 이 클래스는 사용자가 답글에 좋아요를 눌렀을 때 필요한 정보를 담고 있으며,
+ * 알림 전송을 위한 다양한 메서드를 구현하고 있습니다.
+ */
 @Getter
-@Builder
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class LikeReplyDto implements NotificationConvertable {

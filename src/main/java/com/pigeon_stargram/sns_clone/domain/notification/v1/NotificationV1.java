@@ -1,6 +1,7 @@
-package com.pigeon_stargram.sns_clone.domain.notification;
+package com.pigeon_stargram.sns_clone.domain.notification.v1;
 
 import com.pigeon_stargram.sns_clone.domain.BaseTimeEntity;
+import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
 import com.pigeon_stargram.sns_clone.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,7 +13,7 @@ import lombok.*;
 @Entity
 @Builder
 @AllArgsConstructor
-public class Notification extends BaseTimeEntity {
+public class NotificationV1 extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

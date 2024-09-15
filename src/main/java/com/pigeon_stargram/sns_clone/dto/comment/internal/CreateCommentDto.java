@@ -1,22 +1,22 @@
 package com.pigeon_stargram.sns_clone.dto.comment.internal;
 
-import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
-import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotificationBatchDto;
 import lombok.*;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
-import static com.pigeon_stargram.sns_clone.domain.notification.NotificationType.FOLLOW;
-
+/**
+ * 댓글 작성 요청을 위한 데이터 전송 객체 (DTO)입니다.
+ *
+ * 이 클래스는 게시물에 댓글을 작성할 때 필요한 정보를 담고 있으며,
+ * 알림 전송을 위한 다양한 메서드를 구현하고 있습니다.
+ */
 @Getter
-@Builder
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateCommentDto implements NotificationConvertable {

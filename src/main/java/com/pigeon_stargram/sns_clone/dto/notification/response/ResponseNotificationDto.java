@@ -1,12 +1,7 @@
 package com.pigeon_stargram.sns_clone.dto.notification.response;
 
-import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
 import lombok.*;
-
-import java.time.LocalDateTime;
-
-import static com.pigeon_stargram.sns_clone.util.LocalDateTimeUtil.formatTime;
 
 @Getter
 @Builder

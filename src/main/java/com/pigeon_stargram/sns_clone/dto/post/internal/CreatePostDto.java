@@ -1,19 +1,22 @@
 package com.pigeon_stargram.sns_clone.dto.post.internal;
 
-import com.pigeon_stargram.sns_clone.domain.notification.Notification;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
-import com.pigeon_stargram.sns_clone.domain.post.Image;
-import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotificationBatchDto;
 import lombok.*;
 
 import java.util.List;
 
+/**
+ * 게시물 생성 요청을 위한 데이터 전송 객체 (DTO)입니다.
+ *
+ * 이 클래스는 사용자가 게시물을 생성할 때 필요한 정보를 담고 있으며,
+ * 알림 전송을 위한 다양한 메서드를 구현하고 있습니다.
+ */
 @Getter
-@Builder
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreatePostDto implements NotificationConvertable {
@@ -26,17 +29,6 @@ public class CreatePostDto implements NotificationConvertable {
     private String fieldKey;
     private Boolean hasImage;
     private List<Long> taggedUserIds;
-
-    public CreatePostDto(Long loginUserId,
-                         String content,
-                         List<Long> notificationRecipientIds,
-                         List<Long> taggedUserIds) {
-        this.loginUserId = loginUserId;
-        this.content = content;
-        this.notificationRecipientIds = notificationRecipientIds;
-        this.taggedUserIds = taggedUserIds;
-        this.hasImage = false;
-    }
 
     @Override
     public NotificationBatchDto toNotificationBatchDto(Long senderId,

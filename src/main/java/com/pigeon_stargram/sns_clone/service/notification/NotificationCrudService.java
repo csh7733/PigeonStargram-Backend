@@ -2,79 +2,66 @@ package com.pigeon_stargram.sns_clone.service.notification;
 
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationV2;
-import com.pigeon_stargram.sns_clone.exception.notification.NotificationNotFoundException;
-import com.pigeon_stargram.sns_clone.repository.notification.NotificationContentRepository;
-import com.pigeon_stargram.sns_clone.repository.notification.NotificationV2Repository;
-import com.pigeon_stargram.sns_clone.service.redis.RedisService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
-import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.*;
-import static com.pigeon_stargram.sns_clone.util.RedisUtil.*;
+/**
+ * 알림 관련 비즈니스 로직을 처리하는 Service 인터페이스.
+ * 알림 저장, 조회, 삭제 등의 작업을 위한 메서드를 제공합니다.
+ */
+public interface NotificationCrudService {
 
-@Slf4j
-@RequiredArgsConstructor
-@Transactional
-@Service
-public class NotificationCrudService {
+    /**
+     * 특정 수신자의 알림 목록을 조회합니다.
+     * 
+     * @param recipientId 수신자 ID
+     * @return 조회된 알림 목록
+     */
+    List<NotificationV2> findNotificationByRecipientId(Long recipientId);
 
-    private final RedisService redisService;
+    /**
+     * 알림 ID로 알림을 조회합니다.
+     *
+     * @param notificationId 알림 ID
+     * @return 조회된 알림 객체
+     */
+    NotificationV2 findById(Long notificationId);
 
-    private final NotificationV2Repository notificationRepository;
-    private final NotificationContentRepository contentRepository;
-    private final NotificationContentRepository notificationContentRepository;
+    /**
+     * 알림 내용(Content)을 ID로 조회합니다.
+     *
+     * @param contentId 알림 내용 ID
+     * @return 조회된 알림 내용 객체
+     */
+    NotificationContent findContentById(Long contentId);
 
-    public List<NotificationV2> findNotificationByRecipientId(Long recipientId) {
-        return notificationRepository.findByRecipientId(recipientId);
-    }
+    /**
+     * 새로운 알림을 저장합니다.
+     *
+     * @param notification 저장할 알림 객체
+     * @return 저장된 알림 객체
+     */
+    NotificationV2 save(NotificationV2 notification);
 
-    public NotificationV2 findById(Long notificationId) {
-        return notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new NotificationNotFoundException(NOTIFICATION_NOT_FOUND_ID));
-    }
+    /**
+     * 알림 내용을 저장합니다.
+     *
+     * @param content 저장할 알림 내용 객체
+     * @return 저장된 알림 내용 객체
+     */
+    NotificationContent saveContent(NotificationContent content);
 
-    @Cacheable(value = NOTIFICATION_CONTENT,
-            key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).NOTIFICATION_CONTENT_ID + '_' + #contentId")
-    public NotificationContent findContentById(Long contentId) {
-        return notificationContentRepository.findById(contentId)
-                .orElseThrow(() -> new NotificationNotFoundException(NOTIFICATION_CONTENT_NOT_FOUND_ID));
-    }
+    /**
+     * 알림 ID로 알림을 삭제합니다.
+     *
+     * @param notificationId 삭제할 알림 ID
+     */
+    void deleteNotificationById(Long notificationId);
 
-    public NotificationV2 save(NotificationV2 notification) {
-        Long recipientId = notification.getRecipientId();
-        NotificationV2 save = notificationRepository.save(notification);
-
-        String contentIdsKey =
-                cacheKeyGenerator(NOTIFICATION_CONTENT_IDS, USER_ID, recipientId.toString());
-        if (redisService.hasKey(contentIdsKey)) {
-            log.info("notification 저장후 recipientId에 대한 모든 contentId 캐시 저장 recipientId = {}", recipientId);
-            redisService.addToSet(contentIdsKey, notification.getContent().getId(), ONE_DAY_TTL);
-        }
-
-        return save;
-    }
-
-    @CachePut(value = NOTIFICATION_CONTENT,
-            key = "T(com.pigeon_stargram.sns_clone.constant.CacheConstants).NOTIFICATION_CONTENT_ID + '_' + #content.id")
-    public NotificationContent saveContent(NotificationContent content) {
-        return contentRepository.save(content);
-    }
-
-    public void deleteNotificationById(Long notificationId) {
-
-        notificationRepository.deleteById(notificationId);
-    }
-
-    public void deleteAllNotificationByRecipientId(Long recipientId) {
-
-        notificationRepository.deleteAllByRecipientId(recipientId);
-    }
-
+    /**
+     * 특정 수신자의 모든 알림을 삭제합니다.
+     *
+     * @param recipientId 삭제할 알림의 수신자 ID
+     */
+    void deleteAllNotificationByRecipientId(Long recipientId);
 }

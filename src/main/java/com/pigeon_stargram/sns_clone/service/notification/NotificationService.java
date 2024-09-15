@@ -1,95 +1,56 @@
 package com.pigeon_stargram.sns_clone.service.notification;
 
-
-import com.pigeon_stargram.sns_clone.domain.notification.Notification;
-import com.pigeon_stargram.sns_clone.domain.notification.NotificationContent;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
-import com.pigeon_stargram.sns_clone.domain.notification.NotificationV2;
-import com.pigeon_stargram.sns_clone.domain.user.User;
-import com.pigeon_stargram.sns_clone.dto.notification.internal.NotificationSplitDto;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
-import com.pigeon_stargram.sns_clone.service.user.UserService;
-import com.pigeon_stargram.sns_clone.worker.NotificationSplitWorker;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static com.pigeon_stargram.sns_clone.service.notification.NotificationBuilder.buildResponseNotificationDto;
+/**
+ * 알림 관련 비즈니스 로직을 처리하는 Service 인터페이스.
+ * 알림 전송, 조회, 읽음 처리 등을 위한 메서드를 제공합니다.
+ */
+public interface NotificationService {
 
-@Slf4j
-@RequiredArgsConstructor
-@Transactional
-@Service
-public class NotificationService {
+    /**
+     * 알림 전송을 위한 작업을 큐에 넣습니다.
+     * @param dto 알림 내용과 관련된 데이터
+     */
+    void sendToSplitWorker(NotificationConvertable dto);
 
-    private final UserService userService;
-    private final NotificationCrudService notificationCrudService;
+    /**
+     * 특정 사용자의 알림 목록을 조회합니다.
+     * @param userId 사용자 ID
+     * @return 알림 DTO 리스트
+     */
+    List<ResponseNotificationDto> findByUserId(Long userId);
 
-    private final NotificationSplitWorker notificationSplitWorker;
+    /**
+     * 특정 알림을 읽음 상태로 설정합니다.
+     * @param notificationId 알림 ID
+     */
+    void readNotification(Long notificationId);
 
-    public void sendToSplitWorker(NotificationConvertable dto) {
+    /**
+     * 특정 사용자의 모든 알림을 읽음 상태로 설정합니다.
+     * @param userId 사용자 ID
+     */
+    void readNotifications(Long userId);
 
-        NotificationContent content = dto.toNotificationContent();
-        NotificationContent saveContent = notificationCrudService.saveContent(content);
+    /**
+     * 특정 알림을 삭제합니다.
+     * @param notificationId 알림 ID
+     */
+    void deleteNotification(Long notificationId);
 
-        // Content 저장 후 커밋 전에 다른 worker에서 읽기를 시도할 때 Uncommitted read를 방지하기 위해 사용.
-        // 현재 트랜잭션이 종료된 후 큐에 넣는다.
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                NotificationSplitDto task = NotificationSplitDto.builder()
-                        .notificationDto(dto)
-                        .contentId(saveContent.getId())
-                        .build();
-                notificationSplitWorker.enqueue(task);
-            }
-        });
-    }
+    /**
+     * 특정 사용자의 모든 알림을 삭제합니다.
+     * @param recipientId 사용자 ID
+     */
+    void deleteAll(Long recipientId);
 
-    public List<ResponseNotificationDto> findByUserId(Long userId) {
-        List<NotificationV2> notifications = notificationCrudService.findNotificationByRecipientId(userId);
-
-        return notifications.stream()
-                .map(notification -> {
-                    NotificationContent content =
-                            notificationCrudService.findContentById(notification.getContent().getId());
-                    User sender = userService.getUserById(content.getSenderId());
-
-                    return buildResponseNotificationDto(notification, sender, content);
-                })
-                .collect(Collectors.toList());
-    }
-
-    public void readNotification(Long notificationId) {
-        NotificationV2 notification = notificationCrudService.findById(notificationId);
-        notification.setRead(true);
-    }
-
-    public void readNotifications(Long userId) {
-        List<NotificationV2> notifications =
-                notificationCrudService.findNotificationByRecipientId(userId);
-
-        notifications.forEach(notification -> notification.setRead(true));
-    }
-
-    public void deleteNotification(Long notificationId) {
-
-        notificationCrudService.deleteNotificationById(notificationId);
-    }
-
-    public void deleteAll(Long recipientId) {
-
-        notificationCrudService.deleteAllNotificationByRecipientId(recipientId);
-    }
-
-    public void notifyTaggedUsers(NotificationConvertable dto) {
-
-        if (!dto.toRecipientIds().isEmpty()) sendToSplitWorker(dto);
-    }
+    /**
+     * 태그된 사용자에게 알림을 전송합니다.
+     * @param dto 알림 내용과 관련된 데이터
+     */
+    void notifyTaggedUsers(NotificationConvertable dto);
 }

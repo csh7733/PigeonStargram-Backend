@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.pigeon_stargram.sns_clone.constant.RedisQueueConstants.NOTIFICATION_QUEUE;
+import static com.pigeon_stargram.sns_clone.domain.notification.NotificationFactory.createNotification;
 import static com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst.UNSUPPORTED_TYPE;
-import static com.pigeon_stargram.sns_clone.service.notification.NotificationBuilder.buildNotification;
-import static com.pigeon_stargram.sns_clone.service.notification.NotificationBuilder.buildResponseNotificationDto;
+import static com.pigeon_stargram.sns_clone.dto.notification.NotificationDtoConvertor.buildResponseNotificationDto;
 
 
 @Primary
@@ -85,7 +85,7 @@ public class RedisNotificationWorker implements NotificationWorker {
         User sender = userService.getUserById(content.getSenderId());
 
         List<NotificationV2> notifications = batch.getBatchRecipientIds().stream()
-                .map(recipientId -> buildNotification(recipientId, content))
+                .map(recipientId -> createNotification(recipientId, content))
                 .collect(Collectors.toList());
 
         notifications.forEach(notification -> {

@@ -13,7 +13,7 @@ import com.pigeon_stargram.sns_clone.dto.comment.response.ResponseCommentDto;
 import com.pigeon_stargram.sns_clone.exception.comment.CommentNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.comment.CommentRepository;
-import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
+import com.pigeon_stargram.sns_clone.service.notification.NotificationServiceV2;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -47,7 +47,7 @@ class CommentServiceTest {
     @Mock
     ReplyService replyService;
     @Mock
-    NotificationService notificationService;
+    NotificationServiceV2 notificationService;
 
     @Mock
     CommentRepository commentRepository;

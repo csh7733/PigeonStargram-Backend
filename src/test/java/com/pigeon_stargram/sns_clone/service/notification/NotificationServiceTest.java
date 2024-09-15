@@ -1,7 +1,7 @@
 package com.pigeon_stargram.sns_clone.service.notification;
 
 import com.pigeon_stargram.sns_clone.domain.comment.Comment;
-import com.pigeon_stargram.sns_clone.domain.notification.Notification;
+import com.pigeon_stargram.sns_clone.domain.notification.v1.NotificationV1;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationType;
 import com.pigeon_stargram.sns_clone.domain.post.Post;
@@ -46,7 +46,7 @@ class NotificationServiceTest {
 
     @Spy
     @InjectMocks
-    NotificationService notificationService;
+    NotificationServiceV2 notificationService;
 
     @Mock
     UserService userService;
@@ -109,11 +109,11 @@ class NotificationServiceTest {
         }
 
         when(notificationRepository.saveAll(anyList()))
-                .thenAnswer(new Answer<List<Notification>>() {
+                .thenAnswer(new Answer<List<NotificationV1>>() {
                     @Override
-                    public List<Notification> answer(InvocationOnMock invocation) throws Throwable {
+                    public List<NotificationV1> answer(InvocationOnMock invocation) throws Throwable {
                         Object[] args = invocation.getArguments();
-                        return (List<Notification>) args[0];  // 첫 번째 파라미터(리스트)를 그대로 리턴
+                        return (List<NotificationV1>) args[0];  // 첫 번째 파라미터(리스트)를 그대로 리턴
                     }
                 });
 
@@ -122,7 +122,7 @@ class NotificationServiceTest {
 
         notificationConvertables.forEach(notificationConvertable -> {
             //when
-            List<Notification> notifications = notificationService.sendToSplitWorker(notificationConvertable);
+            List<NotificationV1> notifications = notificationService.sendToSplitWorker(notificationConvertable);
 
             //then
             notifications.forEach(notification -> {
@@ -155,15 +155,15 @@ class NotificationServiceTest {
     @DisplayName("읽지 않은 모든 알림 가져오기")
     void testFindUnreadNotifications() {
         //given
-        Notification notification1 = new Notification(
+        NotificationV1 notification1 = new NotificationV1(
                 1L, user, mock(User.class), NotificationType.FOLLOW,
                 "message", false, 1L, 2L
         );
-        Notification notification2 = new Notification(
+        NotificationV1 notification2 = new NotificationV1(
                 2L, user, mock(User.class), NotificationType.FOLLOW,
                 "message", true, 1L, 2L
         );
-        List<Notification> notifications = List.of(notification1, notification2);
+        List<NotificationV1> notifications = List.of(notification1, notification2);
 
         when(notificationRepository.findAllByRecipientId(anyLong()))
                 .thenReturn(notifications);
@@ -178,7 +178,7 @@ class NotificationServiceTest {
     @DisplayName("알림 하나 읽음처리 - 성공")
     void testReadNotificationSuccess() {
         //given
-        Notification notification = new Notification(
+        NotificationV1 notification = new NotificationV1(
                 1L, user, mock(User.class), NotificationType.FOLLOW,
                 "message", false, 1L, 2L
         );
@@ -211,15 +211,15 @@ class NotificationServiceTest {
     @DisplayName("알림 전체 읽음처리 - 성공")
     void testReadNotificationsSuccess() {
         //given
-        Notification notification1 = new Notification(
+        NotificationV1 notification1 = new NotificationV1(
                 1L, user, mock(User.class), NotificationType.FOLLOW,
                 "message", false, 1L, 2L
         );
-        Notification notification2 = new Notification(
+        NotificationV1 notification2 = new NotificationV1(
                 2L, user, mock(User.class), NotificationType.FOLLOW,
                 "message", false, 1L, 2L
         );
-        List<Notification> notifications = List.of(notification1, notification2);
+        List<NotificationV1> notifications = List.of(notification1, notification2);
 
         when(notificationRepository.findAllByRecipientId(anyLong()))
                 .thenReturn(notifications);

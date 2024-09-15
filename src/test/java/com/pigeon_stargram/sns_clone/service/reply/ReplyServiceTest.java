@@ -13,7 +13,7 @@ import com.pigeon_stargram.sns_clone.dto.reply.response.ResponseReplyDto;
 import com.pigeon_stargram.sns_clone.exception.reply.ReplyNotFoundException;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyLikeRepository;
 import com.pigeon_stargram.sns_clone.repository.reply.ReplyRepository;
-import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
+import com.pigeon_stargram.sns_clone.service.notification.NotificationServiceV2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ class ReplyServiceTest {
     ReplyService replyService;
 
     @Mock
-    NotificationService notificationService;
+    NotificationServiceV2 notificationService;
 
     @Mock
     ReplyRepository replyRepository;
