@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.service.redis;
+package com.pigeon_stargram.sns_clone.scheduler;
 
 import com.pigeon_stargram.sns_clone.exception.ExceptionMessageConst;
 import com.pigeon_stargram.sns_clone.exception.redis.PatternNotMatchException;
@@ -6,6 +6,7 @@ import com.pigeon_stargram.sns_clone.service.chat.ChatWriteBackService;
 import com.pigeon_stargram.sns_clone.service.comment.CommentWriteBackService;
 import com.pigeon_stargram.sns_clone.service.follow.FollowWriteBackService;
 import com.pigeon_stargram.sns_clone.service.post.PostWriteBackService;
+import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.reply.ReplyWriteBackService;
 import com.pigeon_stargram.sns_clone.service.search.SearchWriteBackService;
 import jakarta.annotation.PostConstruct;
@@ -24,12 +25,19 @@ import java.util.function.Consumer;
 import static com.pigeon_stargram.sns_clone.constant.CacheConstants.*;
 import static com.pigeon_stargram.sns_clone.util.RedisUtil.cacheKeyPatternGenerator;
 
-@Slf4j
-@RequiredArgsConstructor
-@Transactional
+/**
+ * 캐시 데이터를 주기적으로 DB에 기록하는 스케줄러 클래스입니다.
+ *
+ * 이 클래스는 Redis에 저장된 데이터를 특정 간격으로 가져와 데이터베이스에 동기화하며,
+ * 필요한 경우 일괄적으로 캐시 데이터를 DB에 기록하는 작업을 수행합니다.
+ */
 @Service
+@Transactional
+@RequiredArgsConstructor
+@Slf4j
 public class WriteBackScheduler {
 
+    // 정규 표현식과 해당하는 처리 메서드를 매핑하는 맵
     private static final Map<String, Consumer<String>> regexPatterns = new HashMap<>();
 
     private final PostWriteBackService postWriteBackService;
@@ -41,9 +49,9 @@ public class WriteBackScheduler {
     private final RedisService redisService;
 
     /**
-     * Key의 데이터를 DB에 기록한다.
+     * 주어진 키의 데이터를 DB에 기록하는 메서드입니다.
      *
-     * @param key 저장할 Key
+     * @param key 저장할 Redis 키
      */
     private static void writeBack(String key) {
         regexPatterns.entrySet().stream()
@@ -60,6 +68,9 @@ public class WriteBackScheduler {
                 });
     }
 
+    /**
+     * 각 패턴과 해당 Write-Back 메서드를 미리 설정하는 메서드입니다.
+     */
     @PostConstruct
     public void prepareRegexPatterns() {
         regexPatterns.put(
@@ -93,32 +104,40 @@ public class WriteBackScheduler {
         redisService.setValue(WRITE_BACK_BATCH_SIZE, WRITE_BACK_BATCH_SIZE_INIT);
     }
 
+    /**
+     * 일정 간격으로 캐시 데이터를 DB에 동기화하는 스케줄러 메서드입니다.
+     *
+     * 각 주기마다 Redis Sorted Set에서 데이터를 가져와 DB에 기록합니다.
+     */
     @Scheduled(fixedRate = 100)
     public void syncCacheToDB() {
-        // 한 번에 몇개를 가져올지 확인
+        // 한 번에 가져올 Write-Back 작업의 개수 설정
         Integer writeBackBatchSize = (Integer) redisService.getValue(WRITE_BACK_BATCH_SIZE);
         if (writeBackBatchSize == null) {
             writeBackBatchSize = WRITE_BACK_BATCH_SIZE_INIT;
         }
 
-        log.info("writeBackBatchSize={}", writeBackBatchSize);
-        // 하위 N개의 값을 가져옴
+        // Redis Sorted Set에서 하위 N개의 값을 가져옴
         List<String> sortedSetList =
                 redisService.getAndRemoveBottomNFromSortedSet(WRITE_BACK, writeBackBatchSize, String.class);
 
-        // 리스트가 비어 있으면 반환
         if (sortedSetList.size() < writeBackBatchSize) {
             redisService.setValue(WRITE_BACK_BATCH_SIZE, WRITE_BACK_BATCH_SIZE_INIT);
-            log.info("Write Back Batch Size를 {}로 설정했습니다.", WRITE_BACK_BATCH_SIZE_INIT);
         }
 
-        // 가져온 모든 키에 대해 처리
+        // 각 가져온 키에 대해 DB 기록 처리
         for (String writeBackKey : sortedSetList) {
-            log.info("WriteBack Set에서 DB에 기록할 Key를 가져왔습니다. key={}", writeBackKey);
             writeBack(writeBackKey); // 각 키에 대해 writeBack 처리
         }
     }
 
+    /**
+     * 서버중 "write-back-boost" 프로파일 활성화 된 서버일 경우, 캐시 데이터를 일괄적으로 DB에 기록하는 메서드입니다.
+     *
+     * 일부 키들의 경우 계속해서 DB에 Flush 되지 않을 수 있기 때문에, Starvation을 막기 위해
+     *
+     * 주기적으로 Redis Sorted Set의 모든 키에 대해 Write-Back 작업을 처리합니다.
+     */
     @Profile("write-back-boost")
     @Scheduled(fixedRate = 10000)
     public void syncAllCache() {
@@ -129,12 +148,12 @@ public class WriteBackScheduler {
         log.info("전체 Write Back Boosting 시작");
         Long writeBackKeyNum = redisService.getSortedSetSize(WRITE_BACK);
 
+        // Write-Back 작업을 나눌 배치 크기를 계산
         Integer writeBackBatchSize = Math.toIntExact(writeBackKeyNum / WRITE_BACK_BATCH_NUM);
         if (writeBackBatchSize < 1) {
             writeBackBatchSize = 1;
         }
 
         redisService.setValue(WRITE_BACK_BATCH_SIZE, writeBackBatchSize);
-        log.info("Write Back Batch Size를 {}로 설정했습니다.", writeBackBatchSize);
     }
 }
