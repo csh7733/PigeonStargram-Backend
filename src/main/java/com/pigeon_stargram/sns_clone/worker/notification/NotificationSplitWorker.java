@@ -1,10 +1,9 @@
-package com.pigeon_stargram.sns_clone.worker;
+package com.pigeon_stargram.sns_clone.worker.notification;
 
 import com.pigeon_stargram.sns_clone.domain.notification.NotificationConvertable;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotificationBatchDto;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotificationSplitDto;
 import com.pigeon_stargram.sns_clone.exception.redis.UnsupportedTypeException;
-import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

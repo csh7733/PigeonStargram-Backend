@@ -8,7 +8,7 @@ import com.pigeon_stargram.sns_clone.domain.user.User;
 import com.pigeon_stargram.sns_clone.dto.notification.internal.NotificationSplitDto;
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
-import com.pigeon_stargram.sns_clone.worker.NotificationSplitWorker;
+import com.pigeon_stargram.sns_clone.worker.notification.NotificationSplitWorker;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

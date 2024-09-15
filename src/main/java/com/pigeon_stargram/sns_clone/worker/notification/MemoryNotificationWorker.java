@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.worker;
+package com.pigeon_stargram.sns_clone.worker.notification;
 
 import com.pigeon_stargram.sns_clone.dto.notification.response.ResponseNotificationDto;
 import com.pigeon_stargram.sns_clone.exception.redis.UnsupportedTypeException;

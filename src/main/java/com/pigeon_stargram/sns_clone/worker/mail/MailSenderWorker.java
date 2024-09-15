@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.worker;
+package com.pigeon_stargram.sns_clone.worker.mail;
 
 import com.pigeon_stargram.sns_clone.dto.login.internal.MailTask;
 import com.pigeon_stargram.sns_clone.exception.login.EmailNotSentException;

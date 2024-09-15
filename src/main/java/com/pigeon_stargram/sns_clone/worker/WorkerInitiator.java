@@ -1,5 +1,8 @@
 package com.pigeon_stargram.sns_clone.worker;
 
+import com.pigeon_stargram.sns_clone.worker.mail.MailSenderWorker;
+import com.pigeon_stargram.sns_clone.worker.notification.NotificationSplitWorker;
+import com.pigeon_stargram.sns_clone.worker.notification.NotificationWorker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;

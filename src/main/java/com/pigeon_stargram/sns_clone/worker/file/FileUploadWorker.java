@@ -1,4 +1,4 @@
-package com.pigeon_stargram.sns_clone.worker;
+package com.pigeon_stargram.sns_clone.worker.file;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;

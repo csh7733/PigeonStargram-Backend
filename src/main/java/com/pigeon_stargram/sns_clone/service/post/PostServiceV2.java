@@ -20,7 +20,7 @@ import com.pigeon_stargram.sns_clone.service.follow.FollowServiceV2;
 import com.pigeon_stargram.sns_clone.service.notification.NotificationService;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
 import com.pigeon_stargram.sns_clone.service.user.UserService;
-import com.pigeon_stargram.sns_clone.worker.FileUploadWorker;
+import com.pigeon_stargram.sns_clone.worker.file.FileUploadWorker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
