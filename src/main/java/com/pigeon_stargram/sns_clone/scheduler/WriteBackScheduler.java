@@ -109,7 +109,7 @@ public class WriteBackScheduler {
      *
      * 각 주기마다 Redis Sorted Set에서 데이터를 가져와 DB에 기록합니다.
      */
-    @Scheduled(fixedRate = 100)
+    @Scheduled(fixedRate = 10000)
     public void syncCacheToDB() {
         // 한 번에 가져올 Write-Back 작업의 개수 설정
         Integer writeBackBatchSize = (Integer) redisService.getValue(WRITE_BACK_BATCH_SIZE);
@@ -139,7 +139,7 @@ public class WriteBackScheduler {
      * 주기적으로 Redis Sorted Set의 모든 키에 대해 Write-Back 작업을 처리합니다.
      */
     @Profile("write-back-boost")
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = 200000)
     public void syncAllCache() {
         if (!redisService.hasKey(WRITE_BACK)) {
             return;
