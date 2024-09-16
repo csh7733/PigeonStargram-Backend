@@ -101,7 +101,7 @@ public class BasicUserService implements UserService {
                                               String password) {
         // 로그인과 관련된 정보는 직접 DB에서 조회
         return userRepository.findByWorkEmailAndPassword(workEmail, password)
-                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_EMAIL));
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_EMAIL_PASSWORD));
     }
 
     @Transactional(readOnly = true)
