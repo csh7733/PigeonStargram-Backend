@@ -60,6 +60,9 @@ dependencies {
 
 	// MongoDB 의존성 추가
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+	// MariaDB 의존성 추가
+	implementation 'org.mariadb.jdbc:mariadb-java-client:2.7.2'
 }
 
 tasks.named('test') {
