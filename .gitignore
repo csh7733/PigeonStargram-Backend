@@ -37,4 +37,8 @@ out/
 .vscode/
 
 ### proterties ###
+application-db.properties
+application-redis.properties
+application-aws.properties
+application-smtp.properties
 application-oauth.properties
