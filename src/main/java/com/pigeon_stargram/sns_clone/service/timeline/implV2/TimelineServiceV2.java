@@ -1,8 +1,10 @@
 package com.pigeon_stargram.sns_clone.service.timeline.implV2;
 
+import com.pigeon_stargram.sns_clone.domain.post.Post;
 import com.pigeon_stargram.sns_clone.dto.Follow.response.ResponseFollowerDto;
 import com.pigeon_stargram.sns_clone.dto.post.response.ResponsePostDto;
 import com.pigeon_stargram.sns_clone.dto.redis.ScoreWithValue;
+import com.pigeon_stargram.sns_clone.exception.post.PostNotFoundException;
 import com.pigeon_stargram.sns_clone.service.follow.FollowService;
 import com.pigeon_stargram.sns_clone.service.post.PostService;
 import com.pigeon_stargram.sns_clone.service.redis.RedisService;
@@ -71,7 +73,7 @@ public class TimelineServiceV2 implements TimelineService {
 
         // Redis에서 타임라인에 저장된 모든 게시물 ID와 스코어(타임스탬프)를 가져옴
         List<Long> validPostIds = redisService.getAllFromSortedSetWithScores(timelineKey, Long.class).stream()
-                .filter(scoreWithValue -> isValidPost(scoreWithValue, timelineKey, expirationTimeMillis))
+                .filter(scoreWithValue -> isValidPost(userId, scoreWithValue, timelineKey, expirationTimeMillis))
                 .map(ScoreWithValue::getValue)
                 .filter(postId -> !redisService.isMemberOfSet(UPLOADING_POSTS_SET, postId))
                 .collect(Collectors.toList());
@@ -82,14 +84,34 @@ public class TimelineServiceV2 implements TimelineService {
                 .collect(Collectors.toList());
     }
 
-    private boolean isValidPost(ScoreWithValue<Long> scoreWithValue, String timelineKey, Double expirationTimeMillis) {
+    private boolean isValidPost(Long userId, ScoreWithValue<Long> scoreWithValue, String timelineKey, Double expirationTimeMillis) {
         boolean isWithinOneDay = scoreWithValue.getScore() >= expirationTimeMillis;
+        Long postId = scoreWithValue.getValue();
+
         if (!isWithinOneDay) {
             // 24시간 지난 게시물은 Redis에서 제거
-            redisService.removeFromSortedSet(timelineKey, scoreWithValue.getValue());
+            redisService.removeFromSortedSet(timelineKey, postId);
+            return false;
         }
-        return isWithinOneDay;
-    }
 
+        try {
+            Post post = postService.findById(postId);
+            Long postUserId = post.getUser().getId();
+
+            // 사용자가 해당 게시글 작성자를 팔로우하고 있는지 확인
+            boolean isFollowing = followService.isFollowing(userId, postUserId);
+            if (!isFollowing) {
+                // 사용자가 게시글 작성자를 팔로우하지 않는 경우, Redis에서 제거
+                redisService.removeFromSortedSet(timelineKey, postId);
+                return false;
+            }
+        } catch (PostNotFoundException e) {
+            // 게시글이 존재하지 않는 경우, Redis에서 제거
+            redisService.removeFromSortedSet(timelineKey, postId);
+            return false;
+        }
+
+        return true;
+    }
 
 }
