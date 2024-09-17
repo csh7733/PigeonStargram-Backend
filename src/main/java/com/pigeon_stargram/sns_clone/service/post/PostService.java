@@ -109,4 +109,11 @@ public interface PostService {
      * @return 좋아요 처리 여부
      */
     Boolean likePost(LikePostDto dto);
+
+    /**
+     * 게시물 ID를 통해 게시물이 존재하는지 확인합니다.
+     * @param postId 존재 여부를 확인할 게시물 ID
+     * @return 존재 여부
+     */
+    Boolean existsById(Long postId);
 }

@@ -117,7 +117,8 @@ public class FollowServiceV2 implements FollowService {
     @Transactional(readOnly = true)
     @Override
     public Boolean isFamousUser(Long userId) {
-        return countFollowers(userId) >= FAMOUS_USER_THRESHOLD;
+        User user = userService.getUserById(userId);
+        return user.getIsFamousUser();
     }
 
     @Transactional
@@ -136,6 +137,11 @@ public class FollowServiceV2 implements FollowService {
 
         Follow follow = FollowFactory.createFollow(sender, recipient);
         followCrudService.save(follow);
+
+        // 만약 Recipient의 팔로워수가 임계점을 넘어간다면, 해당 유저를 앞으로 유명인으로 설정
+        if(countFollowers(recipientId) >= FAMOUS_USER_THRESHOLD){
+            userService.setFamousUser(recipientId);
+        }
 
         dto.setSenderName(sender.getName());
         notificationService.sendToSplitWorker(dto);

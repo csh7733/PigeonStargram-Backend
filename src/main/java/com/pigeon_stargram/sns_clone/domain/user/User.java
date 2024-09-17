@@ -46,6 +46,7 @@ public class User extends UserBaseTimeEntity {
     private String location;
     private String birthdayText;
     private String onlineStatus;    // 채팅에서 확인할 수 있는 현재 접속 정보
+    private Boolean isFamousUser = false;
 
     /**
      * 연관관계 정보
@@ -76,7 +77,9 @@ public class User extends UserBaseTimeEntity {
     public void updatePassword(String password) {
         this.password = password;
     }
-
+    public void setFamousUser() {
+        this.isFamousUser = true;
+    }
     public void updateOnlineStatus(String onlineStatus) {
         this.onlineStatus = onlineStatus;
     }
