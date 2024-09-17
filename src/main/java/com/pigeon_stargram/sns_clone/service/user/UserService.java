@@ -102,4 +102,10 @@ public interface UserService {
      * @param dto 온라인 상태 갱신 요청 정보 DTO
      */
     void handleOnlineStatusUpdate(UpdateOnlineStatusDto dto);
+
+    /**
+     * 사용자를 유명인으로 설정합니다.
+     * @param userId 유명인으로 설정할 유저의 ID
+     */
+    void setFamousUser(Long userId);
 }

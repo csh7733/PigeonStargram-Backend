@@ -47,8 +47,13 @@ public class TimelineServiceV2 implements TimelineService {
         // 2. 비유명인 팔로우 대상의 게시물 가져오기
         List<ResponsePostDto> unFamousPosts = getUnFamousFollowingsRecentPosts(userId);
 
-        // 3. 두 리스트를 합치고, 시간 기준으로 정렬하여 반환
+        // 3. 두 리스트를 합치고, 중복 제거 후 시간 기준으로 정렬하여 반환
         return Stream.concat(famousPosts.stream(), unFamousPosts.stream())
+                .collect(Collectors.toMap(
+                        ResponsePostDto::getId,  // ID를 키로 사용
+                        post -> post,
+                        (existing, replacement) -> existing))  // 중복된 ID는 첫 번째 값을 선택
+                .values().stream()
                 .sorted(Comparator.comparing(
                         post -> post.getProfile().getTime(),
                         getReverseOrderComparator()))
@@ -94,24 +99,30 @@ public class TimelineServiceV2 implements TimelineService {
             return false;
         }
 
-        try {
-            Post post = postService.findById(postId);
-            Long postUserId = post.getUser().getId();
-
-            // 사용자가 해당 게시글 작성자를 팔로우하고 있는지 확인
-            boolean isFollowing = followService.isFollowing(userId, postUserId);
-            if (!isFollowing) {
-                // 사용자가 게시글 작성자를 팔로우하지 않는 경우, Redis에서 제거
-                redisService.removeFromSortedSet(timelineKey, postId);
-                return false;
-            }
-        } catch (PostNotFoundException e) {
+        if (!isPostExisting(postId)) {
             // 게시글이 존재하지 않는 경우, Redis에서 제거
+            redisService.removeFromSortedSet(timelineKey, postId);
+            return false;
+        }
+
+        if (!isUserFollowingPostOwner(userId, postId)) {
+            // 사용자가 게시글 작성자를 팔로우하지 않는 경우, Redis에서 제거
             redisService.removeFromSortedSet(timelineKey, postId);
             return false;
         }
 
         return true;
     }
+
+    private boolean isPostExisting(Long postId) {
+        return postService.existsById(postId);
+    }
+
+    private boolean isUserFollowingPostOwner(Long userId, Long postId) {
+        Post post = postService.findById(postId);
+        Long postUserId = post.getUser().getId();
+        return followService.isFollowing(userId, postUserId);
+    }
+
 
 }

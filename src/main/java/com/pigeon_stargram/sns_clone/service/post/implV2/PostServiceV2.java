@@ -195,6 +195,11 @@ public class PostServiceV2 implements PostService {
         return false;
     }
 
+    @Transactional(readOnly = true)
+    public Boolean existsById(Long postId){
+        return postCrudService.existsById(postId);
+    }
+
     /**
      * 주어진 사용자 ID로 최근 게시물 ID 목록을 조회합니다.
      * 게시물이 최근 24시간 이내 작성된 경우만 포함됩니다.

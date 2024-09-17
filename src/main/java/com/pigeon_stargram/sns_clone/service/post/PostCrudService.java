@@ -59,4 +59,11 @@ public interface PostCrudService {
      * @param postId 삭제할 게시물의 ID
      */
     void deleteById(Long postId);
+
+    /**
+     * 게시물 ID를 통해 게시물이 존재하는지 확인합니다.
+     * @param postId 존재 여부를 확인할 게시물 ID
+     * @return 존재 여부
+     */
+    Boolean existsById(Long postId);
 }

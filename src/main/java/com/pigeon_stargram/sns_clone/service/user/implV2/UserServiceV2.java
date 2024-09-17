@@ -204,6 +204,17 @@ public class UserServiceV2 implements UserService {
         return user;
     }
 
+    @Transactional
+    @Override
+    public void setFamousUser(Long userId) {
+        // 유명인이 되는것은 한번만 설정 되므로 DB에 바로 업데이트
+        User user = getUserByIdFromRepository(userId);
+        user.setFamousUser();
+
+        // 변경된 사용자 정보를 캐시에도 업데이트(Write-Through)
+        redisService.putValueInHash(USER_CACHE_KEY, user.getId().toString(), user);
+    }
+
     private User getUserByIdFromRepository(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_ID + "id=" + id));

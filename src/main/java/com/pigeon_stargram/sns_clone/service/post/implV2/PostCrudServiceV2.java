@@ -160,6 +160,11 @@ public class PostCrudServiceV2 implements PostCrudService {
             redisService.removeFromSet(recentPostIdsKeys, postId);
         }
     }
+    @Transactional(readOnly = true)
+    public Boolean existsById(Long postId) {
+        return repository.findById(postId).isPresent();
+    }
+
 
     /**
      * 사용자 ID를 기준으로 게시물 ID 목록을 데이터베이스에서 조회합니다.
