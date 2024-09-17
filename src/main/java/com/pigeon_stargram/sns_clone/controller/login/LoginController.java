@@ -85,7 +85,7 @@ public class LoginController {
      */
     @PostMapping("/password")
     public ResponseEntity<String> sendPasswordResetLink(@RequestBody RequestForgotPasswordDto request) {
-        logControllerMethod("sendPasswordResetLink");
+        logControllerMethod("sendPasswordResetLink", request);
 
         loginService.sendPasswordResetLink(request.getEmail());
 
