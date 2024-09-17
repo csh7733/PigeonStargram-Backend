@@ -36,12 +36,12 @@ public interface NotificationCrudService {
     NotificationContent findContentById(Long contentId);
 
     /**
-     * 새로운 알림을 저장합니다.
+     * 새로운 알림을 리스트로 전부 저장합니다.
      *
-     * @param notification 저장할 알림 객체
-     * @return 저장된 알림 객체
+     * @param notifications 저장할 알림 객체 리스트
+     * @return 저장된 알림 객체 리스트
      */
-    NotificationV2 save(NotificationV2 notification);
+    List<NotificationV2> saveAll(List<NotificationV2> notifications);
 
     /**
      * 알림 내용을 저장합니다.

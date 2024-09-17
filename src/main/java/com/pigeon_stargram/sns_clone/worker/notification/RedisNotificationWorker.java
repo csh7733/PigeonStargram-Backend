@@ -93,9 +93,12 @@ public class RedisNotificationWorker implements NotificationWorker {
                 .map(recipientId -> createNotification(recipientId, content))
                 .collect(Collectors.toList());
 
-        notifications.forEach(notification -> {
-            ResponseNotificationDto message =
-                    saveNotificationAndbuildMessage(notification, sender);
+        // 알림을 전부 저장
+        List<NotificationV2> savedNotifications = notificationCrudService.saveAll(notifications);
+
+        // 알림 전송 처리
+        savedNotifications.forEach(notification -> {
+            ResponseNotificationDto message = buildMessage(notification, sender);
             publishMessage(message);
         });
 
@@ -122,13 +125,11 @@ public class RedisNotificationWorker implements NotificationWorker {
      * @param sender 알림을 보낸 사용자
      * @return 생성된 알림 메시지
      */
-    private ResponseNotificationDto saveNotificationAndbuildMessage(NotificationV2 notification,
-                                                                    User sender) {
-        NotificationV2 save = notificationCrudService.save(notification);
-        NotificationContent saveContent = save.getContent();
-        ResponseNotificationDto message =
-                buildResponseNotificationDto(save, sender, saveContent);
-        return message;
+    private ResponseNotificationDto buildMessage(NotificationV2 notification,
+                                                 User sender) {
+        NotificationContent saveContent = notification.getContent();
+
+        return buildResponseNotificationDto(notification, sender, saveContent);
     }
 
     /**

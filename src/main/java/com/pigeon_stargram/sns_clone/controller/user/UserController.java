@@ -62,7 +62,7 @@ public class UserController {
      */
     @PostMapping
     public ResponseUserInfoDto getUserInfoByName(@RequestBody RequestUsernameDto request){
-        logControllerMethod("getCurrentMember", request);
+        logControllerMethod("getUserInfoByName", request);
 
         User user = userService.getUserByName(request.getName());
         return toResponseUserInfoDto(user);

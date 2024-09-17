@@ -61,19 +61,21 @@ public class NotificationCrudServiceV2 implements NotificationCrudService{
     }
 
     @Transactional
-    public NotificationV2 save(NotificationV2 notification) {
-        Long recipientId = notification.getRecipientId();
-        NotificationV2 save = notificationRepository.save(notification);
+    public List<NotificationV2> saveAll(List<NotificationV2> notifications) {
+        // 알림 전체 저장
+        List<NotificationV2> savedNotifications = notificationRepository.saveAll(notifications);
 
-        String contentIdsKey =
-                cacheKeyGenerator(NOTIFICATION_CONTENT_IDS, USER_ID, recipientId.toString());
+        savedNotifications.forEach(notification -> {
+            String contentIdsKey =
+                    cacheKeyGenerator(NOTIFICATION_CONTENT_IDS, USER_ID, notification.getRecipientId().toString());
 
-        // 캐시가 존재할 경우 캐시에 저장된 contentId 세트에 새로운 contentId 추가
-        if (redisService.hasKey(contentIdsKey)) {
-            addContentIdToCache(contentIdsKey, notification.getContent().getId());
-        }
+            // 캐시가 존재할 경우 캐시에 저장된 contentId 세트에 새로운 contentId 추가
+            if (redisService.hasKey(contentIdsKey)) {
+                addContentIdToCache(contentIdsKey, notification.getContent().getId());
+            }
+        });
 
-        return save;
+        return savedNotifications;
     }
 
     @CachePut(value = NOTIFICATION_CONTENT,
