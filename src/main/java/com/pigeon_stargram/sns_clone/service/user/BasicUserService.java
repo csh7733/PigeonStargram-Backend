@@ -156,11 +156,9 @@ public class BasicUserService implements UserService {
     @Transactional
     @Override
     public User updateOnlineStatus(UpdateOnlineStatusDto dto) {
-        User foundUser = getUserById(dto.getUserId());
+        User foundUser = getUserByIdFromRepository(dto.getUserId());
 
         foundUser.updateOnlineStatus(dto.getOnlineStatus());
-
-        userRepository.save(foundUser);
 
         // 변경된 사용자 정보를 캐시에 업데이트
         redisService.putValueInHash(USER_CACHE_KEY, foundUser.getId().toString(), foundUser);
