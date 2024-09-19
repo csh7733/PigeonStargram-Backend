@@ -3,6 +3,73 @@
 ## 📖 프로젝트 소개(https://pigeonstargram.com)
 PigeonStargram은 인스타그램의 기능들을 구현하는 것을 목표로 한 소셜 미디어 클론 프로젝트입니다. [V1(Version1)](#-주요-기능-v1)에서는 기능 구현에만 초점을 맞춰 다양한 기능을 구현하였으며, [V2(Version2)](#-성능-개선-v2)에서는 실제 테스트를 통해 V1과 동일한 기능을 유지하면서도 최적화에 중점을 두어 개발되었습니다.
 
+<details>
+<summary>👤 테스트 용 계정</summary>
+  <br></br>
+  아래 계정을 사용하면 회원가입 없이 사용할 수 있습니다.
+
+  - **ID**: test1@gmil.com  
+  - **P.W**: test  
+  - **Username**: PigeonKing  
+  ---------------------------
+  - **ID**: test2@gmil.com  
+  - **P.W**: test  
+  - **Username**: ChickMaster  
+---------------------------
+  - **ID**: test3@gmil.com  
+  - **P.W**: test  
+  - **Username**: WingedHero  
+---------------------------
+  - **ID**: test4@gmil.com  
+  - **P.W**: test  
+  - **Username**: RoosterLeader  
+---------------------------
+  - **ID**: test5@gmil.com  
+  - **P.W**: test  
+  - **Username**: FeatherQueen  
+---------------------------
+  - **ID**: test6@gmil.com  
+  - **P.W**: test  
+  - **Username**: EggGuardian  
+---------------------------
+  - **ID**: test7@gmil.com  
+  - **P.W**: test  
+  - **Username**: SkyWatcher  
+---------------------------
+  - **ID**: test8@gmil.com  
+  - **P.W**: test  
+  - **Username**: NestProtector  
+---------------------------
+  - **ID**: test9@gmil.com  
+  - **P.W**: test  
+  - **Username**: CluckCommander  
+---------------------------
+  - **ID**: test10@gmil.com  
+  - **P.W**: test  
+  - **Username**: DoveChampion  
+---------------------------
+  - **ID**: test11@gmil.com  
+  - **P.W**: test  
+  - **Username**: HatchMaster  
+---------------------------
+  - **ID**: test12@gmil.com  
+  - **P.W**: test  
+  - **Username**: FlightLord  
+---------------------------
+  - **ID**: test13@gmil.com  
+  - **P.W**: test  
+  - **Username**: ChickKing  
+---------------------------
+  - **ID**: test14@gmil.com  
+  - **P.W**: test  
+  - **Username**: FalconRider  
+---------------------------
+  - **ID**: test15@gmil.com  
+  - **P.W**: test  
+  - **Username**: HenQueen  
+
+</details>
+
 ## 🛠 기술 스택
 - **Server**: Java, Spring Boot, Spring Data JPA, WebSocket, OAuth 2.0, Spring Security, AWS S3, Gmail SMTP
 - **Redis**: 캐시, 세션 관리, Pub/Sub, 메시지 큐, 자료구조 활용(Set, Sorted Set, Hash...)
